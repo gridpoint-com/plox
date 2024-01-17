@@ -65,10 +65,15 @@ defmodule Plox do
 
     ~H"""
     <%= for y_value <- Scale.values(@scale, scale_opts(assigns)), y_pixel = y_to_graph(y_value, @dimensions, @scale) do %>
-      <.y_label graph={@dimensions} y_pixel={y_pixel} position={@position}>
+      <.y_label dimensions={@dimensions} y_pixel={y_pixel} position={@position}>
         <%= render_slot(@inner_block, y_value) %>
       </.y_label>
-      <.horizontal_line :if={@grid_lines} graph={@dimensions} y_pixel={y_pixel} width={@line_width} />
+      <.horizontal_line
+        :if={@grid_lines}
+        dimensions={@dimensions}
+        y_pixel={y_pixel}
+        width={@line_width}
+      />
     <% end %>
     """
   end
@@ -90,10 +95,15 @@ defmodule Plox do
 
     ~H"""
     <%= for x_value <- Scale.values(@scale, scale_opts(assigns)), x_pixel = x_to_graph(x_value, @dimensions, @scale) do %>
-      <.x_label graph={@dimensions} x_pixel={x_pixel} position={@position}>
+      <.x_label dimensions={@dimensions} x_pixel={x_pixel} position={@position}>
         <%= render_slot(@inner_block, x_value) %>
       </.x_label>
-      <.vertical_line :if={@grid_lines} graph={@dimensions} x_pixel={x_pixel} width={@line_width} />
+      <.vertical_line
+        :if={@grid_lines}
+        dimensions={@dimensions}
+        x_pixel={x_pixel}
+        width={@line_width}
+      />
     <% end %>
     """
   end
@@ -168,7 +178,7 @@ defmodule Plox do
     Scale.convert_to_range(dataset.scales[key], datum[key], min..max) |> to_string()
   end
 
-  attr :graph, :map, required: true
+  attr :dimensions, :map, required: true
   attr :y_pixel, :float, required: true, doc: "Y pixel value for rendering this label"
   attr :position, :atom, required: true, values: [:left, :right]
 
@@ -177,7 +187,7 @@ defmodule Plox do
   defp y_label(%{position: :left} = assigns) do
     ~H"""
     <text
-      x={@graph.gutters.left - 16}
+      x={@dimensions.gutters.left - 16}
       y={@y_pixel}
       class="fill-grey-1000 text-xs [dominant-baseline:middle] [text-anchor:end]"
     >
@@ -189,7 +199,7 @@ defmodule Plox do
   defp y_label(%{position: :right} = assigns) do
     ~H"""
     <text
-      x={@graph.width - @graph.gutters.right + 16}
+      x={@dimensions.width - @dimensions.gutters.right + 16}
       y={@y_pixel}
       class="fill-grey-1000 text-xs [dominant-baseline:middle] [text-anchor:start]"
     >
@@ -198,7 +208,7 @@ defmodule Plox do
     """
   end
 
-  attr :graph, :map, required: true
+  attr :dimensions, :map, required: true
   attr :x_pixel, :float, required: true, doc: "X pixel value for rendering this label"
   attr :position, :atom, required: true, values: [:top, :bottom]
 
@@ -208,7 +218,7 @@ defmodule Plox do
     ~H"""
     <text
       x={@x_pixel}
-      y={@graph.height - @graph.gutters.bottom + 16}
+      y={@dimensions.height - @dimensions.gutters.bottom + 16}
       class="fill-grey-1000 text-xs [dominant-baseline:hanging] [text-anchor:middle]"
     >
       <%= render_slot(@inner_block) %>
@@ -220,7 +230,7 @@ defmodule Plox do
     ~H"""
     <text
       x={@x_pixel}
-      y={@graph.gutters.bottom - 16}
+      y={@dimensions.gutters.bottom - 16}
       class="fill-grey-1000 text-xs [dominant-baseline:text-bottom] [text-anchor:middle]"
     >
       <%= render_slot(@inner_block) %>
@@ -228,16 +238,16 @@ defmodule Plox do
     """
   end
 
-  attr :graph, :map, required: true
+  attr :dimensions, :map, required: true
   attr :y_pixel, :float, required: true
   attr :width, :string, required: true
 
   defp horizontal_line(assigns) do
     ~H"""
     <line
-      x1={@graph.gutters.left}
+      x1={@dimensions.gutters.left}
       y1={@y_pixel}
-      x2={@graph.width - @graph.gutters.right}
+      x2={@dimensions.width - @dimensions.gutters.right}
       y2={@y_pixel}
       stroke-width={@width}
       class="stroke-grey-50"
@@ -245,7 +255,7 @@ defmodule Plox do
     """
   end
 
-  attr :graph, :map, required: true
+  attr :dimensions, :map, required: true
   attr :x_pixel, :float, required: true
   attr :width, :string, required: true
 
@@ -253,12 +263,41 @@ defmodule Plox do
     ~H"""
     <line
       x1={@x_pixel}
-      y1={@graph.gutters.top}
+      y1={@dimensions.gutters.top}
       x2={@x_pixel}
-      y2={@graph.height - @graph.gutters.bottom}
+      y2={@dimensions.height - @dimensions.gutters.bottom}
       stroke-width={@width}
       class="stroke-grey-50"
     />
+    """
+  end
+
+  attr :marker, :any, required: true
+  attr :width, :string, default: "1.5"
+
+  slot :inner_block, required: true
+
+  def vertical_marker(assigns) do
+    {{value, scale}, dimensions} = assigns.marker
+    x_pixel = x_to_graph(value, dimensions, scale)
+    assigns = assign(assigns, dimensions: dimensions, x_pixel: x_pixel)
+
+    ~H"""
+    <line
+      x1={@x_pixel}
+      y1={@dimensions.gutters.top - 12}
+      x2={@x_pixel}
+      y2={@dimensions.height - @dimensions.gutters.bottom}
+      stroke-width={@width}
+      class="stroke-grey-1000 [stroke-dasharray:2]"
+    />
+    <text
+      x={@x_pixel}
+      y={@dimensions.gutters.top - 24}
+      class={["fill-grey-1000", "text-xs [dominant-baseline:middle] [text-anchor:middle]"]}
+    >
+      <%= render_slot(@inner_block) %>
+    </text>
     """
   end
 
