@@ -25,7 +25,7 @@ defprotocol Plox.Scale do
   scale, just the values meant to be labeled and rendered on the corresponding
   axis. e.g. the final value might not be equal to the scale's configured max.
   """
-  @spec values(scale :: t(), opts :: keyword()) :: Enumerable.t()
+  @spec values(scale :: t(), opts :: map()) :: Enumerable.t()
   def values(scale, opts)
 
   @doc """

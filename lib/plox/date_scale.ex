@@ -34,7 +34,7 @@ defmodule Plox.DateScale do
 
   defimpl Plox.Scale do
     def values(scale, opts) do
-      case Keyword.fetch(opts, :step) do
+      case Map.fetch(opts, :step) do
         :error -> scale.range
         {:ok, step} when scale.range.step > 0 -> %{scale.range | step: step}
         {:ok, step} when scale.range.step < 0 -> %{scale.range | step: -step}

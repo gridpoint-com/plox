@@ -7,6 +7,8 @@ defmodule Plox do
 
   alias Plox.Dataset
   alias Plox.DateScale
+  alias Plox.DateTimeScale
+  alias Plox.FixedValuesScale
   alias Plox.Graph
   alias Plox.NumberScale
   alias Plox.Scale
@@ -116,9 +118,7 @@ defmodule Plox do
     """
   end
 
-  defp scale_opts(assigns) do
-    assigns |> Map.take([:ticks, :step]) |> Map.to_list()
-  end
+  defp scale_opts(assigns), do: Map.take(assigns, [:ticks, :step])
 
   attr :dataset, :any, required: true
 
@@ -128,22 +128,31 @@ defmodule Plox do
   attr :width, :string, examples: ["1.5", "4"], default: "2"
   attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :solid
   attr :color, :string, default: "#FF9330"
+  attr :type, :atom, values: [:line, :step_line], default: :line
 
   def line_plot(assigns) do
     {dataset, dimensions} = assigns.dataset
-    assigns = assign(assigns, dimensions: dimensions, dataset: dataset)
+
+    points_fun =
+      case assigns.type do
+        :line -> &points/4
+        :step_line -> &step_points/4
+      end
+
+    points =
+      polyline_points(
+        dataset,
+        dimensions,
+        points_fun,
+        dataset.scales[assigns.x],
+        dataset.scales[assigns.y]
+      )
+
+    assigns = assign(assigns, points: points)
 
     ~H"""
     <polyline
-      points={
-        polyline_points(
-          @dataset,
-          @dimensions,
-          &points/4,
-          @dataset.scales[@x],
-          @dataset.scales[@y]
-        )
-      }
+      points={@points}
       fill="none"
       stroke={@color}
       stroke-width={@width}
@@ -158,7 +167,7 @@ defmodule Plox do
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
   attr :radius, :any, examples: ["8", "24.5", :radius, {:radius, 2, 10}], default: "4"
-  attr :color, :string, default: "#FF9330"
+  attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
 
   def points_plot(assigns) do
     {dataset, dimensions} = assigns.dataset
@@ -362,6 +371,21 @@ defmodule Plox do
     end
   end
 
+  defp step_points(dataset, graph, x_scale, y_scale) do
+    dataset.data
+    |> Enum.chunk_every(2, 1)
+    |> Enum.flat_map(fn
+      [point1, point2] ->
+        [
+          {x_to_graph(point1.x, graph, x_scale), y_to_graph(point1.y, graph, y_scale), point1},
+          {x_to_graph(point2.x, graph, x_scale), y_to_graph(point1.y, graph, y_scale), point2}
+        ]
+
+      [%{x: x_value, y: y_value} = datum] ->
+        [{x_to_graph(x_value, graph, x_scale), y_to_graph(y_value, graph, y_scale), datum}]
+    end)
+  end
+
   defp x_to_graph(x_value, graph, scale) do
     Scale.convert_to_range(
       scale,
@@ -384,6 +408,8 @@ defmodule Plox do
 
   defdelegate to_graph(scales_and_datasets), to: Graph, as: :new
   defdelegate date_scale(range), to: DateScale, as: :new
+  defdelegate datetime_scale(first, last), to: DateTimeScale, as: :new
   defdelegate number_scale(first, last), to: NumberScale, as: :new
+  defdelegate fixed_values_scale(values), to: FixedValuesScale, as: :new
   defdelegate dataset(data, aces), to: Dataset, as: :new
 end

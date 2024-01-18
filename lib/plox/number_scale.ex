@@ -41,8 +41,8 @@ defmodule Plox.NumberScale do
   end
 
   defimpl Plox.Scale do
-    def values(scale, opts \\ []) do
-      ticks = Keyword.get(opts, :ticks, 11)
+    def values(scale, opts \\ %{}) do
+      ticks = Map.get(opts, :ticks, 11)
       step = Decimal.sub(scale.last, scale.first) |> Decimal.div(ticks - 1)
 
       # we don't compute the last value because it could include rounding errors
