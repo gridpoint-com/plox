@@ -54,8 +54,11 @@ defmodule Plox do
 
   attr :position, :atom, values: [:left, :right], default: :left
 
+  attr :label_color, :string, default: "#18191A"
+
   attr :grid_lines, :boolean, default: true
   attr :line_width, :string, default: "1"
+  attr :line_color, :string, default: "#F2F4F5"
 
   slot :inner_block, required: true
 
@@ -65,7 +68,7 @@ defmodule Plox do
 
     ~H"""
     <%= for y_value <- Scale.values(@scale, scale_opts(assigns)), y_pixel = y_to_graph(y_value, @dimensions, @scale) do %>
-      <.y_label dimensions={@dimensions} y_pixel={y_pixel} position={@position}>
+      <.y_label dimensions={@dimensions} y_pixel={y_pixel} position={@position} color={@label_color}>
         <%= render_slot(@inner_block, y_value) %>
       </.y_label>
       <.horizontal_line
@@ -73,6 +76,7 @@ defmodule Plox do
         dimensions={@dimensions}
         y_pixel={y_pixel}
         width={@line_width}
+        color={@line_color}
       />
     <% end %>
     """
@@ -84,8 +88,11 @@ defmodule Plox do
 
   attr :position, :atom, values: [:top, :bottom], default: :bottom
 
+  attr :label_color, :string, default: "#18191A"
+
   attr :grid_lines, :boolean, default: true
   attr :line_width, :string, default: "1"
+  attr :line_color, :string, default: "#F2F4F5"
 
   slot :inner_block, required: true
 
@@ -95,7 +102,7 @@ defmodule Plox do
 
     ~H"""
     <%= for x_value <- Scale.values(@scale, scale_opts(assigns)), x_pixel = x_to_graph(x_value, @dimensions, @scale) do %>
-      <.x_label dimensions={@dimensions} x_pixel={x_pixel} position={@position}>
+      <.x_label dimensions={@dimensions} x_pixel={x_pixel} position={@position} color={@label_color}>
         <%= render_slot(@inner_block, x_value) %>
       </.x_label>
       <.vertical_line
@@ -103,6 +110,7 @@ defmodule Plox do
         dimensions={@dimensions}
         x_pixel={x_pixel}
         width={@line_width}
+        color={@line_color}
       />
     <% end %>
     """
@@ -118,6 +126,8 @@ defmodule Plox do
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
   attr :width, :string, examples: ["1.5", "4"], default: "2"
+  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :solid
+  attr :color, :string, default: "#FF9330"
 
   def line_plot(assigns) do
     {dataset, dimensions} = assigns.dataset
@@ -135,8 +145,9 @@ defmodule Plox do
         )
       }
       fill="none"
+      stroke={@color}
       stroke-width={@width}
-      class="stroke-vibrant-orange-300"
+      stroke-dasharray={stoke_dasharray(@line_style)}
     />
     """
   end
@@ -147,6 +158,7 @@ defmodule Plox do
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
   attr :radius, :any, examples: ["8", "24.5", :radius, {:radius, 2, 10}], default: "4"
+  attr :color, :string, default: "#FF9330"
 
   def points_plot(assigns) do
     {dataset, dimensions} = assigns.dataset
@@ -158,10 +170,10 @@ defmodule Plox do
         {x_pixel, y_pixel, datum} <-
           points(@dataset, @dimensions, @dataset.scales[@x], @dataset.scales[@y])
       }
+      fill={@color}
       cx={x_pixel}
       cy={y_pixel}
       r={radius(@radius, @dimensions, @dataset, datum)}
-      class="fill-vibrant-orange-300"
     />
     """
   end
@@ -182,6 +194,9 @@ defmodule Plox do
   attr :y_pixel, :float, required: true, doc: "Y pixel value for rendering this label"
   attr :position, :atom, required: true, values: [:left, :right]
 
+  attr :color, :string, required: true
+  attr :style, :string, default: "font-size: 0.75rem; line-height: 1rem"
+
   slot :inner_block, required: true
 
   defp y_label(%{position: :left} = assigns) do
@@ -189,7 +204,10 @@ defmodule Plox do
     <text
       x={@dimensions.gutters.left - 16}
       y={@y_pixel}
-      class="fill-grey-1000 text-xs [dominant-baseline:middle] [text-anchor:end]"
+      fill={@color}
+      dominant-baseline="middle"
+      text-anchor="end"
+      style={@style}
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -201,7 +219,10 @@ defmodule Plox do
     <text
       x={@dimensions.width - @dimensions.gutters.right + 16}
       y={@y_pixel}
-      class="fill-grey-1000 text-xs [dominant-baseline:middle] [text-anchor:start]"
+      fill={@color}
+      dominant-baseline="middle"
+      text-anchor="start"
+      style={@style}
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -212,6 +233,9 @@ defmodule Plox do
   attr :x_pixel, :float, required: true, doc: "X pixel value for rendering this label"
   attr :position, :atom, required: true, values: [:top, :bottom]
 
+  attr :color, :string, required: true
+  attr :style, :string, default: "font-size: 0.75rem; line-height: 1rem"
+
   slot :inner_block, required: true
 
   defp x_label(%{position: :bottom} = assigns) do
@@ -219,7 +243,10 @@ defmodule Plox do
     <text
       x={@x_pixel}
       y={@dimensions.height - @dimensions.gutters.bottom + 16}
-      class="fill-grey-1000 text-xs [dominant-baseline:hanging] [text-anchor:middle]"
+      fill={@color}
+      dominant-baseline="hanging"
+      text-anchor="middle"
+      style={@style}
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -231,7 +258,10 @@ defmodule Plox do
     <text
       x={@x_pixel}
       y={@dimensions.gutters.bottom - 16}
-      class="fill-grey-1000 text-xs [dominant-baseline:text-bottom] [text-anchor:middle]"
+      fill={@color}
+      dominant-baseline="text-bottom"
+      text-anchor="middle"
+      style={@style}
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -242,6 +272,9 @@ defmodule Plox do
   attr :y_pixel, :float, required: true
   attr :width, :string, required: true
 
+  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :solid
+  attr :color, :string, required: true
+
   defp horizontal_line(assigns) do
     ~H"""
     <line
@@ -249,8 +282,9 @@ defmodule Plox do
       y1={@y_pixel}
       x2={@dimensions.width - @dimensions.gutters.right}
       y2={@y_pixel}
+      stroke={@color}
       stroke-width={@width}
-      class="stroke-grey-50"
+      stroke-dasharray={stoke_dasharray(@line_style)}
     />
     """
   end
@@ -259,6 +293,9 @@ defmodule Plox do
   attr :x_pixel, :float, required: true
   attr :width, :string, required: true
 
+  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :solid
+  attr :color, :string, required: true
+
   defp vertical_line(assigns) do
     ~H"""
     <line
@@ -266,19 +303,27 @@ defmodule Plox do
       y1={@dimensions.gutters.top}
       x2={@x_pixel}
       y2={@dimensions.height - @dimensions.gutters.bottom}
+      stroke={@color}
       stroke-width={@width}
-      class="stroke-grey-50"
+      stroke-dasharray={stoke_dasharray(@line_style)}
     />
     """
   end
 
-  attr :marker, :any, required: true
+  attr :at, :any, required: true
+  attr :scale, :any, required: true
   attr :width, :string, default: "1.5"
+
+  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :dotted
+  attr :line_color, :string, default: "#18191A"
+  attr :label_color, :string, default: "#18191A"
+  attr :label_style, :string, default: "font-size: 0.75rem; line-height: 1rem"
 
   slot :inner_block, required: true
 
   def vertical_marker(assigns) do
-    {{value, scale}, dimensions} = assigns.marker
+    {scale, dimensions} = assigns.scale
+    value = assigns.at
     x_pixel = x_to_graph(value, dimensions, scale)
     assigns = assign(assigns, dimensions: dimensions, x_pixel: x_pixel)
 
@@ -288,13 +333,17 @@ defmodule Plox do
       y1={@dimensions.gutters.top - 12}
       x2={@x_pixel}
       y2={@dimensions.height - @dimensions.gutters.bottom}
+      stroke={@line_color}
       stroke-width={@width}
-      class="stroke-grey-1000 [stroke-dasharray:2]"
+      stroke-dasharray={stoke_dasharray(@line_style)}
     />
     <text
       x={@x_pixel}
       y={@dimensions.gutters.top - 24}
-      class={["fill-grey-1000", "text-xs [dominant-baseline:middle] [text-anchor:middle]"]}
+      fill={@label_color}
+      dominant-baseline="middle"
+      text-anchor="middle"
+      style={@label_style}
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -328,6 +377,10 @@ defmodule Plox do
       (graph.height - graph.gutters.bottom)..graph.gutters.top
     )
   end
+
+  defp stoke_dasharray(:solid), do: false
+  defp stoke_dasharray(:dotted), do: "2"
+  defp stoke_dasharray(:dashed), do: "6"
 
   defdelegate to_graph(scales_and_datasets), to: Graph, as: :new
   defdelegate date_scale(range), to: DateScale, as: :new
