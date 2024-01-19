@@ -26,16 +26,24 @@ defmodule Plox do
   attr :bottom_gutter, :integer, default: 35, doc: "Bottom padding in pixels for the x-axis"
   attr :left_gutter, :integer, default: 70, doc: "Left padding in pixels for the y-axis"
 
+  slot :legend
   slot :inner_block, required: true
 
   def graph(assigns) do
     assigns = assign(assigns, :graph, %{assigns.for | dimensions: dimensions(assigns)})
 
     ~H"""
-    <div id={@id} style={"width: #{@width}px; height: #{@height}px"}>
-      <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
-        <%= render_slot(@inner_block, @graph) %>
-      </svg>
+    <div id={@id}>
+      <div style={"display: flex; flex-direction: column; align-items: flex-end; max-width: #{@graph.dimensions.width - @graph.dimensions.gutters.right}px"}>
+        <.legend :for={legend <- @legend}>
+          <%= render_slot(legend) %>
+        </.legend>
+      </div>
+      <div style={"width: #{@width}px; height: #{@height}px"}>
+        <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
+          <%= render_slot(@inner_block, @graph) %>
+        </svg>
+      </div>
     </div>
     """
   end
@@ -396,6 +404,36 @@ defmodule Plox do
     >
       <%= render_slot(@inner_block) %>
     </text>
+    """
+  end
+
+  slot :inner_block, required: true
+
+  def legend(assigns) do
+    ~H"""
+    <div style="display: flex; gap: 0.5rem">
+      <%= render_slot(@inner_block) %>
+    </div>
+    """
+  end
+
+  attr :color, :string, required: true
+  attr :label, :string, required: true
+
+  def legend_item(assigns) do
+    ~H"""
+    <div style="display: flex; align-items: baseline; column-gap: 0.5rem">
+      <.color_bubble color={@color} />
+      <p style="font-size: 0.75rem; line-height: 1rem; color: #9D9E9F;"><%= @label %></p>
+    </div>
+    """
+  end
+
+  attr :color, :string, required: true
+
+  def color_bubble(assigns) do
+    ~H"""
+    <div style={"background-color: #{@color}; height: 0.5rem; width: 0.5rem; flex: none; border-radius: 9999px;"} />
     """
   end
 
