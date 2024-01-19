@@ -146,9 +146,9 @@ defmodule Plox do
       polyline_points(
         dataset,
         dimensions,
-        points_fun,
-        dataset.scales[assigns.x],
-        dataset.scales[assigns.y]
+        assigns.x,
+        assigns.y,
+        points_fun
       )
 
     assigns = assign(assigns, points: points)
@@ -198,7 +198,7 @@ defmodule Plox do
     radius({key, 2, 20}, dimensions, dataset, datum)
   end
 
-  defp radius({key, min, max}, _graph, dataset, datum) do
+  defp radius({key, min, max}, _dimensions, dataset, datum) do
     # TODO: be more assertive with the key access
     Scale.convert_to_range(dataset.scales[key], datum[key], min..max) |> to_string()
   end
@@ -370,46 +370,59 @@ defmodule Plox do
     """
   end
 
-  defp polyline_points(dataset, graph, points_fun, x_scale, y_scale) do
+  defp polyline_points(dataset, dimensions, x_key, y_key, points_fun) do
     dataset
-    |> points_fun.(graph, x_scale, y_scale)
+    |> points_fun.(dimensions, x_key, y_key)
     |> Enum.map_join(" ", fn {x, y, _} -> "#{x},#{y}" end)
   end
 
-  defp points(dataset, graph, x_scale, y_scale) do
-    for %{x: x_value, y: y_value} = datum <- dataset.data do
-      {x_to_graph(x_value, graph, x_scale), y_to_graph(y_value, graph, y_scale), datum}
+  defp points(dataset, dimensions, x_key, y_key) do
+    # FIXME: make these functions calls on `Plox.Dataset`
+    x_scale = dataset.scales[x_key]
+    y_scale = dataset.scales[y_key]
+
+    for %{^x_key => x_value, ^y_key => y_value} = datum <- dataset.data do
+      {x_to_graph(x_value, dimensions, x_scale), y_to_graph(y_value, dimensions, y_scale), datum}
     end
   end
 
-  defp step_points(dataset, graph, x_scale, y_scale) do
+  defp step_points(dataset, dimensions, x_key, y_key) do
+    # FIXME: make these functions calls on `Plox.Dataset`
+    x_scale = dataset.scales[x_key]
+    y_scale = dataset.scales[y_key]
+
     dataset.data
     |> Enum.chunk_every(2, 1)
     |> Enum.flat_map(fn
       [point1, point2] ->
         [
-          {x_to_graph(point1.x, graph, x_scale), y_to_graph(point1.y, graph, y_scale), point1},
-          {x_to_graph(point2.x, graph, x_scale), y_to_graph(point1.y, graph, y_scale), point2}
+          {x_to_graph(point1[x_key], dimensions, x_scale),
+           y_to_graph(point1[y_key], dimensions, y_scale), point1},
+          {x_to_graph(point2[x_key], dimensions, x_scale),
+           y_to_graph(point1[y_key], dimensions, y_scale), point2}
         ]
 
-      [%{x: x_value, y: y_value} = datum] ->
-        [{x_to_graph(x_value, graph, x_scale), y_to_graph(y_value, graph, y_scale), datum}]
+      [%{^x_key => x_value, ^y_key => y_value} = datum] ->
+        [
+          {x_to_graph(x_value, dimensions, x_scale), y_to_graph(y_value, dimensions, y_scale),
+           datum}
+        ]
     end)
   end
 
-  defp x_to_graph(x_value, graph, scale) do
+  defp x_to_graph(x_value, dimensions, scale) do
     Scale.convert_to_range(
       scale,
       x_value,
-      graph.gutters.left..(graph.width - graph.gutters.right)
+      dimensions.gutters.left..(dimensions.width - dimensions.gutters.right)
     )
   end
 
-  defp y_to_graph(y_value, graph, scale) do
+  defp y_to_graph(y_value, dimensions, scale) do
     Scale.convert_to_range(
       scale,
       y_value,
-      (graph.height - graph.gutters.bottom)..graph.gutters.top
+      (dimensions.height - dimensions.gutters.bottom)..dimensions.gutters.top
     )
   end
 
