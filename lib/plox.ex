@@ -159,7 +159,7 @@ defmodule Plox do
       fill="none"
       stroke={@color}
       stroke-width={@width}
-      stroke-dasharray={stoke_dasharray(@line_style)}
+      stroke-dasharray={stroke_dasharray(@line_style)}
     />
     """
   end
@@ -304,7 +304,7 @@ defmodule Plox do
       y2={@y_pixel}
       stroke={@color}
       stroke-width={@width}
-      stroke-dasharray={stoke_dasharray(@line_style)}
+      stroke-dasharray={stroke_dasharray(@line_style)}
     />
     """
   end
@@ -325,7 +325,7 @@ defmodule Plox do
       y2={@dimensions.height - @dimensions.gutters.bottom}
       stroke={@color}
       stroke-width={@width}
-      stroke-dasharray={stoke_dasharray(@line_style)}
+      stroke-dasharray={stroke_dasharray(@line_style)}
     />
     """
   end
@@ -355,7 +355,7 @@ defmodule Plox do
       y2={@dimensions.height - @dimensions.gutters.bottom}
       stroke={@line_color}
       stroke-width={@width}
-      stroke-dasharray={stoke_dasharray(@line_style)}
+      stroke-dasharray={stroke_dasharray(@line_style)}
     />
     <text
       x={@x_pixel}
@@ -426,9 +426,9 @@ defmodule Plox do
     )
   end
 
-  defp stoke_dasharray(:solid), do: false
-  defp stoke_dasharray(:dotted), do: "2"
-  defp stoke_dasharray(:dashed), do: "6"
+  defp stroke_dasharray(:solid), do: false
+  defp stroke_dasharray(:dotted), do: "2"
+  defp stroke_dasharray(:dashed), do: "6"
 
   defdelegate to_graph(scales_and_datasets), to: Graph, as: :new
   defdelegate date_scale(range), to: DateScale, as: :new
