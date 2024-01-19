@@ -210,6 +210,35 @@ defmodule Plox do
     ColorScale.convert_to_color(dataset.scales[key], datum[key])
   end
 
+  attr :dataset, :any, required: true
+
+  attr :area, :atom, default: :x, doc: "The dataset axis key to use for area"
+  attr :color, :atom, default: :y, doc: "The dataset axis key to use for colors"
+
+  def area_plot(assigns) do
+    {dataset, dimensions} = assigns.dataset
+
+    assigns =
+      assign(assigns,
+        dimensions: dimensions,
+        dataset: dataset,
+        rect_points: area_points(dataset, dimensions, assigns.area)
+      )
+
+    ~H"""
+    <%= for [{x1_pixel, datum}, {x2_pixel, _datum}] <- @rect_points, rect_color = color(@color, @dataset, datum) do %>
+      <rect
+        :if={!is_nil(rect_color)}
+        fill={rect_color}
+        height={@dimensions.height - @dimensions.gutters.top - @dimensions.gutters.bottom}
+        width={x2_pixel - x1_pixel}
+        x={x1_pixel}
+        y={@dimensions.gutters.top}
+      />
+    <% end %>
+    """
+  end
+
   attr :dimensions, :map, required: true
   attr :y_pixel, :float, required: true, doc: "Y pixel value for rendering this label"
   attr :position, :atom, required: true, values: [:left, :right]
@@ -407,6 +436,20 @@ defmodule Plox do
           {x_to_graph(x_value, dimensions, x_scale), y_to_graph(y_value, dimensions, y_scale),
            datum}
         ]
+    end)
+  end
+
+  defp area_points(dataset, dimensions, key) do
+    # FIXME: make these functions calls on `Plox.Dataset`
+    scale = dataset.scales[key]
+
+    dataset.data
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.map(fn [point1, point2] ->
+      [
+        {x_to_graph(point1[key], dimensions, scale), point1},
+        {x_to_graph(point2[key], dimensions, scale), point2}
+      ]
     end)
   end
 
