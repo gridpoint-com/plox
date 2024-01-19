@@ -180,7 +180,7 @@ defmodule Plox do
     <circle
       :for={
         {x_pixel, y_pixel, datum} <-
-          points(@dataset, @dimensions, @dataset.scales[@x], @dataset.scales[@y])
+          points(@dataset, @dimensions, @x, @y)
       }
       fill={color(@color, @dataset, datum)}
       cx={x_pixel}
