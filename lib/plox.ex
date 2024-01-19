@@ -5,9 +5,11 @@ defmodule Plox do
 
   use Phoenix.Component
 
+  alias Plox.ColorScale
   alias Plox.Dataset
   alias Plox.DateScale
   alias Plox.DateTimeScale
+  alias Plox.FixedColorsScale
   alias Plox.FixedValuesScale
   alias Plox.Graph
   alias Plox.NumberScale
@@ -15,6 +17,7 @@ defmodule Plox do
 
   attr :for, :map, required: true
 
+  attr :id, :string, required: true
   attr :width, :integer, required: true, doc: "The total width of the rendered graph, in pixels"
   attr :height, :integer, required: true, doc: "The total height of the rendered graph, in pixels"
 
@@ -29,7 +32,7 @@ defmodule Plox do
     assigns = assign(assigns, :graph, %{assigns.for | dimensions: dimensions(assigns)})
 
     ~H"""
-    <div style={"width: #{@width}px; height: #{@height}px"}>
+    <div id={@id} style={"width: #{@width}px; height: #{@height}px"}>
       <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
         <%= render_slot(@inner_block, @graph) %>
       </svg>
@@ -179,7 +182,7 @@ defmodule Plox do
         {x_pixel, y_pixel, datum} <-
           points(@dataset, @dimensions, @dataset.scales[@x], @dataset.scales[@y])
       }
-      fill={@color}
+      fill={color(@color, @dataset, datum)}
       cx={x_pixel}
       cy={y_pixel}
       r={radius(@radius, @dimensions, @dataset, datum)}
@@ -187,16 +190,24 @@ defmodule Plox do
     """
   end
 
-  defp radius(radius, _graph, _dataset, _datum) when is_binary(radius) or is_number(radius),
+  defp radius(radius, _dimensions, _dataset, _datum) when is_binary(radius) or is_number(radius),
     do: radius
 
-  defp radius(key, graph, dataset, datum) when is_atom(key) do
+  defp radius(key, dimensions, dataset, datum) when is_atom(key) do
     # TODO: infer radius min and max based on graph dimensions
-    radius({key, 2, 20}, graph, dataset, datum)
+    radius({key, 2, 20}, dimensions, dataset, datum)
   end
 
   defp radius({key, min, max}, _graph, dataset, datum) do
+    # TODO: be more assertive with the key access
     Scale.convert_to_range(dataset.scales[key], datum[key], min..max) |> to_string()
+  end
+
+  defp color(color, _dataset, _datum) when is_binary(color), do: color
+
+  defp color(key, dataset, datum) when is_atom(key) do
+    # TODO: be more assertive with the key access
+    ColorScale.convert_to_color(dataset.scales[key], datum[key])
   end
 
   attr :dimensions, :map, required: true
@@ -410,6 +421,7 @@ defmodule Plox do
   defdelegate date_scale(range), to: DateScale, as: :new
   defdelegate datetime_scale(first, last), to: DateTimeScale, as: :new
   defdelegate number_scale(first, last), to: NumberScale, as: :new
+  defdelegate fixed_colors_scale(color_mapping), to: FixedColorsScale, as: :new
   defdelegate fixed_values_scale(values), to: FixedValuesScale, as: :new
   defdelegate dataset(data, aces), to: Dataset, as: :new
 end

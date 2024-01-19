@@ -17,7 +17,7 @@ defmodule Plox.Dataset do
             {key, fun.(datum)}
           end)
         )
-        |> Map.put(:id, idx)
+        |> Map.put_new(:id, idx)
       end)
 
     %__MODULE__{data: data, scales: scales}
