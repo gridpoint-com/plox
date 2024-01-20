@@ -39,7 +39,7 @@ defmodule Plox do
           <%= render_slot(legend) %>
         </.legend>
       </div>
-      <div style={"width: #{@width}px; height: #{@height}px"}>
+      <div style={"position: relative; width: #{@width}px; height: #{@height}px"}>
         <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
           <%= render_slot(@inner_block, @graph) %>
         </svg>
@@ -179,6 +179,7 @@ defmodule Plox do
 
   attr :radius, :any, examples: ["8", "24.5", :radius, {:radius, 2, 10}], default: "4"
   attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
+  attr :phx_click_event, :any, default: nil
 
   def points_plot(assigns) do
     {dataset, dimensions} = assigns.dataset
@@ -190,11 +191,34 @@ defmodule Plox do
         {x_pixel, y_pixel, datum} <-
           points(@dataset, @dimensions, @x, @y)
       }
+      phx-click={@phx_click_event}
+      phx-value-x_value={datum.x}
+      phx-value-y_value={datum.y}
+      phx-value-x_pixel={x_pixel}
+      phx-value-y_pixel={y_pixel}
+      phx-value-graph_height={dimensions.height}
       fill={color(@color, @dataset, datum)}
       cx={x_pixel}
       cy={y_pixel}
       r={radius(@radius, @dimensions, @dataset, datum)}
+      onmouseover="this.style.cursor='pointer';"
+      onmouseout="this.style.cursor='default';"
     />
+    """
+  end
+
+  attr :point, :any, required: true
+  slot :inner_block, required: true
+
+  def tooltip(assigns) do
+    ~H"""
+    <div
+      class="z-10 absolute text-grey-200 text-xs p-4 shadow-md bg-grey-800 rounded-xl -translate-x-1/2"
+      style={"left: #{@point.x_pixel}px; bottom: #{@point.graph_height - @point.y_pixel + 12}px"}
+    >
+      <%= render_slot(@inner_block) %>
+      <div class="-z-10 absolute bg-grey-800 w-4 h-4 left-1/2 -translate-x-1/2 rotate-45 -bottom-2" />
+    </div>
     """
   end
 
