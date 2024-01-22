@@ -27,6 +27,7 @@ defmodule Plox do
   attr :left_gutter, :integer, default: 70, doc: "Left padding in pixels for the y-axis"
 
   slot :legend
+  slot :tooltips
   slot :inner_block, required: true
 
   def graph(assigns) do
@@ -43,6 +44,9 @@ defmodule Plox do
         <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
           <%= render_slot(@inner_block, @graph) %>
         </svg>
+        <%= for tooltip <- @tooltips do %>
+          <%= render_slot(tooltip) %>
+        <% end %>
       </div>
     </div>
     """
@@ -180,7 +184,9 @@ defmodule Plox do
   attr :radius, :any, examples: ["8", "24.5", :radius, {:radius, 2, 10}], default: "4"
   attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
   attr :phx_click_event, :any, default: nil
+  attr :phx_target, :any, default: nil
 
+  # TODO: use the point's ID instead of manually sending values/pixels/graph height
   def points_plot(assigns) do
     {dataset, dimensions} = assigns.dataset
     assigns = assign(assigns, dimensions: dimensions, dataset: dataset)
@@ -203,6 +209,7 @@ defmodule Plox do
       r={radius(@radius, @dimensions, @dataset, datum)}
       onmouseover="this.style.cursor='pointer';"
       onmouseout="this.style.cursor='default';"
+      phx-target={@phx_target}
     />
     """
   end
