@@ -5,6 +5,8 @@ defmodule Plox do
 
   use Phoenix.Component
 
+  alias Phoenix.LiveView.JS
+
   alias Plox.ColorScale
   alias Plox.Dataset
   alias Plox.DateScale
@@ -45,7 +47,7 @@ defmodule Plox do
           <%= render_slot(@inner_block, @graph) %>
         </svg>
         <%= for tooltip <- @tooltips do %>
-          <%= render_slot(tooltip) %>
+          <%= render_slot(tooltip, @graph) %>
         <% end %>
       </div>
     </div>
@@ -81,7 +83,7 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def y_axis(assigns) do
-    {scale, dimensions} = assigns.scale
+    {scale, dimensions, _key} = assigns.scale
     assigns = assign(assigns, dimensions: dimensions, scale: scale)
 
     ~H"""
@@ -122,7 +124,7 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def x_axis(assigns) do
-    {scale, dimensions} = assigns.scale
+    {scale, dimensions, _key} = assigns.scale
     assigns = assign(assigns, dimensions: dimensions, scale: scale)
 
     ~H"""
@@ -160,7 +162,7 @@ defmodule Plox do
   attr :type, :atom, values: [:line, :step_line], default: :line
 
   def line_plot(assigns) do
-    {dataset, dimensions} = assigns.dataset
+    {dataset, dimensions, _key} = assigns.dataset
 
     points_fun =
       case assigns.type do
@@ -202,8 +204,8 @@ defmodule Plox do
 
   # TODO: use the point's ID instead of manually sending values/pixels/graph height
   def points_plot(assigns) do
-    {dataset, dimensions} = assigns.dataset
-    assigns = assign(assigns, dimensions: dimensions, dataset: dataset)
+    {dataset, dimensions, dataset_id} = assigns.dataset
+    assigns = assign(assigns, dimensions: dimensions, dataset: dataset, dataset_id: dataset_id)
 
     ~H"""
     <circle
@@ -211,33 +213,48 @@ defmodule Plox do
         {x_pixel, y_pixel, datum} <-
           points(@dataset, @dimensions, @x, @y)
       }
-      phx-click={@phx_click_event}
-      phx-value-x_value={datum.x}
-      phx-value-y_value={datum.y}
-      phx-value-x_pixel={x_pixel}
-      phx-value-y_pixel={y_pixel}
-      phx-value-graph_height={@dimensions.height}
+      phx-click={
+        if @phx_click_event,
+          do: JS.push(@phx_click_event, value: %{id: datum.id, dataset_id: @dataset_id})
+      }
+      phx-target={@phx_target}
       fill={color(@color, @dataset, datum)}
       cx={x_pixel}
       cy={y_pixel}
       r={radius(@radius, @dimensions, @dataset, datum)}
-      onmouseover="this.style.cursor='pointer';"
-      onmouseout="this.style.cursor='default';"
-      phx-target={@phx_target}
+      style="cursor: pointer;"
     />
     """
   end
 
-  attr :point, :any, required: true
+  attr :dataset, :any, required: true
+  attr :point_id, :any, required: true
+  attr :phx_click_event, :any
+
+  attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
+  attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+
   slot :inner_block, required: true
 
   def tooltip(assigns) do
+    {dataset, dimensions, _key} = assigns.dataset
+    {x_pixel, y_pixel, datum} = point(dataset, dimensions, assigns.x, assigns.y, assigns.point_id)
+
+    assigns =
+      assign(assigns,
+        dimensions: dimensions,
+        x_pixel: x_pixel,
+        y_pixel: y_pixel,
+        datum: datum
+      )
+
     ~H"""
     <div
       class="z-10 absolute text-grey-200 text-xs p-4 shadow-md bg-grey-800 rounded-xl -translate-x-1/2"
-      style={"left: #{@point.x_pixel}px; bottom: #{@point.graph_height - @point.y_pixel + 12}px"}
+      style={"left: #{@x_pixel}px; bottom: #{@dimensions.height - @y_pixel + 12}px"}
+      phx-click-away={@phx_click_event}
     >
-      <%= render_slot(@inner_block) %>
+      <%= render_slot(@inner_block, @datum) %>
       <div class="-z-10 absolute bg-grey-800 w-4 h-4 left-1/2 -translate-x-1/2 rotate-45 -bottom-2" />
     </div>
     """
@@ -270,7 +287,7 @@ defmodule Plox do
   attr :color, :atom, default: :y, doc: "The dataset axis key to use for colors"
 
   def area_plot(assigns) do
-    {dataset, dimensions} = assigns.dataset
+    {dataset, dimensions, _key} = assigns.dataset
 
     assigns =
       assign(assigns,
@@ -447,7 +464,7 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def marker(%{orientation: :vertical} = assigns) do
-    {scale, dimensions} = assigns.scale
+    {scale, dimensions, _key} = assigns.scale
     value = assigns.at
     x_pixel = x_to_graph(value, dimensions, scale)
     assigns = assign(assigns, dimensions: dimensions, x_pixel: x_pixel)
@@ -480,7 +497,7 @@ defmodule Plox do
   end
 
   def marker(%{orientation: :horizontal} = assigns) do
-    {scale, dimensions} = assigns.scale
+    {scale, dimensions, _key} = assigns.scale
     value = assigns.at
     y_pixel = y_to_graph(value, dimensions, scale)
     assigns = assign(assigns, dimensions: dimensions, y_pixel: y_pixel)
@@ -556,6 +573,21 @@ defmodule Plox do
     for %{^x_key => x_value, ^y_key => y_value} = datum <- dataset.data do
       {x_to_graph(x_value, dimensions, x_scale), y_to_graph(y_value, dimensions, y_scale), datum}
     end
+  end
+
+  defp point(dataset, dimensions, x_key, y_key, point_id) do
+    # FIXME: make these functions calls on `Plox.Dataset`
+    x_scale = dataset.scales[x_key]
+    y_scale = dataset.scales[y_key]
+
+    Enum.find_value(dataset.data, fn datum ->
+      if datum.id == point_id do
+        %{^x_key => x_value, ^y_key => y_value} = datum
+
+        {x_to_graph(x_value, dimensions, x_scale), y_to_graph(y_value, dimensions, y_scale),
+         datum}
+      end
+    end)
   end
 
   defp step_points(dataset, dimensions, x_key, y_key) do

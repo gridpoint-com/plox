@@ -19,7 +19,8 @@ defmodule Plox.Graph do
       raise ArgumentError,
             "accessing a graph with graph[key] requires the key to be the ID of a dataset or scale got: #{inspect(key)}"
     else
-      {:ok, scale_or_dataset} -> {:ok, {scale_or_dataset, graph.dimensions}}
+      # FIXME: return a map or struct to better handle pattern matching later
+      {:ok, scale_or_dataset} -> {:ok, {scale_or_dataset, graph.dimensions, key}}
     end
   end
 end
