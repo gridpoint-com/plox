@@ -83,7 +83,7 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def y_axis(assigns) do
-    {scale, dimensions, _key} = assigns.scale
+    {scale, dimensions, _} = assigns.scale
     assigns = assign(assigns, dimensions: dimensions, scale: scale)
 
     ~H"""
@@ -124,7 +124,7 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def x_axis(assigns) do
-    {scale, dimensions, _key} = assigns.scale
+    {scale, dimensions, _} = assigns.scale
     assigns = assign(assigns, dimensions: dimensions, scale: scale)
 
     ~H"""
@@ -162,7 +162,7 @@ defmodule Plox do
   attr :type, :atom, values: [:line, :step_line], default: :line
 
   def line_plot(assigns) do
-    {dataset, dimensions, _key} = assigns.dataset
+    {dataset, dimensions, _} = assigns.dataset
 
     points_fun =
       case assigns.type do
@@ -229,7 +229,7 @@ defmodule Plox do
 
   attr :dataset, :any, required: true
   attr :point_id, :any, required: true
-  attr :phx_click_event, :any
+  attr :phx_click_away_event, :any
 
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
@@ -237,25 +237,23 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def tooltip(assigns) do
-    {dataset, dimensions, _key} = assigns.dataset
+    {dataset, dimensions, _} = assigns.dataset
     {x_pixel, y_pixel, datum} = point(dataset, dimensions, assigns.x, assigns.y, assigns.point_id)
 
     assigns =
-      assign(assigns,
-        dimensions: dimensions,
-        x_pixel: x_pixel,
-        y_pixel: y_pixel,
-        datum: datum
-      )
+      assign(assigns, dimensions: dimensions, x_pixel: x_pixel, y_pixel: y_pixel, datum: datum)
 
     ~H"""
     <div
-      class="z-10 absolute text-grey-200 text-xs p-4 shadow-md bg-grey-800 rounded-xl -translate-x-1/2"
-      style={"left: #{@x_pixel}px; bottom: #{@dimensions.height - @y_pixel + 12}px"}
-      phx-click-away={@phx_click_event}
+      style={[
+        "position: absolute; padding: 1rem; font-size: 0.75rem; background: #4B4C4D; color: #CACBCC; z-index: 10; border-radius: 0.75rem; transform: translate(-50%);",
+        "left: #{@x_pixel}px; bottom: #{@dimensions.height - @y_pixel + 12}px;",
+        "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
+      ]}
+      phx-click-away={@phx_click_away_event}
     >
       <%= render_slot(@inner_block, @datum) %>
-      <div class="-z-10 absolute bg-grey-800 w-4 h-4 left-1/2 -translate-x-1/2 rotate-45 -bottom-2" />
+      <div style="transform: translate(-50%) rotate(45deg); position: absolute; left: 50%; bottom: -0.5rem; width: 1rem; height: 1rem; z-index: -10; background: #4B4C4D" />
     </div>
     """
   end
@@ -287,7 +285,7 @@ defmodule Plox do
   attr :color, :atom, default: :y, doc: "The dataset axis key to use for colors"
 
   def area_plot(assigns) do
-    {dataset, dimensions, _key} = assigns.dataset
+    {dataset, dimensions, _} = assigns.dataset
 
     assigns =
       assign(assigns,
@@ -464,7 +462,7 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def marker(%{orientation: :vertical} = assigns) do
-    {scale, dimensions, _key} = assigns.scale
+    {scale, dimensions, _} = assigns.scale
     value = assigns.at
     x_pixel = x_to_graph(value, dimensions, scale)
     assigns = assign(assigns, dimensions: dimensions, x_pixel: x_pixel)
@@ -497,7 +495,7 @@ defmodule Plox do
   end
 
   def marker(%{orientation: :horizontal} = assigns) do
-    {scale, dimensions, _key} = assigns.scale
+    {scale, dimensions, _} = assigns.scale
     value = assigns.at
     y_pixel = y_to_graph(value, dimensions, scale)
     assigns = assign(assigns, dimensions: dimensions, y_pixel: y_pixel)
