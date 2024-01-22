@@ -72,6 +72,7 @@ defmodule Plox do
   attr :position, :atom, values: [:left, :right], default: :left
 
   attr :label_color, :string, default: "#18191A"
+  attr :label_rotation, :integer, default: nil
 
   attr :grid_lines, :boolean, default: true
   attr :line_width, :string, default: "1"
@@ -85,7 +86,13 @@ defmodule Plox do
 
     ~H"""
     <%= for y_value <- Scale.values(@scale, scale_opts(assigns)), y_pixel = y_to_graph(y_value, @dimensions, @scale) do %>
-      <.y_label dimensions={@dimensions} y_pixel={y_pixel} position={@position} color={@label_color}>
+      <.y_label
+        dimensions={@dimensions}
+        y_pixel={y_pixel}
+        position={@position}
+        color={@label_color}
+        rotation={@label_rotation}
+      >
         <%= render_slot(@inner_block, y_value) %>
       </.y_label>
       <.horizontal_line
@@ -106,6 +113,7 @@ defmodule Plox do
   attr :position, :atom, values: [:top, :bottom], default: :bottom
 
   attr :label_color, :string, default: "#18191A"
+  attr :label_rotation, :integer, default: nil
 
   attr :grid_lines, :boolean, default: true
   attr :line_width, :string, default: "1"
@@ -119,7 +127,13 @@ defmodule Plox do
 
     ~H"""
     <%= for x_value <- Scale.values(@scale, scale_opts(assigns)), x_pixel = x_to_graph(x_value, @dimensions, @scale) do %>
-      <.x_label dimensions={@dimensions} x_pixel={x_pixel} position={@position} color={@label_color}>
+      <.x_label
+        dimensions={@dimensions}
+        x_pixel={x_pixel}
+        position={@position}
+        color={@label_color}
+        rotation={@label_rotation}
+      >
         <%= render_slot(@inner_block, x_value) %>
       </.x_label>
       <.vertical_line
@@ -202,7 +216,7 @@ defmodule Plox do
       phx-value-y_value={datum.y}
       phx-value-x_pixel={x_pixel}
       phx-value-y_pixel={y_pixel}
-      phx-value-graph_height={dimensions.height}
+      phx-value-graph_height={@dimensions.height}
       fill={color(@color, @dataset, datum)}
       cx={x_pixel}
       cy={y_pixel}
@@ -239,6 +253,7 @@ defmodule Plox do
 
   defp radius({key, min, max}, _dimensions, dataset, datum) do
     # TODO: be more assertive with the key access
+    # FIXME: if the scale is backwards, the min..max needs to be reversed
     Scale.convert_to_range(dataset.scales[key], datum[key], min..max) |> to_string()
   end
 
@@ -284,6 +299,7 @@ defmodule Plox do
 
   attr :color, :string, required: true
   attr :style, :string, default: "font-size: 0.75rem; line-height: 1rem"
+  attr :rotation, :integer, default: nil
 
   slot :inner_block, required: true
 
@@ -296,6 +312,10 @@ defmodule Plox do
       dominant-baseline="middle"
       text-anchor="end"
       style={@style}
+      transform={
+        if @rotation,
+          do: "rotate(#{@rotation}, #{@dimensions.gutters.left - 16}, #{@y_pixel})"
+      }
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -311,6 +331,11 @@ defmodule Plox do
       dominant-baseline="middle"
       text-anchor="start"
       style={@style}
+      transform={
+        if @rotation,
+          do:
+            "rotate(#{@rotation}, #{@dimensions.width - @dimensions.gutters.right + 16}, #{@y_pixel})"
+      }
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -323,6 +348,7 @@ defmodule Plox do
 
   attr :color, :string, required: true
   attr :style, :string, default: "font-size: 0.75rem; line-height: 1rem"
+  attr :rotation, :integer, default: nil
 
   slot :inner_block, required: true
 
@@ -335,6 +361,11 @@ defmodule Plox do
       dominant-baseline="hanging"
       text-anchor="middle"
       style={@style}
+      transform={
+        if @rotation,
+          do:
+            "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.height - @dimensions.gutters.bottom + 16})"
+      }
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -350,6 +381,10 @@ defmodule Plox do
       dominant-baseline="text-bottom"
       text-anchor="middle"
       style={@style}
+      transform={
+        if @rotation,
+          do: "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.gutters.bottom - 16})"
+      }
     >
       <%= render_slot(@inner_block) %>
     </text>
@@ -401,15 +436,17 @@ defmodule Plox do
   attr :at, :any, required: true
   attr :scale, :any, required: true
   attr :width, :string, default: "1.5"
+  attr :orientation, :atom, values: [:vertical, :horizontal], default: :vertical
 
   attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :dotted
   attr :line_color, :string, default: "#18191A"
   attr :label_color, :string, default: "#18191A"
   attr :label_style, :string, default: "font-size: 0.75rem; line-height: 1rem"
+  attr :label_rotation, :integer, default: nil
 
   slot :inner_block, required: true
 
-  def vertical_marker(assigns) do
+  def marker(%{orientation: :vertical} = assigns) do
     {scale, dimensions} = assigns.scale
     value = assigns.at
     x_pixel = x_to_graph(value, dimensions, scale)
@@ -432,6 +469,43 @@ defmodule Plox do
       dominant-baseline="middle"
       text-anchor="middle"
       style={@label_style}
+      transform={
+        if @label_rotation,
+          do: "rotate(#{@label_rotation}, #{@x_pixel}, #{@dimensions.gutters.top - 24})"
+      }
+    >
+      <%= render_slot(@inner_block) %>
+    </text>
+    """
+  end
+
+  def marker(%{orientation: :horizontal} = assigns) do
+    {scale, dimensions} = assigns.scale
+    value = assigns.at
+    y_pixel = y_to_graph(value, dimensions, scale)
+    assigns = assign(assigns, dimensions: dimensions, y_pixel: y_pixel)
+
+    ~H"""
+    <line
+      x1={@dimensions.gutters.left - 12}
+      y1={@y_pixel}
+      x2={@dimensions.width - @dimensions.gutters.right}
+      y2={@y_pixel}
+      stroke={@line_color}
+      stroke-width={@width}
+      stroke-dasharray={stroke_dasharray(@line_style)}
+    />
+    <text
+      x={@dimensions.gutters.left - 24}
+      y={@y_pixel}
+      fill={@label_color}
+      dominant-baseline="middle"
+      text-anchor="middle"
+      style={@label_style}
+      transform={
+        if @label_rotation,
+          do: "rotate(#{@label_rotation}, #{@dimensions.gutters.left - 24}, #{@y_pixel})"
+      }
     >
       <%= render_slot(@inner_block) %>
     </text>
