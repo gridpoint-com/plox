@@ -20,6 +20,6 @@ defprotocol Plox.ColorScale do
   @doc """
   Converts a specific scale value to a color.
   """
-  @spec convert_to_color(scale :: t(), any()) :: color()
+  @spec convert_to_color(scale :: t(), any()) :: color() | nil
   def convert_to_color(scale, value)
 end
