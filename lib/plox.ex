@@ -27,6 +27,7 @@ defmodule Plox do
   attr :right_gutter, :integer, default: 70, doc: "Right padding in pixels for the graph"
   attr :bottom_gutter, :integer, default: 35, doc: "Bottom padding in pixels for the x-axis"
   attr :left_gutter, :integer, default: 70, doc: "Left padding in pixels for the y-axis"
+  attr :padding, :integer, default: 0
 
   slot :legend
   slot :tooltips
@@ -63,7 +64,8 @@ defmodule Plox do
         right: assigns.right_gutter,
         bottom: assigns.bottom_gutter,
         left: assigns.left_gutter
-      }
+      },
+      padding: assigns.padding
     }
   end
 
@@ -669,7 +671,8 @@ defmodule Plox do
     Scale.convert_to_range(
       scale,
       x_value,
-      dimensions.gutters.left..(dimensions.width - dimensions.gutters.right)
+      (dimensions.gutters.left + dimensions.padding)..(dimensions.width - dimensions.gutters.right -
+                                                         dimensions.padding)
     )
   end
 
