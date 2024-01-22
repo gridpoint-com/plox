@@ -202,7 +202,6 @@ defmodule Plox do
   attr :phx_click_event, :any, default: nil
   attr :phx_target, :any, default: nil
 
-  # TODO: use the point's ID instead of manually sending values/pixels/graph height
   def points_plot(assigns) do
     {dataset, dimensions, dataset_id} = assigns.dataset
     assigns = assign(assigns, dimensions: dimensions, dataset: dataset, dataset_id: dataset_id)
@@ -224,6 +223,46 @@ defmodule Plox do
       r={radius(@radius, @dimensions, @dataset, datum)}
       style="cursor: pointer;"
     />
+    """
+  end
+
+  attr :dataset, :any, required: true
+
+  attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
+  attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+
+  attr :width, :string, examples: ["1.5", "4"], default: "16"
+  attr :bar_style, :atom, values: [:round, :square], default: :round
+  attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
+
+  attr :phx_click_event, :any, default: nil
+  attr :phx_target, :any, default: nil
+
+  # TODO:
+  # support for several groups of bars
+
+  def bar_plot(assigns) do
+    {dataset, dimensions, dataset_id} = assigns.dataset
+    assigns = assign(assigns, dimensions: dimensions, dataset: dataset, dataset_id: dataset_id)
+
+    ~H"""
+    <%= for {x_pixel, y_pixel, datum} <- points(@dataset, @dimensions, @x, @y) do %>
+      <line
+        phx-click={
+          if @phx_click_event,
+            do: JS.push(@phx_click_event, value: %{id: datum.id, dataset_id: @dataset_id})
+        }
+        x1={x_pixel}
+        y1={y_pixel}
+        x2={x_pixel}
+        phx-target={@phx_target}
+        y2={@dimensions.height - @dimensions.gutters.bottom}
+        stroke={color(@color, @dataset, datum)}
+        stroke-width={@width}
+        stroke-linecap={bar_style(@bar_style)}
+        style="cursor: pointer;"
+      />
+    <% end %>
     """
   end
 
@@ -641,6 +680,9 @@ defmodule Plox do
       (dimensions.height - dimensions.gutters.bottom)..dimensions.gutters.top
     )
   end
+
+  defp bar_style(:round), do: "round"
+  defp bar_style(:square), do: "butt"
 
   defp stroke_dasharray(:solid), do: false
   defp stroke_dasharray(:dotted), do: "2"
