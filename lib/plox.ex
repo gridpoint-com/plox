@@ -20,14 +20,23 @@ defmodule Plox do
   attr :for, :map, required: true
 
   attr :id, :string, required: true
-  attr :width, :integer, required: true, doc: "The total width of the rendered graph, in pixels"
-  attr :height, :integer, required: true, doc: "The total height of the rendered graph, in pixels"
+  attr :width, :any, required: true, doc: "The total width of the rendered graph in pixels"
+  attr :height, :any, required: true, doc: "The total height of the rendered graph in pixels"
 
-  attr :top_gutter, :integer, default: 35, doc: "Top padding in pixels above the graph"
-  attr :right_gutter, :integer, default: 70, doc: "Right padding in pixels for the graph"
-  attr :bottom_gutter, :integer, default: 35, doc: "Bottom padding in pixels for the x-axis"
-  attr :left_gutter, :integer, default: 70, doc: "Left padding in pixels for the y-axis"
-  attr :padding, :integer, default: 0
+  attr :margin, :any,
+    default: {35, 70},
+    doc: """
+    The amount of space around the plotting area of the graph in which the axis labels are
+    rendered. Accepts one, two, three or four values and interprets them the same was as in
+    CSS.
+    """
+
+  attr :padding, :any,
+    default: 0,
+    doc: """
+    The amount of space inside the plotting area of the graph from the edges to where plotting
+    begins. Accepts one, two, three or four values and interprets them the same was as in CSS.
+    """
 
   slot :legend
   slot :tooltips
@@ -38,7 +47,7 @@ defmodule Plox do
 
     ~H"""
     <div id={@id}>
-      <div style={"display: flex; flex-direction: column; align-items: flex-end; max-width: #{@graph.dimensions.width - @graph.dimensions.gutters.right}px"}>
+      <div style={"display: flex; flex-direction: column; align-items: flex-end; max-width: #{@graph.dimensions.width - @graph.dimensions.margin.right}px"}>
         <.legend :for={legend <- @legend}>
           <%= render_slot(legend) %>
         </.legend>
@@ -57,17 +66,35 @@ defmodule Plox do
 
   defp dimensions(assigns) do
     %{
-      width: assigns.width,
-      height: assigns.height,
-      gutters: %{
-        top: assigns.top_gutter,
-        right: assigns.right_gutter,
-        bottom: assigns.bottom_gutter,
-        left: assigns.left_gutter
-      },
-      padding: assigns.padding
+      width: parse_number(assigns.width),
+      height: parse_number(assigns.height),
+      margin: parse_numbers(assigns.margin),
+      padding: parse_numbers(assigns.padding)
     }
   end
+
+  defp parse_number(string) when is_binary(string), do: String.to_integer(string)
+  defp parse_number(number) when is_number(number), do: number
+
+  defp parse_numbers(string) when is_binary(string) do
+    String.split(string, " ", trim: true)
+    |> Enum.map(&String.to_integer/1)
+    |> List.to_tuple()
+    |> parse_numbers()
+  end
+
+  defp parse_numbers(n) when is_number(n), do: %{top: n, right: n, bottom: n, left: n}
+
+  defp parse_numbers({n}) when is_number(n), do: parse_numbers(n)
+
+  defp parse_numbers({top_bottom, right_left}),
+    do: %{top: top_bottom, right: right_left, bottom: top_bottom, left: right_left}
+
+  defp parse_numbers({top, right_left, bottom}),
+    do: %{top: top, right: right_left, bottom: bottom, left: right_left}
+
+  defp parse_numbers({top, right, bottom, left}),
+    do: %{top: top, right: right, bottom: bottom, left: left}
 
   attr :scale, :any, required: true
   attr :ticks, :any
@@ -258,7 +285,7 @@ defmodule Plox do
         y1={y_pixel}
         x2={x_pixel}
         phx-target={@phx_target}
-        y2={@dimensions.height - @dimensions.gutters.bottom}
+        y2={@dimensions.height - @dimensions.margin.bottom - @dimensions.padding.bottom}
         stroke={color(@color, @dataset, datum)}
         stroke-width={@width}
         stroke-linecap={bar_style(@bar_style)}
@@ -340,10 +367,10 @@ defmodule Plox do
       <rect
         :if={!is_nil(rect_color)}
         fill={rect_color}
-        height={@dimensions.height - @dimensions.gutters.top - @dimensions.gutters.bottom}
+        height={@dimensions.height - @dimensions.margin.top - @dimensions.margin.bottom}
         width={x2_pixel - x1_pixel}
         x={x1_pixel}
-        y={@dimensions.gutters.top}
+        y={@dimensions.margin.top}
       />
     <% end %>
     """
@@ -362,7 +389,7 @@ defmodule Plox do
   defp y_label(%{position: :left} = assigns) do
     ~H"""
     <text
-      x={@dimensions.gutters.left - 16}
+      x={@dimensions.margin.left - 16}
       y={@y_pixel}
       fill={@color}
       dominant-baseline="middle"
@@ -370,7 +397,7 @@ defmodule Plox do
       style={@style}
       transform={
         if @rotation,
-          do: "rotate(#{@rotation}, #{@dimensions.gutters.left - 16}, #{@y_pixel})"
+          do: "rotate(#{@rotation}, #{@dimensions.margin.left - 16}, #{@y_pixel})"
       }
     >
       <%= render_slot(@inner_block) %>
@@ -381,7 +408,7 @@ defmodule Plox do
   defp y_label(%{position: :right} = assigns) do
     ~H"""
     <text
-      x={@dimensions.width - @dimensions.gutters.right + 16}
+      x={@dimensions.width - @dimensions.margin.right + 16}
       y={@y_pixel}
       fill={@color}
       dominant-baseline="middle"
@@ -390,7 +417,7 @@ defmodule Plox do
       transform={
         if @rotation,
           do:
-            "rotate(#{@rotation}, #{@dimensions.width - @dimensions.gutters.right + 16}, #{@y_pixel})"
+            "rotate(#{@rotation}, #{@dimensions.width - @dimensions.margin.right + 16}, #{@y_pixel})"
       }
     >
       <%= render_slot(@inner_block) %>
@@ -412,7 +439,7 @@ defmodule Plox do
     ~H"""
     <text
       x={@x_pixel}
-      y={@dimensions.height - @dimensions.gutters.bottom + 16}
+      y={@dimensions.height - @dimensions.margin.bottom + 16}
       fill={@color}
       dominant-baseline="hanging"
       text-anchor="middle"
@@ -420,7 +447,7 @@ defmodule Plox do
       transform={
         if @rotation,
           do:
-            "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.height - @dimensions.gutters.bottom + 16})"
+            "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.height - @dimensions.margin.bottom + 16})"
       }
     >
       <%= render_slot(@inner_block) %>
@@ -432,14 +459,14 @@ defmodule Plox do
     ~H"""
     <text
       x={@x_pixel}
-      y={@dimensions.gutters.bottom - 16}
+      y={@dimensions.margin.bottom - 16}
       fill={@color}
       dominant-baseline="text-bottom"
       text-anchor="middle"
       style={@style}
       transform={
         if @rotation,
-          do: "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.gutters.bottom - 16})"
+          do: "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.margin.bottom - 16})"
       }
     >
       <%= render_slot(@inner_block) %>
@@ -457,9 +484,9 @@ defmodule Plox do
   defp horizontal_line(assigns) do
     ~H"""
     <line
-      x1={@dimensions.gutters.left}
+      x1={@dimensions.margin.left}
       y1={@y_pixel}
-      x2={@dimensions.width - @dimensions.gutters.right}
+      x2={@dimensions.width - @dimensions.margin.right}
       y2={@y_pixel}
       stroke={@color}
       stroke-width={@width}
@@ -479,9 +506,9 @@ defmodule Plox do
     ~H"""
     <line
       x1={@x_pixel}
-      y1={@dimensions.gutters.top}
+      y1={@dimensions.margin.top}
       x2={@x_pixel}
-      y2={@dimensions.height - @dimensions.gutters.bottom}
+      y2={@dimensions.height - @dimensions.margin.bottom}
       stroke={@color}
       stroke-width={@width}
       stroke-dasharray={stroke_dasharray(@line_style)}
@@ -511,23 +538,23 @@ defmodule Plox do
     ~H"""
     <line
       x1={@x_pixel}
-      y1={@dimensions.gutters.top - 12}
+      y1={@dimensions.margin.top - 12}
       x2={@x_pixel}
-      y2={@dimensions.height - @dimensions.gutters.bottom}
+      y2={@dimensions.height - @dimensions.margin.bottom}
       stroke={@line_color}
       stroke-width={@width}
       stroke-dasharray={stroke_dasharray(@line_style)}
     />
     <text
       x={@x_pixel}
-      y={@dimensions.gutters.top - 24}
+      y={@dimensions.margin.top - 24}
       fill={@label_color}
       dominant-baseline="middle"
       text-anchor="middle"
       style={@label_style}
       transform={
         if @label_rotation,
-          do: "rotate(#{@label_rotation}, #{@x_pixel}, #{@dimensions.gutters.top - 24})"
+          do: "rotate(#{@label_rotation}, #{@x_pixel}, #{@dimensions.margin.top - 24})"
       }
     >
       <%= render_slot(@inner_block) %>
@@ -543,16 +570,16 @@ defmodule Plox do
 
     ~H"""
     <line
-      x1={@dimensions.gutters.left - 12}
+      x1={@dimensions.margin.left - 12}
       y1={@y_pixel}
-      x2={@dimensions.width - @dimensions.gutters.right}
+      x2={@dimensions.width - @dimensions.margin.right}
       y2={@y_pixel}
       stroke={@line_color}
       stroke-width={@width}
       stroke-dasharray={stroke_dasharray(@line_style)}
     />
     <text
-      x={@dimensions.gutters.left - 24}
+      x={@dimensions.margin.left - 24}
       y={@y_pixel}
       fill={@label_color}
       dominant-baseline="middle"
@@ -560,7 +587,7 @@ defmodule Plox do
       style={@label_style}
       transform={
         if @label_rotation,
-          do: "rotate(#{@label_rotation}, #{@dimensions.gutters.left - 24}, #{@y_pixel})"
+          do: "rotate(#{@label_rotation}, #{@dimensions.margin.left - 24}, #{@y_pixel})"
       }
     >
       <%= render_slot(@inner_block) %>
@@ -671,8 +698,10 @@ defmodule Plox do
     Scale.convert_to_range(
       scale,
       x_value,
-      (dimensions.gutters.left + dimensions.padding)..(dimensions.width - dimensions.gutters.right -
-                                                         dimensions.padding)
+      (dimensions.margin.left +
+         dimensions.padding.left)..(dimensions.width -
+                                      dimensions.margin.right -
+                                      dimensions.padding.right)
     )
   end
 
@@ -680,7 +709,10 @@ defmodule Plox do
     Scale.convert_to_range(
       scale,
       y_value,
-      (dimensions.height - dimensions.gutters.bottom)..dimensions.gutters.top
+      (dimensions.height -
+         dimensions.margin.bottom -
+         dimensions.padding.bottom)..(dimensions.margin.top +
+                                        dimensions.padding.top)
     )
   end
 
