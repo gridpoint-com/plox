@@ -11,6 +11,7 @@ defmodule Plox do
   alias Plox.Dataset
   alias Plox.DateScale
   alias Plox.DateTimeScale
+  alias Plox.Dimensions
   alias Plox.FixedColorsScale
   alias Plox.FixedValuesScale
   alias Plox.Graph
@@ -43,7 +44,7 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def graph(assigns) do
-    assigns = assign(assigns, :graph, %{assigns.for | dimensions: dimensions(assigns)})
+    assigns = assign(assigns, :graph, %{assigns.for | dimensions: Dimensions.new(assigns)})
 
     ~H"""
     <div id={@id}>
@@ -63,38 +64,6 @@ defmodule Plox do
     </div>
     """
   end
-
-  defp dimensions(assigns) do
-    %{
-      width: parse_number(assigns.width),
-      height: parse_number(assigns.height),
-      margin: parse_numbers(assigns.margin),
-      padding: parse_numbers(assigns.padding)
-    }
-  end
-
-  defp parse_number(string) when is_binary(string), do: String.to_integer(string)
-  defp parse_number(number) when is_number(number), do: number
-
-  defp parse_numbers(string) when is_binary(string) do
-    String.split(string, " ", trim: true)
-    |> Enum.map(&String.to_integer/1)
-    |> List.to_tuple()
-    |> parse_numbers()
-  end
-
-  defp parse_numbers(n) when is_number(n), do: %{top: n, right: n, bottom: n, left: n}
-
-  defp parse_numbers({n}) when is_number(n), do: parse_numbers(n)
-
-  defp parse_numbers({top_bottom, right_left}),
-    do: %{top: top_bottom, right: right_left, bottom: top_bottom, left: right_left}
-
-  defp parse_numbers({top, right_left, bottom}),
-    do: %{top: top, right: right_left, bottom: bottom, left: right_left}
-
-  defp parse_numbers({top, right, bottom, left}),
-    do: %{top: top, right: right, bottom: bottom, left: left}
 
   attr :scale, :any, required: true
   attr :ticks, :any
