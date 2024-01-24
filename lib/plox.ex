@@ -200,23 +200,24 @@ defmodule Plox do
 
   attr :radius, :string, examples: ["8", "24.5"], default: "4"
   attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
-  attr :phx_click_event, :any, default: nil
-  attr :phx_target, :any, default: nil
+  attr :"phx-click", :any, default: nil
+  attr :"phx-target", :any, default: nil
 
   def points_plot(assigns) do
     ~H"""
     <circle
       :for={point <- GraphDataset.to_graph_points(@dataset, @x, @y)}
       phx-click={
-        if @phx_click_event,
-          do: JS.push(@phx_click_event, value: %{id: point.data_point.id, dataset_id: @dataset.id})
+        if assigns[:"phx-click"],
+          do:
+            JS.push(assigns[:"phx-click"], value: %{id: point.data_point.id, dataset_id: @dataset.id})
       }
-      phx-target={@phx_target}
+      phx-target={assigns[:"phx-target"]}
+      style={if assigns[:"phx-click"], do: "cursor: pointer;"}
       fill={GraphDataset.to_color(@dataset, @color, point.data_point)}
       cx={point.x}
       cy={point.y}
       r={@radius}
-      style="cursor: pointer;"
     />
     """
   end
@@ -230,8 +231,8 @@ defmodule Plox do
   attr :bar_style, :atom, values: [:round, :square], default: :round
   attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
 
-  attr :phx_click_event, :any, default: nil
-  attr :phx_target, :any, default: nil
+  attr :"phx-click", :any, default: nil
+  attr :"phx-target", :any, default: nil
 
   # TODO:
   # support for several groups of bars
@@ -241,13 +242,17 @@ defmodule Plox do
     <%= for point <- GraphDataset.to_graph_points(@dataset, @x, @y) do %>
       <line
         phx-click={
-          if @phx_click_event,
-            do: JS.push(@phx_click_event, value: %{id: point.data_point.id, dataset_id: @dataset.id})
+          if assigns[:"phx-click"],
+            do:
+              JS.push(assigns[:"phx-click"],
+                value: %{id: point.data_point.id, dataset_id: @dataset.id}
+              )
         }
+        phx-target={assigns[:"phx-target"]}
+        style={if assigns[:"phx-click"], do: "cursor: pointer;"}
         x1={point.x}
         y1={point.y}
         x2={point.x}
-        phx-target={@phx_target}
         y2={
           @dataset.dimensions.height - @dataset.dimensions.margin.bottom -
             @dataset.dimensions.padding.bottom
@@ -255,18 +260,22 @@ defmodule Plox do
         stroke={GraphDataset.to_color(@dataset, @color, point.data_point)}
         stroke-width={@width}
         stroke-linecap={bar_style(@bar_style)}
-        style="cursor: pointer;"
       />
     <% end %>
     """
   end
 
+  defp bar_style(:round), do: "round"
+  defp bar_style(:square), do: "butt"
+
   attr :dataset, :any, required: true
   attr :point_id, :any, required: true
-  attr :phx_click_away_event, :any
 
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+
+  attr :"phx-click-away", :any
+  attr :"phx-target", :any, default: nil
 
   slot :inner_block, required: true
 
@@ -283,7 +292,8 @@ defmodule Plox do
         "left: #{@point.x}px; bottom: #{@dataset.dimensions.height - @point.y + 12}px;",
         "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
       ]}
-      phx-click-away={@phx_click_away_event}
+      phx-click-away={assigns[:"phx-click-away"]}
+      phx-target={assigns[:"phx-target"]}
     >
       <%= render_slot(@inner_block, @point.data_point.original) %>
       <div style="transform: translate(-50%) rotate(45deg); position: absolute; left: 50%; bottom: -0.5rem; width: 1rem; height: 1rem; z-index: -10; background: #4B4C4D" />
@@ -590,9 +600,6 @@ defmodule Plox do
     <div style={"background-color: #{@color}; height: 0.5rem; width: 0.5rem; flex: none; border-radius: 9999px;"} />
     """
   end
-
-  defp bar_style(:round), do: "round"
-  defp bar_style(:square), do: "butt"
 
   defp stroke_dasharray(:solid), do: false
   defp stroke_dasharray(:dotted), do: "2"
