@@ -196,16 +196,16 @@ defmodule Plox do
   def points_plot(assigns) do
     ~H"""
     <circle
-      :for={{x_pixel, y_pixel, datum} <- GraphDataset.to_graph_points(@dataset, @x, @y)}
+      :for={point <- GraphDataset.to_graph_points(@dataset, @x, @y)}
       phx-click={
         if @phx_click_event,
-          do: JS.push(@phx_click_event, value: %{id: datum.id, dataset_id: @dataset.id})
+          do: JS.push(@phx_click_event, value: %{id: point.data_point.id, dataset_id: @dataset.id})
       }
       phx-target={@phx_target}
-      fill={color(@color, @dataset, datum)}
-      cx={x_pixel}
-      cy={y_pixel}
-      r={radius(@radius, @dataset, datum)}
+      fill={color(@color, @dataset, point.data_point)}
+      cx={point.x}
+      cy={point.y}
+      r={radius(@radius, @dataset, point.data_point)}
       style="cursor: pointer;"
     />
     """
@@ -228,21 +228,21 @@ defmodule Plox do
 
   def bar_plot(assigns) do
     ~H"""
-    <%= for {x_pixel, y_pixel, datum} <- GraphDataset.to_graph_points(@dataset, @x, @y) do %>
+    <%= for point <- GraphDataset.to_graph_points(@dataset, @x, @y) do %>
       <line
         phx-click={
           if @phx_click_event,
-            do: JS.push(@phx_click_event, value: %{id: datum.id, dataset_id: @dataset.id})
+            do: JS.push(@phx_click_event, value: %{id: point.data_point.id, dataset_id: @dataset.id})
         }
-        x1={x_pixel}
-        y1={y_pixel}
-        x2={x_pixel}
+        x1={point.x}
+        y1={point.y}
+        x2={point.x}
         phx-target={@phx_target}
         y2={
           @dataset.dimensions.height - @dataset.dimensions.margin.bottom -
             @dataset.dimensions.padding.bottom
         }
-        stroke={color(@color, @dataset, datum)}
+        stroke={color(@color, @dataset, point.data_point)}
         stroke-width={@width}
         stroke-linecap={bar_style(@bar_style)}
         style="cursor: pointer;"
@@ -261,47 +261,47 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def tooltip(assigns) do
-    {x_pixel, y_pixel, datum} =
-      GraphDataset.to_graph_point(assigns.dataset, assigns.x, assigns.y, assigns.point_id)
+    point = GraphDataset.to_graph_point(assigns.dataset, assigns.x, assigns.y, assigns.point_id)
 
     assigns =
-      assign(assigns, x_pixel: x_pixel, y_pixel: y_pixel, datum: datum)
+      assign(assigns, point: point)
 
     ~H"""
     <div
       style={[
         "position: absolute; padding: 1rem; font-size: 0.75rem; background: #4B4C4D; color: #CACBCC; z-index: 10; border-radius: 0.75rem; transform: translate(-50%);",
-        "left: #{@x_pixel}px; bottom: #{@dataset.dimensions.height - @y_pixel + 12}px;",
+        "left: #{@point.x}px; bottom: #{@dataset.dimensions.height - @point.y + 12}px;",
         "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
       ]}
       phx-click-away={@phx_click_away_event}
     >
-      <%= render_slot(@inner_block, @datum) %>
+      <%= render_slot(@inner_block, @point.data_point.original) %>
       <div style="transform: translate(-50%) rotate(45deg); position: absolute; left: 50%; bottom: -0.5rem; width: 1rem; height: 1rem; z-index: -10; background: #4B4C4D" />
     </div>
     """
   end
 
-  defp radius(radius, _graph_dataset, _datum) when is_binary(radius) or is_number(radius),
+  defp radius(radius, _graph_dataset, _data_point) when is_binary(radius) or is_number(radius),
     do: radius
 
-  defp radius(key, graph_dataset, datum) when is_atom(key) do
+  defp radius(key, graph_dataset, data_point) when is_atom(key) do
     # TODO: infer radius min and max based on graph dimensions
-    radius({key, 2, 20}, graph_dataset, datum)
+    radius({key, 2, 20}, graph_dataset, data_point)
   end
 
-  defp radius({key, min, max}, graph_dataset, datum) do
+  defp radius({key, min, max}, graph_dataset, data_point) do
     # TODO: be more assertive with the key access
     # FIXME: if the scale is backwards, the min..max needs to be reversed
-    Scale.convert_to_range(graph_dataset.dataset.scales[key], datum[key], min..max) |> to_string()
+    Scale.convert_to_range(graph_dataset.dataset.scales[key], data_point.mapped[key], min..max)
+    |> to_string()
   end
 
-  defp color(color, _graph_dataset, _datum) when is_binary(color), do: color
+  defp color(color, _graph_dataset, _data_point) when is_binary(color), do: color
 
-  defp color(key, graph_dataset, datum) when is_atom(key) do
+  defp color(key, graph_dataset, data_point) when is_atom(key) do
     # TODO: be more assertive with the key access
     # FIXME:
-    ColorScale.convert_to_color(graph_dataset.dataset.scales[key], datum[key])
+    ColorScale.convert_to_color(graph_dataset.dataset.scales[key], data_point.mapped[key])
   end
 
   attr :dataset, :any, required: true
@@ -311,7 +311,7 @@ defmodule Plox do
 
   def area_plot(assigns) do
     ~H"""
-    <%= for [{x1_pixel, datum}, {x2_pixel, _datum}] <- area_points(@dataset, @area), rect_color = color(@color, @dataset, datum) do %>
+    <%= for [scalar1, scalar2] <- area_points(@dataset, @area), rect_color = color(@color, @dataset, scalar1.data_point) do %>
       <rect
         :if={!is_nil(rect_color)}
         fill={rect_color}
@@ -319,8 +319,8 @@ defmodule Plox do
           @dataset.dimensions.height - @dataset.dimensions.margin.top -
             @dataset.dimensions.margin.bottom
         }
-        width={x2_pixel - x1_pixel}
-        x={x1_pixel}
+        width={scalar2.value - scalar1.value}
+        x={scalar1.value}
         y={@dataset.dimensions.margin.top}
       />
     <% end %>
@@ -572,42 +572,22 @@ defmodule Plox do
     """
   end
 
-  defp polyline_points(points), do: Enum.map_join(points, " ", fn {x, y, _} -> "#{x},#{y}" end)
+  defp polyline_points(points), do: Enum.map_join(points, " ", &"#{&1.x},#{&1.y}")
 
   defp step_points(%GraphDataset{} = graph_dataset, x_key, y_key) do
-    x_scale = GraphDataset.get_scale!(graph_dataset, x_key)
-    y_scale = GraphDataset.get_scale!(graph_dataset, y_key)
-
-    graph_dataset.dataset.data
+    graph_dataset
+    |> GraphDataset.to_graph_points(x_key, y_key)
     |> Enum.chunk_every(2, 1)
     |> Enum.flat_map(fn
-      [point1, point2] ->
-        [
-          {GraphScale.to_graph_x(x_scale, point1[x_key]),
-           GraphScale.to_graph_y(y_scale, point1[y_key]), point1},
-          {GraphScale.to_graph_x(x_scale, point2[x_key]),
-           GraphScale.to_graph_y(y_scale, point1[y_key]), point2}
-        ]
-
-      [%{^x_key => x_value, ^y_key => y_value} = datum] ->
-        [
-          {GraphScale.to_graph_x(x_scale, x_value), GraphScale.to_graph_y(y_scale, y_value),
-           datum}
-        ]
+      [point1, point2] -> [point1, %{point2 | y: point1.y}]
+      [point] -> [point]
     end)
   end
 
   defp area_points(%GraphDataset{} = graph_dataset, key) do
-    scale = GraphDataset.get_scale!(graph_dataset, key)
-
-    graph_dataset.dataset.data
+    graph_dataset
+    |> GraphDataset.to_graph_xs(key)
     |> Enum.chunk_every(2, 1, :discard)
-    |> Enum.map(fn [point1, point2] ->
-      [
-        {GraphScale.to_graph_x(scale, point1[key]), point1},
-        {GraphScale.to_graph_x(scale, point2[key]), point2}
-      ]
-    end)
   end
 
   defp bar_style(:round), do: "round"

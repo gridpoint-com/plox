@@ -4,6 +4,7 @@ defmodule Plox.GraphDataset do
   with, so it should be documented
   """
 
+  alias Plox.DataPoint
   alias Plox.GraphScale
 
   defstruct [:id, :dataset, :dimensions]
@@ -27,21 +28,35 @@ defmodule Plox.GraphDataset do
     x_scale = get_scale!(dataset, x_key)
     y_scale = get_scale!(dataset, y_key)
 
-    for %{^x_key => x_value, ^y_key => y_value} = datum <- dataset.dataset.data do
-      {GraphScale.to_graph_x(x_scale, x_value), GraphScale.to_graph_y(y_scale, y_value), datum}
-    end
+    Enum.map(dataset.dataset.data, fn data_point ->
+      DataPoint.to_graph_point(data_point, x_scale, x_key, y_scale, y_key)
+    end)
   end
 
   def to_graph_point(%__MODULE__{} = dataset, x_key, y_key, id) do
     x_scale = get_scale!(dataset, x_key)
     y_scale = get_scale!(dataset, y_key)
 
-    Enum.find_value(dataset.dataset.data, fn datum ->
-      if datum.id == id do
-        %{^x_key => x_value, ^y_key => y_value} = datum
-
-        {GraphScale.to_graph_x(x_scale, x_value), GraphScale.to_graph_y(y_scale, y_value), datum}
+    Enum.find_value(dataset.dataset.data, fn data_point ->
+      if data_point.id == id do
+        DataPoint.to_graph_point(data_point, x_scale, x_key, y_scale, y_key)
       end
+    end)
+  end
+
+  def to_graph_xs(%__MODULE__{} = dataset, x_key) do
+    x_scale = get_scale!(dataset, x_key)
+
+    Enum.map(dataset.dataset.data, fn data_point ->
+      DataPoint.to_graph_x(data_point, x_scale, x_key)
+    end)
+  end
+
+  def to_graph_ys(%__MODULE__{} = dataset, y_key) do
+    y_scale = get_scale!(dataset, y_key)
+
+    Enum.map(dataset.dataset.data, fn data_point ->
+      DataPoint.to_graph_y(data_point, y_scale, y_key)
     end)
   end
 end

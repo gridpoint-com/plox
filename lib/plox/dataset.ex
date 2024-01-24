@@ -2,22 +2,25 @@ defmodule Plox.Dataset do
   @moduledoc """
   A collection of data points and some metadata for a graph
   """
+  alias Plox.DataPoint
+
   defstruct [:data, :scales]
 
-  def new(data, axes) do
+  def new(original_data, axes) do
     scales = Map.new(axes, fn {key, {scale, _fun}} -> {key, scale} end)
 
     data =
-      data
+      original_data
       |> Enum.with_index()
-      |> Enum.map(fn {datum, idx} ->
-        Map.merge(
-          datum,
+      |> Enum.map(fn {original, idx} ->
+        id = Map.get(original, :id, idx)
+
+        mapped =
           Map.new(axes, fn {key, {_scale, fun}} ->
-            {key, fun.(datum)}
+            {key, fun.(original)}
           end)
-        )
-        |> Map.put_new(:id, idx)
+
+        DataPoint.new(id, original, mapped)
       end)
 
     %__MODULE__{data: data, scales: scales}
