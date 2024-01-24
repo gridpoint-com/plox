@@ -3,7 +3,7 @@ defmodule Plox.Graph do
   # this is a semi-private struct and I'm not sure general users will use it
   # directly, so maybe we don't document it.
 
-  defstruct datasets: %{}, scales: %{}, dimensions: nil
+  defstruct datasets: %{}, scales: %{}, color_scales: %{}, dimensions: nil
 
   alias Plox.Dataset
   alias Plox.Dimensions
@@ -12,12 +12,13 @@ defmodule Plox.Graph do
 
   def new(scales_and_datasets) do
     scales = scales_and_datasets |> Keyword.get(:scales, []) |> Map.new()
+    color_scales = scales_and_datasets |> Keyword.get(:color_scales, []) |> Map.new()
     datasets = scales_and_datasets |> Keyword.get(:datasets, []) |> Map.new()
 
     # TODO: you could theoretically check that all scales that appear in the
     # datasets, were also given in the `scales` input
 
-    %__MODULE__{scales: scales, datasets: datasets}
+    %__MODULE__{scales: scales, color_scales: color_scales, datasets: datasets}
   end
 
   def put_dimensions(%__MODULE__{} = graph, %Dimensions{} = dimensions) do

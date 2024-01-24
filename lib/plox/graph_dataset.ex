@@ -4,6 +4,7 @@ defmodule Plox.GraphDataset do
   with, so it should be documented
   """
 
+  alias Plox.ColorScale
   alias Plox.DataPoint
   alias Plox.GraphScale
 
@@ -58,5 +59,13 @@ defmodule Plox.GraphDataset do
     Enum.map(dataset.dataset.data, fn data_point ->
       DataPoint.to_graph_y(data_point, y_scale, y_key)
     end)
+  end
+
+  def to_color(%__MODULE__{} = _dataset, color, _data_point) when is_binary(color), do: color
+
+  def to_color(%__MODULE__{} = dataset, key, data_point) when is_atom(key) do
+    graph_scale = get_scale!(dataset, key)
+
+    ColorScale.convert_to_color(graph_scale.scale, data_point.mapped[key])
   end
 end

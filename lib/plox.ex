@@ -7,7 +7,6 @@ defmodule Plox do
 
   alias Phoenix.LiveView.JS
 
-  alias Plox.ColorScale
   alias Plox.Dataset
   alias Plox.DateScale
   alias Plox.DateTimeScale
@@ -18,7 +17,6 @@ defmodule Plox do
   alias Plox.GraphDataset
   alias Plox.GraphScale
   alias Plox.NumberScale
-  alias Plox.Scale
 
   attr :for, Graph, required: true
 
@@ -183,12 +181,24 @@ defmodule Plox do
     """
   end
 
+  defp step_points(%GraphDataset{} = graph_dataset, x_key, y_key) do
+    graph_dataset
+    |> GraphDataset.to_graph_points(x_key, y_key)
+    |> Enum.chunk_every(2, 1)
+    |> Enum.flat_map(fn
+      [point1, point2] -> [point1, %{point2 | y: point1.y}]
+      [point] -> [point]
+    end)
+  end
+
+  defp polyline_points(points), do: Enum.map_join(points, " ", &"#{&1.x},#{&1.y}")
+
   attr :dataset, :any, required: true
 
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
-  attr :radius, :any, examples: ["8", "24.5", :radius, {:radius, 2, 10}], default: "4"
+  attr :radius, :string, examples: ["8", "24.5"], default: "4"
   attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
   attr :phx_click_event, :any, default: nil
   attr :phx_target, :any, default: nil
@@ -202,10 +212,10 @@ defmodule Plox do
           do: JS.push(@phx_click_event, value: %{id: point.data_point.id, dataset_id: @dataset.id})
       }
       phx-target={@phx_target}
-      fill={color(@color, @dataset, point.data_point)}
+      fill={GraphDataset.to_color(@dataset, @color, point.data_point)}
       cx={point.x}
       cy={point.y}
-      r={radius(@radius, @dataset, point.data_point)}
+      r={@radius}
       style="cursor: pointer;"
     />
     """
@@ -242,7 +252,7 @@ defmodule Plox do
           @dataset.dimensions.height - @dataset.dimensions.margin.bottom -
             @dataset.dimensions.padding.bottom
         }
-        stroke={color(@color, @dataset, point.data_point)}
+        stroke={GraphDataset.to_color(@dataset, @color, point.data_point)}
         stroke-width={@width}
         stroke-linecap={bar_style(@bar_style)}
         style="cursor: pointer;"
@@ -281,37 +291,16 @@ defmodule Plox do
     """
   end
 
-  defp radius(radius, _graph_dataset, _data_point) when is_binary(radius) or is_number(radius),
-    do: radius
-
-  defp radius(key, graph_dataset, data_point) when is_atom(key) do
-    # TODO: infer radius min and max based on graph dimensions
-    radius({key, 2, 20}, graph_dataset, data_point)
-  end
-
-  defp radius({key, min, max}, graph_dataset, data_point) do
-    # TODO: be more assertive with the key access
-    # FIXME: if the scale is backwards, the min..max needs to be reversed
-    Scale.convert_to_range(graph_dataset.dataset.scales[key], data_point.mapped[key], min..max)
-    |> to_string()
-  end
-
-  defp color(color, _graph_dataset, _data_point) when is_binary(color), do: color
-
-  defp color(key, graph_dataset, data_point) when is_atom(key) do
-    # TODO: be more assertive with the key access
-    # FIXME:
-    ColorScale.convert_to_color(graph_dataset.dataset.scales[key], data_point.mapped[key])
-  end
-
   attr :dataset, :any, required: true
 
-  attr :area, :atom, default: :x, doc: "The dataset axis key to use for area"
-  attr :color, :atom, default: :y, doc: "The dataset axis key to use for colors"
+  attr :area, :atom, required: true, doc: "The dataset axis key to use for the area plots"
+  attr :color, :atom, required: true, doc: "The dataset axis key to use for colors"
 
-  def area_plot(assigns) do
+  attr :orientation, :atom, values: [:vertical, :horizontal], default: :horizontal
+
+  def area_plot(%{orientation: :horizontal} = assigns) do
     ~H"""
-    <%= for [scalar1, scalar2] <- area_points(@dataset, @area), rect_color = color(@color, @dataset, scalar1.data_point) do %>
+    <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
       <rect
         :if={!is_nil(rect_color)}
         fill={rect_color}
@@ -325,6 +314,36 @@ defmodule Plox do
       />
     <% end %>
     """
+  end
+
+  def area_plot(%{orientation: :vertical} = assigns) do
+    ~H"""
+    <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
+      <rect
+        :if={!is_nil(rect_color)}
+        fill={rect_color}
+        height={scalar1.value - scalar2.value}
+        width={
+          @dataset.dimensions.width - @dataset.dimensions.margin.left -
+            @dataset.dimensions.margin.right
+        }
+        x={@dataset.dimensions.margin.left}
+        y={scalar1.value - (scalar1.value - scalar2.value)}
+      />
+    <% end %>
+    """
+  end
+
+  defp area_points(%GraphDataset{} = graph_dataset, key, :horizontal) do
+    graph_dataset
+    |> GraphDataset.to_graph_xs(key)
+    |> Enum.chunk_every(2, 1, :discard)
+  end
+
+  defp area_points(%GraphDataset{} = graph_dataset, key, :vertical) do
+    graph_dataset
+    |> GraphDataset.to_graph_ys(key)
+    |> Enum.chunk_every(2, 1, :discard)
   end
 
   attr :dimensions, :map, required: true
@@ -570,24 +589,6 @@ defmodule Plox do
     ~H"""
     <div style={"background-color: #{@color}; height: 0.5rem; width: 0.5rem; flex: none; border-radius: 9999px;"} />
     """
-  end
-
-  defp polyline_points(points), do: Enum.map_join(points, " ", &"#{&1.x},#{&1.y}")
-
-  defp step_points(%GraphDataset{} = graph_dataset, x_key, y_key) do
-    graph_dataset
-    |> GraphDataset.to_graph_points(x_key, y_key)
-    |> Enum.chunk_every(2, 1)
-    |> Enum.flat_map(fn
-      [point1, point2] -> [point1, %{point2 | y: point1.y}]
-      [point] -> [point]
-    end)
-  end
-
-  defp area_points(%GraphDataset{} = graph_dataset, key) do
-    graph_dataset
-    |> GraphDataset.to_graph_xs(key)
-    |> Enum.chunk_every(2, 1, :discard)
   end
 
   defp bar_style(:round), do: "round"

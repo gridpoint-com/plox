@@ -23,18 +23,14 @@ defmodule Plox.DataPoint do
   end
 
   def to_graph_x(%__MODULE__{} = data_point, scale, key) do
-    value = data_point.mapped[key]
-
-    value = GraphScale.to_graph_x(scale, value)
-
-    GraphScalar.new(value, data_point)
+    scale
+    |> GraphScale.to_graph_x(data_point.mapped[key])
+    |> GraphScalar.new(data_point)
   end
 
   def to_graph_y(%__MODULE__{} = data_point, scale, key) do
-    value = data_point.mapped[key]
-
-    value = GraphScale.to_graph_y(scale, value)
-
-    GraphScalar.new(value, data_point)
+    scale
+    |> GraphScale.to_graph_y(data_point.mapped[key])
+    |> GraphScalar.new(data_point)
   end
 end
