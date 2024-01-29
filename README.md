@@ -5,7 +5,7 @@ Server-side rendered SVG graphing/plotting components for Phoenix HEEx.
 
 ## Installation
 
-Plox is [available in Hex](https://hex.pm/docs/publish), the package can be
+Plox is [available in Hex](https://hex.pm/packages/plox), the package can be
 installed by adding `plox` to your list of dependencies in `mix.exs`:
 
 ```elixir

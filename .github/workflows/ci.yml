@@ -1,0 +1,126 @@
+name: Elixir CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  MIX_ENV: test
+  OTP_VERSION_SPEC: "26.x"
+  ELIXIR_VERSION_SPEC: "1.16.x"
+
+jobs:
+  compile:
+    name: Compile
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.OTP_VERSION_SPEC }}
+          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile dependencies
+        run: mix deps.compile
+      - name: Compile
+        run: mix compile --warnings-as-errors
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.OTP_VERSION_SPEC }}
+          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile dependencies
+        run: mix deps.compile
+      - name: Run tests
+        run: mix test
+
+  check-formatted:
+    name: Check Formatted
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.OTP_VERSION_SPEC }}
+          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile dependencies
+        run: mix deps.compile
+      - name: Check formatted
+        run: mix format --check-formatted
+
+  # credo:
+  #   name: Credo
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Set up Elixir
+  #       uses: erlef/setup-beam@v1
+  #       with:
+  #         otp-version: ${{ env.OTP_VERSION_SPEC }}
+  #         elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+  #     - name: Install dependencies
+  #       run: mix deps.get
+  #     - name: Compile dependencies
+  #       run: mix deps.compile
+  #     - name: Run credo
+  #       run: mix credo --strict
+
+  # dialyzer:
+  #   name: Dialyzer
+  #   runs-on: ubuntu-latest
+
+  #   env:
+  #     MIX_ENV: dev
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Set mix file hash
+  #       id: set_vars
+  #       run: |
+  #         mix_hash="${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}"
+  #         echo "::set-output name=mix_hash::$mix_hash"
+  #     - name: Cache PLT files
+  #       id: cache-plt
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           _build/dev/*.plt
+  #           _build/dev/*.plt.hash
+  #         key: plt-cache-${{ steps.set_vars.outputs.mix_hash }}
+  #         restore-keys: |
+  #           plt-cache-
+  #     - name: Set up Elixir
+  #       uses: erlef/setup-beam@v1
+  #       with:
+  #         otp-version: ${{ env.OTP_VERSION_SPEC }}
+  #         elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+  #     - name: Install dependencies
+  #       run: mix deps.get
+  #     - name: Compile dependencies
+  #       run: mix deps.compile
+  #     - name: Run dialyzer
+  #       run: mix dialyzer
