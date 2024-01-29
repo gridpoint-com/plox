@@ -27,7 +27,7 @@ defmodule Plox.Graph do
 
   # Access behaviour
 
-  def fetch(%__MODULE__{} = graph, key) when is_atom(key) do
+  def fetch(%__MODULE__{} = graph, key) do
     with :error <- Map.fetch(graph.datasets, key),
          :error <- Map.fetch(graph.scales, key) do
       raise ArgumentError,
