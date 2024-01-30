@@ -17,7 +17,7 @@ defmodule PloxDemoWeb.Router do
   scope "/", PloxDemoWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", GraphsLive
   end
 
   # Other scopes may use custom stacks.
