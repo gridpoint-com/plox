@@ -46,7 +46,11 @@ dataset =
     x: {date_scale, & &1.date},
     y: {number_scale, & &1.value}
   )
+```
 
+Once you have those, you can build a `Plox.Graph` struct:
+
+```elixir
 example_graph =
   to_graph(
     scales: [date_scale: date_scale, number_scale: number_scale],
@@ -54,9 +58,9 @@ example_graph =
   )
 ```
 
-Then you can simply render a `graph` directly within your HEEx template:
+Finally, render the `Plox.Graph` directly within your HEEx template:
 
-```heex
+```html
 <.graph :let={graph} id="example_graph" for={@example_graph} width="800" height="250">
   <:legend>
     <.legend_item color="#EC7E16" label="Data" />
