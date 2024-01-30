@@ -1,0 +1,81 @@
+<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      
+  
+  <!-- <Plox.x_label> lib/plox.ex:419 --><text x="1.0" y="63" fill="#18191A" dominant-baseline="hanging" text-anchor="middle" style="font-size: 0.75rem; line-height: 1rem">
+  
+    
+    0.0
+  
+  
+</text><!-- </Plox.x_label> -->
+  <!-- <Plox.vertical_line> lib/plox.ex:486 --><line x1="1.0" y1="1" x2="1.0" y2="47" stroke="#39393A" stroke-width="2"></line><!-- </Plox.vertical_line> -->
+
+  <!-- <Plox.x_label> lib/plox.ex:419 --><text x="16.333333333333332" y="63" fill="#18191A" dominant-baseline="hanging" text-anchor="middle" style="font-size: 0.75rem; line-height: 1rem">
+  
+    
+    1.0
+  
+  
+</text><!-- </Plox.x_label> -->
+  <!-- <Plox.vertical_line> lib/plox.ex:486 --><line x1="16.333333333333332" y1="1" x2="16.333333333333332" y2="47" stroke="#39393A" stroke-width="2"></line><!-- </Plox.vertical_line> -->
+
+  <!-- <Plox.x_label> lib/plox.ex:419 --><text x="31.666666666666668" y="63" fill="#18191A" dominant-baseline="hanging" text-anchor="middle" style="font-size: 0.75rem; line-height: 1rem">
+  
+    
+    2.0
+  
+  
+</text><!-- </Plox.x_label> -->
+  <!-- <Plox.vertical_line> lib/plox.ex:486 --><line x1="31.666666666666668" y1="1" x2="31.666666666666668" y2="47" stroke="#39393A" stroke-width="2"></line><!-- </Plox.vertical_line> -->
+
+  <!-- <Plox.x_label> lib/plox.ex:419 --><text x="47.0" y="63" fill="#18191A" dominant-baseline="hanging" text-anchor="middle" style="font-size: 0.75rem; line-height: 1rem">
+  
+    
+    3.0
+  
+  
+</text><!-- </Plox.x_label> -->
+  <!-- <Plox.vertical_line> lib/plox.ex:486 --><line x1="47.0" y1="1" x2="47.0" y2="47" stroke="#39393A" stroke-width="2"></line><!-- </Plox.vertical_line> -->
+
+  
+  <!-- <Plox.y_label> lib/plox.ex:370 --><text x="-15" y="47.0" fill="#18191A" dominant-baseline="middle" text-anchor="end" style="font-size: 0.75rem; line-height: 1rem">
+  
+    
+    0.0
+  
+  
+</text><!-- </Plox.y_label> -->
+  <!-- <Plox.horizontal_line> lib/plox.ex:465 --><line x1="1" y1="47.0" x2="47" y2="47.0" stroke="#39393A" stroke-width="2"></line><!-- </Plox.horizontal_line> -->
+
+  <!-- <Plox.y_label> lib/plox.ex:370 --><text x="-15" y="31.666666666666668" fill="#18191A" dominant-baseline="middle" text-anchor="end" style="font-size: 0.75rem; line-height: 1rem">
+  
+    
+    2.0
+  
+  
+</text><!-- </Plox.y_label> -->
+  <!-- <Plox.horizontal_line> lib/plox.ex:465 --><line x1="1" y1="31.666666666666668" x2="47" y2="31.666666666666668" stroke="#39393A" stroke-width="2"></line><!-- </Plox.horizontal_line> -->
+
+  <!-- <Plox.y_label> lib/plox.ex:370 --><text x="-15" y="16.333333333333332" fill="#18191A" dominant-baseline="middle" text-anchor="end" style="font-size: 0.75rem; line-height: 1rem">
+  
+    
+    4.0
+  
+  
+</text><!-- </Plox.y_label> -->
+  <!-- <Plox.horizontal_line> lib/plox.ex:465 --><line x1="1" y1="16.333333333333332" x2="47" y2="16.333333333333332" stroke="#39393A" stroke-width="2"></line><!-- </Plox.horizontal_line> -->
+
+  <!-- <Plox.y_label> lib/plox.ex:370 --><text x="-15" y="1.0" fill="#18191A" dominant-baseline="middle" text-anchor="end" style="font-size: 0.75rem; line-height: 1rem">
+  
+    
+    6.0
+  
+  
+</text><!-- </Plox.y_label> -->
+  <!-- <Plox.horizontal_line> lib/plox.ex:465 --><line x1="1" y1="1.0" x2="47" y2="1.0" stroke="#39393A" stroke-width="2"></line><!-- </Plox.horizontal_line> -->
+
+
+  <!-- <Plox.line_plot> lib/plox.ex:161 --><polyline points="16.333333333333332,8.666666666666666 31.666666666666668,16.333333333333332 16.333333333333332,24.0 16.333333333333332,39.333333333333336" fill="none" stroke="#FF9330" stroke-width="3"></polyline><!-- </Plox.line_plot> -->
+  <!-- <Plox.points_plot> lib/plox.ex:207 --><circle style="" fill="#FF9330" cx="16.333333333333332" cy="8.666666666666666" r="4"></circle><circle style="" fill="#FF9330" cx="31.666666666666668" cy="16.333333333333332" r="4"></circle><circle style="" fill="#FF9330" cx="16.333333333333332" cy="24.0" r="4"></circle><circle style="" fill="#FF9330" cx="16.333333333333332" cy="39.333333333333336" r="4"></circle><!-- </Plox.points_plot> -->
+
+    </svg>

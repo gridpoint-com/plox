@@ -1,7 +1,7 @@
 defmodule Plox.Graph do
-  @moduledoc false
-  # this is a semi-private struct and I'm not sure general users will use it
-  # directly, so maybe we don't document it.
+  @moduledoc """
+  TODO: docs
+  """
 
   defstruct datasets: %{}, scales: %{}, color_scales: %{}, dimensions: nil
 

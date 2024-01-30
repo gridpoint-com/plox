@@ -5,7 +5,7 @@
 
 [![Build Status](https://github.com/gridpoint-com/plox/actions/workflows/ci.yml/badge.svg)](https://github.com/gridpoint-com/plox/actions) [![Hex.pm](https://img.shields.io/hexpm/v/plox.svg)](https://hex.pm/packages/plox) [![Documentation](https://img.shields.io/badge/documentation-gray)](https://hexdocs.pm/plox/)
 
-Server-side rendered SVG graphing/plotting components for Phoenix HEEx.
+Server-side rendered SVG graphing components for Phoenix and LiveView.
 
 ## Installation
 

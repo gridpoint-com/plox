@@ -18,6 +18,11 @@ defmodule Plox do
   alias Plox.GraphScale
   alias Plox.NumberScale
 
+  @doc """
+  Entrypoint component for rendering graphs and plots
+  """
+  @doc type: :component
+
   attr :for, Graph, required: true
 
   attr :id, :string, required: true
@@ -69,6 +74,11 @@ defmodule Plox do
     """
   end
 
+  @doc """
+  Y-axis labels along the left or right side of the graph
+  """
+  @doc type: :component
+
   attr :scale, :any, required: true
   attr :ticks, :any
   attr :step, :any
@@ -106,6 +116,11 @@ defmodule Plox do
     <% end %>
     """
   end
+
+  @doc """
+  X-axis labels along the bottom or top of the graph
+  """
+  @doc type: :component
 
   attr :scale, :any, required: true
   attr :ticks, :any
@@ -146,6 +161,11 @@ defmodule Plox do
   end
 
   defp scale_opts(assigns), do: Map.take(assigns, [:ticks, :step])
+
+  @doc """
+  A connected line plot
+  """
+  @doc type: :component
 
   attr :dataset, :any, required: true
 
@@ -193,6 +213,11 @@ defmodule Plox do
 
   defp polyline_points(points), do: Enum.map_join(points, " ", &"#{&1.x},#{&1.y}")
 
+  @doc """
+  Points plot
+  """
+  @doc type: :component
+
   attr :dataset, :any, required: true
 
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
@@ -221,6 +246,11 @@ defmodule Plox do
     />
     """
   end
+
+  @doc """
+  Bar plot
+  """
+  @doc type: :component
 
   attr :dataset, :any, required: true
 
@@ -268,6 +298,11 @@ defmodule Plox do
   defp bar_style(:round), do: "round"
   defp bar_style(:square), do: "butt"
 
+  @doc """
+  Tooltip
+  """
+  @doc type: :component
+
   attr :dataset, :any, required: true
   attr :point_id, :any, required: true
 
@@ -300,6 +335,11 @@ defmodule Plox do
     </div>
     """
   end
+
+  @doc """
+  One-dimensional shaded areas, either horizontal or vertical
+  """
+  @doc type: :component
 
   attr :dataset, :any, required: true
 
@@ -496,6 +536,11 @@ defmodule Plox do
     """
   end
 
+  @doc """
+  A horizontal or vertical marker line with a label
+  """
+  @doc type: :component
+
   attr :at, :any, required: true
   attr :scale, :any, required: true
   attr :width, :string, default: "1.5"
@@ -571,6 +616,11 @@ defmodule Plox do
     """
   end
 
+  @doc """
+  Legend row
+  """
+  @doc type: :component
+
   slot :inner_block, required: true
 
   def legend(assigns) do
@@ -580,6 +630,11 @@ defmodule Plox do
     </div>
     """
   end
+
+  @doc """
+  Legend item
+  """
+  @doc type: :component
 
   attr :color, :string, required: true
   attr :label, :string, required: true
@@ -592,6 +647,11 @@ defmodule Plox do
     </div>
     """
   end
+
+  @doc """
+  A colored circle for legends
+  """
+  @doc type: :component
 
   attr :color, :string, required: true
 
