@@ -1,5 +1,5 @@
-<img width="400" src="screenshots/logo-plot@2x.png#gh-light-mode-only" alt="Plox">
-<img width="400" src="screenshots/logo-plot-dark@2x.png#gh-dark-mode-only" alt="Plox">
+<img width="400" src="images/logo-plot@2x.png#gh-light-mode-only" alt="Plox">
+<img width="400" src="images/logo-plot-dark@2x.png#gh-dark-mode-only" alt="Plox">
 
 ---
 
@@ -25,7 +25,7 @@ Documentation is published on [HexDocs](https://hexdocs.pm) and can be found at
 
 ## Example
 
-<img width="740" src="screenshots/readme-example-plot@2x.png" alt="Example screenshot">
+<img width="740" src="images/readme-example-plot@2x.png" alt="Example screenshot">
 
 Start by setting up your data, scales, and dataset:
 

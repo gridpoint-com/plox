@@ -30,14 +30,19 @@ defmodule Plox.MixProject do
   end
 
   defp package do
-    []
+    [
+      maintainers: ["Chris Dosé", "Cody Rogers", "Nikki Kyllonen"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => @source_url},
+      files: ~w(.formatter.exs mix.exs README.md CODE_OF_CONDUCT.md LICENSE lib)
+    ]
   end
 
   defp docs do
     [
       main: "Plox",
       source_ref: "v#{@version}",
-      logo: "screenshots/plox-icon.png",
+      logo: "images/plox-icon.png",
       source_url: @source_url,
       groups_for_modules: groups_for_modules(),
       groups_for_functions: [
