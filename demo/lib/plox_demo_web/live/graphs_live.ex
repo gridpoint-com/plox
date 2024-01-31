@@ -4,7 +4,7 @@ defmodule PloxDemoWeb.GraphsLive do
   import Plox
 
   def mount(_params, _session, socket) do
-    {:ok, socket |> mount_simple_line() |> mount_logo_graph()}
+    {:ok, socket |> mount_simple_line() |> mount_logo_graph() |> mount_math_stuff()}
   end
 
   def render(assigns) do
@@ -13,6 +13,8 @@ defmodule PloxDemoWeb.GraphsLive do
       <.simple_line simple_line={@simple_line} />
 
       <.logo_graph logo_graph={@logo_graph} />
+
+      <.math_stuff math_stuff={@math_stuff} />
     </div>
     """
   end
@@ -180,6 +182,74 @@ defmodule PloxDemoWeb.GraphsLive do
 
         <.line_plot dataset={graph[:x2_dataset]} width="5" color="#FF7167" />
         <.points_plot dataset={graph[:x2_dataset]} radius="8" color="#FF7167" />
+      </.graph>
+    </div>
+    """
+  end
+
+  defp mount_math_stuff(socket) do
+    sine_data =
+      Enum.map(-360..360//30, fn deg ->
+        %{degrees: deg, sin: :math.sin(deg * :math.pi() / 180)}
+      end)
+
+    cosine_data =
+      Enum.map(-360..360//20, fn deg ->
+        %{degrees: deg, cos: :math.cos(deg * :math.pi() / 180)}
+      end)
+
+    arctangent_data =
+      Enum.map(-180..180//10, fn deg ->
+        %{degrees: deg, atan: :math.atan(deg * :math.pi() / 180)}
+      end)
+
+    x_scale = number_scale(-360, 360)
+    y_scale = number_scale(-1.5, 1.5)
+
+    sine_dataset = dataset(sine_data, x: {x_scale, & &1.degrees}, y: {y_scale, & &1.sin})
+    cosine_dataset = dataset(cosine_data, x: {x_scale, & &1.degrees}, y: {y_scale, & &1.cos})
+
+    arctangent_dataset =
+      dataset(arctangent_data, x: {x_scale, & &1.degrees}, y: {y_scale, & &1.atan})
+
+    assign(socket,
+      math_stuff:
+        to_graph(
+          scales: [x_scale: x_scale, y_scale: y_scale],
+          datasets: [sine: sine_dataset, cosine: cosine_dataset, arctangent: arctangent_dataset]
+        )
+    )
+  end
+
+  defp math_stuff(assigns) do
+    ~H"""
+    <div class="space-y-4">
+      <.heading>3. Sine/Cosine/ArcTangent Graph</.heading>
+
+      <.graph :let={graph} id="math_stuff" for={@math_stuff} width={800} height={250}>
+        <.x_axis :let={degrees} scale={graph[:x_scale]} ticks={9}>
+          <%= round(degrees) %>°
+        </.x_axis>
+
+        <.y_axis :let={y} scale={graph[:y_scale]} ticks={7}>
+          <%= y %>
+        </.y_axis>
+
+        <.line_plot dataset={graph[:sine]} color="#8FDA5D" line_style={:dashed} />
+
+        <.line_plot dataset={graph[:cosine]} color="#35A9C0" width="2" line_style={:dotted} />
+        <.points_plot dataset={graph[:cosine]} color="#35A9C0" />
+
+        <.line_plot dataset={graph[:arctangent]} color="#FF5954" width="1" />
+        <.points_plot dataset={graph[:arctangent]} color="#FF5954" radius="3" />
+
+        <.marker at={-180} scale={graph[:x_scale]}>
+          Start
+        </.marker>
+
+        <.marker at={180} scale={graph[:x_scale]}>
+          End
+        </.marker>
       </.graph>
     </div>
     """
