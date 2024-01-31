@@ -26,11 +26,9 @@ defmodule Plox.DateScale do
     %__MODULE__{range: range}
   end
 
-  defp reduce_step(%Date.Range{step: step} = range) when step > 0,
-    do: Date.range(range.first, range.last, 1)
+  defp reduce_step(%Date.Range{step: step} = range) when step > 0, do: Date.range(range.first, range.last, 1)
 
-  defp reduce_step(%Date.Range{step: step} = range) when step < 0,
-    do: Date.range(range.first, range.last, -1)
+  defp reduce_step(%Date.Range{step: step} = range) when step < 0, do: Date.range(range.first, range.last, -1)
 
   defimpl Plox.Scale do
     def values(scale, opts) do

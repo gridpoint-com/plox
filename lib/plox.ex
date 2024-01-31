@@ -6,7 +6,6 @@ defmodule Plox do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-
   alias Plox.Dataset
   alias Plox.DateScale
   alias Plox.DateTimeScale
