@@ -7,7 +7,8 @@ defmodule Plox.Box do
   defstruct [:top, :right, :bottom, :left]
 
   def new(string) when is_binary(string) do
-    String.split(string, " ", trim: true)
+    string
+    |> String.split(" ", trim: true)
     |> Enum.map(&String.to_integer/1)
     |> List.to_tuple()
     |> new()
@@ -20,9 +21,7 @@ defmodule Plox.Box do
   def new({top_bottom, right_left}),
     do: %__MODULE__{top: top_bottom, right: right_left, bottom: top_bottom, left: right_left}
 
-  def new({top, right_left, bottom}),
-    do: %__MODULE__{top: top, right: right_left, bottom: bottom, left: right_left}
+  def new({top, right_left, bottom}), do: %__MODULE__{top: top, right: right_left, bottom: bottom, left: right_left}
 
-  def new({top, right, bottom, left}),
-    do: %__MODULE__{top: top, right: right, bottom: bottom, left: left}
+  def new({top, right, bottom, left}), do: %__MODULE__{top: top, right: right, bottom: bottom, left: left}
 end

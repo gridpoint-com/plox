@@ -22,8 +22,7 @@ defmodule Plox.NumberScale do
   `ticks` must be at least `2`.
   """
   @spec new(first :: number(), last :: number()) :: t()
-  def new(first, last)
-      when is_number(first) and is_number(last) and first != last do
+  def new(first, last) when is_number(first) and is_number(last) and first != last do
     first = Decimal.from_float(first / 1.0)
     last = Decimal.from_float(last / 1.0)
     backwards? = Decimal.compare(first, last) == :gt
@@ -43,14 +42,14 @@ defmodule Plox.NumberScale do
   defimpl Plox.Scale do
     def values(scale, opts \\ %{}) do
       ticks = Map.get(opts, :ticks, 11)
-      step = Decimal.sub(scale.last, scale.first) |> Decimal.div(ticks - 1)
+      step = scale.last |> Decimal.sub(scale.first) |> Decimal.div(ticks - 1)
 
       # we don't compute the last value because it could include rounding errors
       # carried through each step, instead we just append `scale.last`
       0..(ticks - 2)
       |> Enum.map_reduce(scale.first, fn _i, acc -> {acc, Decimal.add(acc, step)} end)
       |> elem(0)
-      |> then(&(&1 ++ [scale.last]))
+      |> Kernel.++([scale.last])
       |> Enum.map(&Decimal.to_float/1)
     end
 
@@ -61,7 +60,8 @@ defmodule Plox.NumberScale do
         raise ArgumentError,
           message: "Invalid value `#{inspect(input_value)}` given for `#{inspect(scale)}`"
       else
-        Decimal.sub(value, scale.first)
+        value
+        |> Decimal.sub(scale.first)
         |> Decimal.mult(to_range.last - to_range.first)
         |> Decimal.div(Decimal.sub(scale.last, scale.first))
         |> Decimal.add(to_range.first)
@@ -84,10 +84,7 @@ defmodule Plox.NumberScale do
   end
 
   defimpl Inspect do
-    def inspect(
-          %Plox.NumberScale{first: first, last: last},
-          _
-        ) do
+    def inspect(%Plox.NumberScale{first: first, last: last}, _) do
       "Plox.NumberScale.new(" <>
         inspect(Decimal.to_float(first)) <> ", " <> inspect(Decimal.to_float(last)) <> ")"
     end

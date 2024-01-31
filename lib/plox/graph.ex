@@ -3,12 +3,12 @@ defmodule Plox.Graph do
   TODO: docs
   """
 
-  defstruct datasets: %{}, scales: %{}, color_scales: %{}, dimensions: nil
-
   alias Plox.Dataset
   alias Plox.Dimensions
   alias Plox.GraphDataset
   alias Plox.GraphScale
+
+  defstruct datasets: %{}, scales: %{}, color_scales: %{}, dimensions: nil
 
   def new(scales_and_datasets) do
     scales = scales_and_datasets |> Keyword.get(:scales, []) |> Map.new()
