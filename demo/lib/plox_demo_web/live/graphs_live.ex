@@ -4,18 +4,15 @@ defmodule PloxDemoWeb.GraphsLive do
   import Plox
 
   def mount(_params, _session, socket) do
-    {:ok, socket |> mount_simple_line()}
+    {:ok, socket |> mount_simple_line() |> mount_logo_graph()}
   end
 
   def render(assigns) do
     ~H"""
-    <div>
-      <h1>Welcome to Plox!</h1>
-      <p>Here are some demos.</p>
+    <div class="space-y-8">
+      <.simple_line simple_line={@simple_line} />
 
-      <div class="my-4">
-        <.simple_line simple_line={@simple_line} />
-      </div>
+      <.logo_graph logo_graph={@logo_graph} />
     </div>
     """
   end
@@ -49,25 +46,152 @@ defmodule PloxDemoWeb.GraphsLive do
 
   defp simple_line(assigns) do
     ~H"""
-    <h2 class="bg-slate-100 font-bold p-2 rounded-md w-fit">1. Simple Line Plot</h2>
+    <div>
+      <.heading>1. Simple Line Plot</.heading>
 
-    <.graph :let={graph} id="simple_line" for={@simple_line} width="670" height="250">
-      <:legend>
-        <.legend_item color="#EC7E16" label="Data" />
-      </:legend>
+      <.graph :let={graph} id="simple_line" for={@simple_line} width="670" height="250">
+        <:legend>
+          <.legend_item color="#EC7E16" label="Data" />
+        </:legend>
 
-      <.x_axis :let={date} scale={graph[:date_scale]}>
-        <%= Calendar.strftime(date, "%-m/%-d") %>
-      </.x_axis>
+        <.x_axis :let={date} scale={graph[:date_scale]}>
+          <%= Calendar.strftime(date, "%-m/%-d") %>
+        </.x_axis>
 
-      <.y_axis :let={value} scale={graph[:number_scale]} ticks={5}>
-        <%= value %>
-      </.y_axis>
+        <.y_axis :let={value} scale={graph[:number_scale]} ticks={5}>
+          <%= value %>
+        </.y_axis>
 
-      <.line_plot dataset={graph[:dataset]} />
+        <.line_plot dataset={graph[:dataset]} />
 
-      <.points_plot dataset={graph[:dataset]} />
-    </.graph>
+        <.points_plot dataset={graph[:dataset]} />
+      </.graph>
+    </div>
+    """
+  end
+
+  defp mount_logo_graph(socket) do
+    x_scale = number_scale(0.0, 10.0)
+    y_scale = number_scale(0.0, 6.0)
+
+    # Letter "P"
+    p_data = [
+      %{x: 1, y: 5},
+      %{x: 2.5, y: 4},
+      %{x: 1, y: 3},
+      %{x: 1, y: 1}
+    ]
+
+    p_dataset =
+      dataset(p_data,
+        x: {x_scale, & &1.x},
+        y: {y_scale, & &1.y}
+      )
+
+    # Letter "L"
+    l_data = [
+      %{x: 3.5, y: 4.5},
+      %{x: 3.5, y: 1}
+    ]
+
+    l_dataset =
+      dataset(l_data,
+        x: {x_scale, & &1.x},
+        y: {y_scale, & &1.y}
+      )
+
+    # Letter "O"
+    o_data = [
+      %{x: 4.5, y: 2},
+      %{x: 5.5, y: 3},
+      %{x: 6.5, y: 2},
+      %{x: 5.5, y: 1},
+      %{x: 4.5, y: 2}
+    ]
+
+    o_dataset =
+      dataset(o_data,
+        x: {x_scale, & &1.x},
+        y: {y_scale, & &1.y}
+      )
+
+    # Letter "X"
+    x1_data = [
+      %{x: 7, y: 3},
+      %{x: 9, y: 1}
+    ]
+
+    x1_dataset =
+      dataset(x1_data,
+        x: {x_scale, & &1.x},
+        y: {y_scale, & &1.y}
+      )
+
+    x2_data = [
+      %{x: 7, y: 1},
+      %{x: 9, y: 3}
+    ]
+
+    x2_dataset =
+      dataset(x2_data,
+        x: {x_scale, & &1.x},
+        y: {y_scale, & &1.y}
+      )
+
+    assign(socket,
+      logo_graph:
+        to_graph(
+          scales: [x_scale: x_scale, y_scale: y_scale],
+          datasets: [
+            p_dataset: p_dataset,
+            l_dataset: l_dataset,
+            o_dataset: o_dataset,
+            x1_dataset: x1_dataset,
+            x2_dataset: x2_dataset
+          ]
+        )
+    )
+  end
+
+  defp logo_graph(assigns) do
+    ~H"""
+    <div>
+      <.heading>2. Logo graph</.heading>
+
+      <.graph :let={graph} id="logo_graph" for={@logo_graph} width="440" height="250">
+        <.x_axis :let={value} scale={graph[:x_scale]}>
+          <%= value %>
+        </.x_axis>
+        <.y_axis :let={value} scale={graph[:y_scale]} ticks={7}>
+          <%= value %>
+        </.y_axis>
+
+        <.line_plot dataset={graph[:p_dataset]} width="5" />
+        <.points_plot dataset={graph[:p_dataset]} radius="8" />
+
+        <.line_plot dataset={graph[:l_dataset]} width="5" color="#78C348" />
+        <.points_plot dataset={graph[:l_dataset]} radius="8" color="#78C348" />
+
+        <.line_plot dataset={graph[:o_dataset]} width="5" color="#71AEFF" />
+        <.points_plot dataset={graph[:o_dataset]} radius="8" color="#71AEFF" />
+
+        <.line_plot dataset={graph[:x1_dataset]} width="5" color="#FF7167" />
+        <.points_plot dataset={graph[:x1_dataset]} radius="8" color="#FF7167" />
+
+        <.line_plot dataset={graph[:x2_dataset]} width="5" color="#FF7167" />
+        <.points_plot dataset={graph[:x2_dataset]} radius="8" color="#FF7167" />
+      </.graph>
+    </div>
+    """
+  end
+
+  slot :inner_block, required: true
+
+  defp heading(assigns) do
+    ~H"""
+    <h2 class="bg-slate-100 font-bold p-2 rounded-md w-fit">
+      <%= render_slot(@inner_block) %>
+    </h2>
     """
   end
 end
