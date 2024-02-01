@@ -1,6 +1,6 @@
 defmodule PloxDemoWeb.SimpleLineLive do
   @moduledoc """
-  LiveView displaying the "Simple Line Plot" example.
+  LiveView displaying the "Simple Line" example.
   """
   use PloxDemoWeb, :live_view
 
@@ -140,14 +140,4 @@ defmodule PloxDemoWeb.SimpleLineLive do
     )
     """
   end
-
-  # slot :inner_block, required: true
-
-  # defp code_block(assigns) do
-  #   ~H"""
-  #   <div class="bg-slate-100 p-4 rounded-md w-fit">
-  #     <%= render_slot(@inner_block) %>
-  #   </div>
-  #   """
-  # end
 end
