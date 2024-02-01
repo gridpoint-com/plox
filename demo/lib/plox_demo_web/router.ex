@@ -19,6 +19,7 @@ defmodule PloxDemoWeb.Router do
 
     live "/", GraphsLive
     live "/simple_line", SimpleLineLive
+    live "/logo", LogoLive
   end
 
   # Other scopes may use custom stacks.
