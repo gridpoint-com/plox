@@ -3,3 +3,8 @@
 @import "tailwindcss/utilities";
 
 /* This file is for your main application CSS */
+
+/* hide background color added to code snippets by Makeup */
+pre.highlight {
+    background-color: transparent;
+}
