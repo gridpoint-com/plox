@@ -162,7 +162,7 @@ defmodule PloxDemoWeb.GraphsLive do
   defp logo_graph(assigns) do
     ~H"""
     <div>
-      <.heading>2. Logo</.heading>
+      <.heading navigate={~p"/logo"}>2. Logo</.heading>
 
       <.graph :let={graph} id="logo_graph" for={@logo_graph} width="440" height="250">
         <.x_axis :let={value} scale={graph[:x_scale]}>
