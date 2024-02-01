@@ -9,6 +9,10 @@ defmodule PloxDemoWeb.GraphsLive do
 
   def render(assigns) do
     ~H"""
+    <header class="px-4 sm:px-6 lg:px-8">
+      <img class="mx-auto" src={~p"/images/logo-plot@2x.png"} width="400" />
+    </header>
+
     <div class="space-y-8">
       <.simple_line simple_line={@simple_line} />
 
@@ -49,7 +53,7 @@ defmodule PloxDemoWeb.GraphsLive do
   defp simple_line(assigns) do
     ~H"""
     <div>
-      <.heading>1. Simple Line Plot</.heading>
+      <.heading navigate={~p"/simple_line"}>1. Simple Line</.heading>
 
       <.graph :let={graph} id="simple_line" for={@simple_line} width="670" height="250">
         <:legend>
@@ -158,7 +162,7 @@ defmodule PloxDemoWeb.GraphsLive do
   defp logo_graph(assigns) do
     ~H"""
     <div>
-      <.heading>2. Logo graph</.heading>
+      <.heading>2. Logo</.heading>
 
       <.graph :let={graph} id="logo_graph" for={@logo_graph} width="440" height="250">
         <.x_axis :let={value} scale={graph[:x_scale]}>
@@ -224,7 +228,7 @@ defmodule PloxDemoWeb.GraphsLive do
   defp math_stuff(assigns) do
     ~H"""
     <div class="space-y-4">
-      <.heading>3. Sine/Cosine/ArcTangent Graph</.heading>
+      <.heading>3. Sine/Cosine/ArcTangent</.heading>
 
       <.graph :let={graph} id="math_stuff" for={@math_stuff} width={800} height={250}>
         <.x_axis :let={degrees} scale={graph[:x_scale]} ticks={9}>
@@ -255,12 +259,15 @@ defmodule PloxDemoWeb.GraphsLive do
     """
   end
 
+  attr :navigate, :string, default: nil
   slot :inner_block, required: true
 
   defp heading(assigns) do
     ~H"""
     <h2 class="bg-slate-100 font-bold p-2 rounded-md w-fit">
-      <%= render_slot(@inner_block) %>
+      <.link navigate={@navigate} class="">
+        <%= render_slot(@inner_block) %>
+      </.link>
     </h2>
     """
   end

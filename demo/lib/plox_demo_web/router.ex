@@ -18,6 +18,7 @@ defmodule PloxDemoWeb.Router do
     pipe_through :browser
 
     live "/", GraphsLive
+    live "/simple_line", SimpleLineLive
   end
 
   # Other scopes may use custom stacks.
