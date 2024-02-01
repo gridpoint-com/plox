@@ -44,7 +44,10 @@ defmodule PloxDemo.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, ">= 0.0.0"},
-      {:plox, path: "../"}
+      {:plox, path: "../"},
+      {:makeup, "~> 1.1"},
+      {:makeup_elixir, "~> 0.16.1"},
+      {:makeup_eex, "~> 0.1.0"}
     ]
   end
 
