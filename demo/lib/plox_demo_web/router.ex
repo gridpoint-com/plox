@@ -20,6 +20,7 @@ defmodule PloxDemoWeb.Router do
     live "/", GraphsLive
     live "/simple_line", SimpleLineLive
     live "/logo", LogoLive
+    live "/math", MathLive
   end
 
   # Other scopes may use custom stacks.

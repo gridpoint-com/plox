@@ -228,7 +228,7 @@ defmodule PloxDemoWeb.GraphsLive do
   defp math_stuff(assigns) do
     ~H"""
     <div class="space-y-4">
-      <.heading>3. Sine/Cosine/ArcTangent</.heading>
+      <.heading navigate={~p"/math"}>3. Sine/Cosine/ArcTangent</.heading>
 
       <.graph :let={graph} id="math_stuff" for={@math_stuff} width={800} height={250}>
         <.x_axis :let={degrees} scale={graph[:x_scale]} ticks={9}>
