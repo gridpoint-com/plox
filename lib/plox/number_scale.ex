@@ -56,30 +56,17 @@ defmodule Plox.NumberScale do
     def convert_to_range(scale, input_value, to_range) when is_number(input_value) do
       value = Decimal.from_float(input_value / 1.0)
 
-      if in_range?(scale, value) do
-        raise ArgumentError,
-          message: "Invalid value `#{inspect(input_value)}` given for `#{inspect(scale)}`"
-      else
-        value
-        |> Decimal.sub(scale.first)
-        |> Decimal.mult(to_range.last - to_range.first)
-        |> Decimal.div(Decimal.sub(scale.last, scale.first))
-        |> Decimal.add(to_range.first)
-        |> Decimal.to_float()
-      end
+      value
+      |> Decimal.sub(scale.first)
+      |> Decimal.mult(to_range.last - to_range.first)
+      |> Decimal.div(Decimal.sub(scale.last, scale.first))
+      |> Decimal.add(to_range.first)
+      |> Decimal.to_float()
     end
 
     def convert_to_range(scale, value, _to_range) do
       raise ArgumentError,
         message: "Invalid value `#{inspect(value)}` given for `#{inspect(scale)}`"
-    end
-
-    defp in_range?(%{backwards?: true} = scale, value) do
-      Decimal.compare(value, scale.last) == :lt or Decimal.compare(value, scale.first) == :gt
-    end
-
-    defp in_range?(scale, value) do
-      Decimal.compare(value, scale.first) == :lt or Decimal.compare(value, scale.last) == :gt
     end
   end
 
