@@ -314,23 +314,39 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def tooltip(assigns) do
+    height = assigns.dataset.dimensions.height
     point = GraphDataset.to_graph_point(assigns.dataset, assigns.x, assigns.y, assigns.point_id)
 
-    assigns =
-      assign(assigns, point: point)
+    {container_classes, pointer_classes} =
+      if point.y < height / 2 do
+        # top half of the graph: draw tooltip BELOW the clicked point
+        {"top: #{point.y + 12}px;", "top: -0.5rem;"}
+      else
+        # bottom half of the graph: draw tooltip ABOVE the clicked point
+        {"bottom: #{height - point.y + 12}px;", "bottom: -0.5rem;"}
+      end
+
+    assigns = assign(assigns, point: point, container_classes: container_classes, pointer_classes: pointer_classes)
 
     ~H"""
-    <div
-      style={[
-        "position: absolute; padding: 1rem; font-size: 0.75rem; background: #4B4C4D; color: #CACBCC; z-index: 10; border-radius: 0.75rem; transform: translate(-50%);",
-        "left: #{@point.x}px; bottom: #{@dataset.dimensions.height - @point.y + 12}px;",
-        "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
-      ]}
-      phx-click-away={assigns[:"phx-click-away"]}
-      phx-target={assigns[:"phx-target"]}
-    >
-      <%= render_slot(@inner_block, @point.data_point.original) %>
-      <div style="transform: translate(-50%) rotate(45deg); position: absolute; left: 50%; bottom: -0.5rem; width: 1rem; height: 1rem; z-index: -10; background: #4B4C4D" />
+    <div style={[
+      "position: absolute; left: #{@point.x}px; transform: translate(-50%);",
+      @container_classes
+    ]}>
+      <div
+        style={[
+          "position: relative; padding: 1rem; font-size: 0.75rem; background: #4B4C4D; color: #CACBCC; z-index: 10; border-radius: 0.75rem;",
+          "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
+        ]}
+        phx-click-away={assigns[:"phx-click-away"]}
+        phx-target={assigns[:"phx-target"]}
+      >
+        <%= render_slot(@inner_block, @point.data_point.original) %>
+      </div>
+      <div style={[
+        "position: absolute; left: 50%; transform: translate(-50%) rotate(45deg); width: 1rem; height: 1rem; z-index: -10; background: #4B4C4D;",
+        @pointer_classes
+      ]} />
     </div>
     """
   end
