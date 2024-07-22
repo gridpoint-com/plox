@@ -6,6 +6,7 @@ defmodule Plox.GraphDataset do
 
   alias Plox.ColorScale
   alias Plox.DataPoint
+  alias Plox.GraphPoint
   alias Plox.GraphScale
 
   defstruct [:id, :dataset, :dimensions]
@@ -35,15 +36,40 @@ defmodule Plox.GraphDataset do
   end
 
   def to_graph_point(%__MODULE__{} = dataset, x_key, y_key, id) do
-    x_scale = get_scale!(dataset, x_key)
-    y_scale = get_scale!(dataset, y_key)
+    case Map.fetch(dataset.dataset.scales, y_key) do
+      {:ok, _} ->
+        x_scale = get_scale!(dataset, x_key)
+        y_scale = get_scale!(dataset, y_key)
 
-    Enum.find_value(dataset.dataset.data, fn data_point ->
-      if data_point.id == id do
-        DataPoint.to_graph_point(data_point, x_scale, x_key, y_scale, y_key)
-      end
-    end)
+        Enum.find_value(dataset.dataset.data, fn data_point ->
+          if data_point.id == id do
+            DataPoint.to_graph_point(data_point, x_scale, x_key, y_scale, y_key)
+          end
+        end)
+
+      :error ->
+        x_scale = get_scale!(dataset, x_key)
+
+        Enum.find_value(dataset.dataset.data, fn data_point ->
+          if data_point.id == id do
+            graph_x = DataPoint.to_graph_x(data_point, x_scale, x_key)
+
+            GraphPoint.new(graph_x.value, dataset.dimensions.height / 2, data_point)
+          end
+        end)
+    end
   end
+
+  # def to_graph_point(%__MODULE__{} = dataset, x_key, y_key, id) do
+  #   x_scale = get_scale!(dataset, x_key)
+  #   y_scale = get_scale!(dataset, y_key)
+
+  #   Enum.find_value(dataset.dataset.data, fn data_point ->
+  #     if data_point.id == id do
+  #       DataPoint.to_graph_point(data_point, x_scale, x_key, y_scale, y_key)
+  #     end
+  #   end)
+  # end
 
   def to_graph_xs(%__MODULE__{} = dataset, x_key) do
     x_scale = get_scale!(dataset, x_key)

@@ -304,7 +304,6 @@ defmodule Plox do
 
   attr :dataset, :any, required: true
   attr :point_id, :any, required: true
-
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
@@ -316,8 +315,7 @@ defmodule Plox do
   def tooltip(assigns) do
     point = GraphDataset.to_graph_point(assigns.dataset, assigns.x, assigns.y, assigns.point_id)
 
-    assigns =
-      assign(assigns, point: point)
+    assigns = assign(assigns, point: point)
 
     ~H"""
     <div
@@ -335,6 +333,44 @@ defmodule Plox do
     """
   end
 
+  # @doc """
+  # TODO:
+
+  # Tooltip based on manually passing y/y scales/values instead of inferring based on dataset.
+  # """
+  # @doc type: :component
+
+  # attr :x_scale, :any, required: true
+  # attr :y_scale, :any, required: true
+  # attr :x_value, :any, required: true
+  # attr :y_value, :any, required: true
+
+  # attr :"phx-click-away", :any
+  # attr :"phx-target", :any, default: nil
+
+  # slot :inner_block, required: true
+
+  # def coordinate_tooltip(assigns) do
+  #   point = GraphDataset.to_graph_point(assigns.dataset, assigns.x, assigns.y, assigns.point_id)
+
+  #   assigns = assign(assigns, point: point)
+
+  #   ~H"""
+  #   <div
+  #     style={[
+  #       "position: absolute; padding: 1rem; font-size: 0.75rem; background: #4B4C4D; color: #CACBCC; z-index: 10; border-radius: 0.75rem; transform: translate(-50%);",
+  #       "left: #{@point.x}px; bottom: #{@dataset.dimensions.height - @point.y + 12}px;",
+  #       "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
+  #     ]}
+  #     phx-click-away={assigns[:"phx-click-away"]}
+  #     phx-target={assigns[:"phx-target"]}
+  #   >
+  #     <%= render_slot(@inner_block, @point.data_point.original) %>
+  #     <div style="transform: translate(-50%) rotate(45deg); position: absolute; left: 50%; bottom: -0.5rem; width: 1rem; height: 1rem; z-index: -10; background: #4B4C4D" />
+  #   </div>
+  #   """
+  # end
+
   @doc """
   One-dimensional shaded areas, either horizontal or vertical
   """
@@ -346,6 +382,9 @@ defmodule Plox do
   attr :color, :atom, required: true, doc: "The dataset axis key to use for colors"
 
   attr :orientation, :atom, values: [:vertical, :horizontal], default: :horizontal
+
+  attr :"phx-click", :any, default: nil
+  attr :"phx-target", :any, default: nil
 
   def area_plot(%{orientation: :horizontal} = assigns) do
     ~H"""
@@ -360,6 +399,18 @@ defmodule Plox do
         width={scalar2.value - scalar1.value}
         x={scalar1.value}
         y={@dataset.dimensions.margin.top}
+        phx-click={
+          if assigns[:"phx-click"],
+            do:
+              JS.push(assigns[:"phx-click"],
+                value: %{
+                  start_area_point_id: scalar1.data_point.id,
+                  end_area_point_id: scalar2.data_point.id,
+                  dataset_id: @dataset.id
+                }
+              )
+        }
+        phx-target={assigns[:"phx-target"]}
       />
     <% end %>
     """
