@@ -14,6 +14,12 @@ defmodule Plox.GraphDataset do
     %__MODULE__{id: id, dataset: dataset, dimensions: dimensions}
   end
 
+  def get_point(dataset, point_id) do
+    Enum.find_value(dataset.dataset.data, fn data_point ->
+      if data_point.id == point_id, do: data_point
+    end)
+  end
+
   def get_scale!(%__MODULE__{dataset: dataset, dimensions: dimensions}, key) do
     case Map.fetch(dataset.scales, key) do
       {:ok, scale} ->
