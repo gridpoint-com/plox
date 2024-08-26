@@ -6,33 +6,33 @@ defmodule Plox.GraphScale do
 
   alias Plox.Scale
 
-  defstruct [:id, :scale, :dimensions]
+  defstruct [:scale, :graph]
 
-  def new(id, scale, dimensions) do
-    %__MODULE__{id: id, scale: scale, dimensions: dimensions}
+  def new(graph, scale) do
+    %__MODULE__{scale: scale, graph: graph}
   end
 
   def values(%__MODULE__{scale: scale}, opts \\ %{}), do: Scale.values(scale, opts)
 
-  def to_graph_x(%__MODULE__{scale: scale, dimensions: dimensions}, value) do
+  def to_graph_x(%__MODULE__{scale: scale, graph: graph}, value) do
     Scale.convert_to_range(
       scale,
       value,
-      (dimensions.margin.left +
-         dimensions.padding.left)..(dimensions.width -
-                                      dimensions.margin.right -
-                                      dimensions.padding.right)
+      (graph.margin.left +
+         graph.padding.left)..(graph.width -
+                                 graph.margin.right -
+                                 graph.padding.right)
     )
   end
 
-  def to_graph_y(%__MODULE__{scale: scale, dimensions: dimensions}, value) do
+  def to_graph_y(%__MODULE__{scale: scale, graph: graph}, value) do
     Scale.convert_to_range(
       scale,
       value,
-      (dimensions.height -
-         dimensions.margin.bottom -
-         dimensions.padding.bottom)..(dimensions.margin.top +
-                                        dimensions.padding.top)
+      (graph.height -
+         graph.margin.bottom -
+         graph.padding.bottom)..(graph.margin.top +
+                                   graph.padding.top)
     )
   end
 end

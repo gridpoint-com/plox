@@ -6,214 +6,356 @@ defmodule Plox do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
+  alias Plox.Axis
   alias Plox.Dataset
   alias Plox.DateScale
   alias Plox.DateTimeScale
   alias Plox.Dimensions
   alias Plox.FixedColorsScale
   alias Plox.FixedValuesScale
-  alias Plox.Graph
   alias Plox.GraphDataset
   alias Plox.GraphScale
   alias Plox.NumberScale
+  alias Plox.Scale
+  alias Plox.XAxis
+  alias Plox.YAxis
+
+  # copied from SVG spec: https://svgwg.org/svg2-draft/styling.html#TermPresentationAttribute
+  @svg_presentation_globals ~w(alignment-baseline baseline-shift clip-path clip-rule color color-interpolation color-interpolation-filters cursor direction display dominant-baseline fill-opacity fill-rule filter flood-color flood-opacity font-family font-size font-size-adjust font-stretch font-style font-variant font-weight glyph-orientation-horizontal glyph-orientation-vertical image-rendering letter-spacing lighting-color marker-end marker-mid marker-start mask mask-type opacity overflow paint-order pointer-events shape-rendering stop-color stop-opacity stroke stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit stroke-opacity stroke-width text-anchor text-decoration text-overflow text-rendering transform-origin unicode-bidi vector-effect visibility white-space word-spacing writing-mode)
 
   @doc """
-  Entrypoint component for rendering graphs and plots
+  Entrypoint component for rendering graphs and plots.
   """
   @doc type: :component
 
-  attr :for, Graph, required: true
-
-  attr :id, :string, required: true
-  attr :width, :any, required: true, doc: "The total width of the rendered graph in pixels"
-  attr :height, :any, required: true, doc: "The total height of the rendered graph in pixels"
-
-  attr :margin, :any,
-    default: {35, 70},
-    doc: """
-    The amount of space around the plotting area of the graph in which the axis labels are
-    rendered. Accepts one, two, three or four values and interprets them the same was as in
-    CSS.
-    """
-
-  attr :padding, :any,
-    default: 0,
-    doc: """
-    The amount of space inside the plotting area of the graph from the edges to where plotting
-    begins. Accepts one, two, three or four values and interprets them the same was as in CSS.
-    """
+  attr :dimensions, Dimensions, required: true
+  # FIXME:
+  attr :rest, :global
 
   slot :legend
   slot :tooltips
   slot :inner_block, required: true
 
   def graph(assigns) do
-    assigns =
-      assign(assigns,
-        for: nil,
-        graph: Graph.put_dimensions(assigns.for, Dimensions.new(assigns))
-      )
+    # assigns =
+    #   assign(assigns,
+    #     for: nil,
+    #     graph: Graph.put_dimensions(assigns.for, Dimensions.new(assigns))
+    #   )
 
     ~H"""
-    <div id={@id}>
-      <div style={"display: flex; flex-direction: column; align-items: flex-end; max-width: #{@graph.dimensions.width - @graph.dimensions.margin.right}px"}>
+    <div {@rest}>
+      <%!-- <div style={"display: flex; flex-direction: column; align-items: flex-end; max-width: #{@graph.width - @graph.margin.right}px"}>
         <.legend :for={legend <- @legend}>
           <%= render_slot(legend) %>
         </.legend>
-      </div>
-      <div style={"position: relative; width: #{@width}px; height: #{@height}px"}>
-        <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
-          <%= render_slot(@inner_block, @graph) %>
+      </div> --%>
+      <div style={"position: relative; width: #{@dimensions.width}px; height: #{@dimensions.height}px"}>
+        <svg
+          viewBox={"0 0 #{@dimensions.width} #{@dimensions.height}"}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <%= render_slot(@inner_block) %>
         </svg>
-        <%= for tooltip <- @tooltips do %>
-          <%= render_slot(tooltip, @graph) %>
-        <% end %>
+        <%!-- <%= for tooltip <- @tooltips do %>
+          <%= render_slot(tooltip) %>
+        <% end %> --%>
       </div>
     </div>
     """
   end
 
   @doc """
-  Y-axis labels along the left or right side of the graph
+  X-axis labels along the bottom or top of the graph.
+
+  See `x_axis_label/1` for more details on the accepeted attributes.
   """
   @doc type: :component
 
-  attr :scale, :any, required: true
+  attr :axis, XAxis, required: true
   attr :ticks, :any
   attr :step, :any
-
-  attr :position, :atom, values: [:left, :right], default: :left
-
-  attr :label_color, :string, default: "#18191A"
-  attr :label_rotation, :integer, default: nil
-
-  attr :grid_lines, :boolean, default: true
-  attr :line_width, :string, default: "1"
-  attr :line_color, :string, default: "#F2F4F5"
+  attr :rest, :global, include: ~w(gap rotation position) ++ @svg_presentation_globals
 
   slot :inner_block, required: true
 
-  def y_axis(assigns) do
+  def x_axis_labels(assigns) do
     ~H"""
-    <%= for y_value <- GraphScale.values(@scale, scale_opts(assigns)), y_pixel = GraphScale.to_graph_y(@scale, y_value) do %>
-      <.y_label
-        dimensions={@scale.dimensions}
-        y_pixel={y_pixel}
-        position={@position}
-        color={@label_color}
-        rotation={@label_rotation}
-      >
-        <%= render_slot(@inner_block, y_value) %>
-      </.y_label>
-      <.horizontal_line
-        :if={@grid_lines}
-        dimensions={@scale.dimensions}
-        y_pixel={y_pixel}
-        width={@line_width}
-        color={@line_color}
-      />
+    <%= for value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step])) do %>
+      <.x_axis_label axis={@axis} value={value} {@rest}>
+        <%= render_slot(@inner_block, value) %>
+      </.x_axis_label>
     <% end %>
     """
   end
 
   @doc """
-  X-axis labels along the bottom or top of the graph
+  An X-axis label at the bottom or top of the graph.
   """
   @doc type: :component
 
-  attr :scale, :any, required: true
-  attr :ticks, :any
-  attr :step, :any
-
+  attr :axis, XAxis, required: true
+  attr :value, :any, required: true
   attr :position, :atom, values: [:top, :bottom], default: :bottom
-
-  attr :label_color, :string, default: "#18191A"
-  attr :label_rotation, :integer, default: nil
-
-  attr :grid_lines, :boolean, default: true
-  attr :line_width, :string, default: "1"
-  attr :line_color, :string, default: "#F2F4F5"
+  attr :gap, :integer, default: 16
+  attr :rotation, :integer, default: nil
+  attr :"dominant-baseline", :any, default: nil
+  attr :"text-anchor", :any, default: nil
+  attr :rest, :global, include: @svg_presentation_globals
 
   slot :inner_block, required: true
 
-  def x_axis(assigns) do
+  def x_axis_label(%{position: :bottom} = assigns) do
     ~H"""
-    <%= for x_value <- GraphScale.values(@scale, scale_opts(assigns)), x_pixel = GraphScale.to_graph_x(@scale, x_value) do %>
-      <.x_label
-        dimensions={@scale.dimensions}
-        x_pixel={x_pixel}
-        position={@position}
-        color={@label_color}
-        rotation={@label_rotation}
-      >
-        <%= render_slot(@inner_block, x_value) %>
-      </.x_label>
-      <.vertical_line
-        :if={@grid_lines}
-        dimensions={@scale.dimensions}
-        x_pixel={x_pixel}
-        width={@line_width}
-        color={@line_color}
-      />
+    <text
+      x={x = Axis.to_graph(@axis, @value)}
+      y={@axis.dimensions.height - @axis.dimensions.margin.bottom + @gap}
+      dominant-baseline={assigns[:"dominant-baseline"] || "hanging"}
+      text-anchor={assigns[:"text-anchor"] || "middle"}
+      transform={
+        if @rotation,
+          do:
+            "rotate(#{@rotation}, #{x}, #{@axis.dimensions.height - @axis.dimensions.margin.bottom + @gap})"
+      }
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </text>
+    """
+  end
+
+  def x_axis_label(%{position: :top} = assigns) do
+    ~H"""
+    <text
+      x={x = Axis.to_graph(@axis, @value)}
+      y={@axis.dimensions.margin.bottom - @gap}
+      dominant-baseline={assigns[:"dominant-baseline"] || "text-bottom"}
+      text-anchor={assigns[:"text-anchor"] || "middle"}
+      transform={
+        if @rotation,
+          do: "rotate(#{@rotation}, #{x}, #{@axis.dimensions.margin.bottom - @gap})"
+      }
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </text>
+    """
+  end
+
+  @doc """
+  Y-axis labels along the left or right side of the graph.
+
+  See `y_axis_label/1` for more details on the accepeted attributes.
+  """
+  @doc type: :component
+
+  attr :axis, YAxis, required: true
+  attr :ticks, :any
+  attr :step, :any
+  attr :rest, :global, include: ~w(gap rotation position) ++ @svg_presentation_globals
+
+  slot :inner_block, required: true
+
+  def y_axis_labels(assigns) do
+    ~H"""
+    <%= for value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step])) do %>
+      <.y_axis_label axis={@axis} value={value} {@rest}>
+        <%= render_slot(@inner_block, value) %>
+      </.y_axis_label>
     <% end %>
     """
   end
 
-  defp scale_opts(assigns), do: Map.take(assigns, [:ticks, :step])
-
   @doc """
-  A connected line plot
+  A Y-axis label at the left or right side of the graph.
   """
   @doc type: :component
 
-  attr :dataset, :any, required: true
+  attr :axis, YAxis, required: true
+  attr :value, :any, required: true
+  attr :position, :atom, values: [:left, :right], default: :left
+  attr :gap, :integer, default: 16
+  attr :rotation, :integer, default: nil
+  attr :"dominant-baseline", :any, default: nil
+  attr :"text-anchor", :any, default: nil
+  attr :rest, :global, include: @svg_presentation_globals
+
+  slot :inner_block, required: true
+
+  def y_axis_label(%{position: :left} = assigns) do
+    ~H"""
+    <text
+      x={@axis.dimensions.margin.left - @gap}
+      y={y = Axis.to_graph(@axis, @value)}
+      dominant-baseline={assigns[:"dominant-baseline"] || "middle"}
+      text-anchor={assigns[:"text-anchor"] || "end"}
+      transform={
+        if @rotation,
+          do: "rotate(#{@rotation}, #{@axis.dimensions.margin.left - @gap}, #{y})"
+      }
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </text>
+    """
+  end
+
+  def y_axis_label(%{position: :right} = assigns) do
+    ~H"""
+    <text
+      x={@axis.dimensions.width - @axis.dimensions.margin.right + @gap}
+      y={y = Axis.to_graph(@axis, @value)}
+      dominant-baseline={assigns[:"dominant-baseline"] || "middle"}
+      text-anchor={assigns[:"text-anchor"] || "start"}
+      transform={
+        if @rotation,
+          do:
+            "rotate(#{@rotation}, #{@axis.dimensions.width - @axis.dimensions.margin.right + @gap}, #{y})"
+      }
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </text>
+    """
+  end
+
+  @doc """
+  X-axis grid lines.
+  """
+  @doc type: :component
+
+  attr :axis, XAxis, required: true
+  attr :ticks, :any
+  attr :step, :any
+  attr :rest, :global, include: @svg_presentation_globals
+
+  def x_axis_grid_lines(assigns) do
+    ~H"""
+    <%= for value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step])) do %>
+      <.x_axis_grid_line axis={@axis} value={value} {@rest} />
+    <% end %>
+    """
+  end
+
+  @doc """
+  A single X-axis grid line.
+  """
+  @doc type: :component
+
+  attr :axis, XAxis, required: true
+  attr :value, :any, required: true
+  attr :top_overdraw, :integer, default: 0
+  attr :bottom_overdraw, :integer, default: 0
+  attr :rest, :global, include: @svg_presentation_globals
+
+  def x_axis_grid_line(assigns) do
+    ~H"""
+    <line
+      x1={x = Axis.to_graph(@axis, @value)}
+      y1={@axis.dimensions.margin.top - @top_overdraw}
+      x2={x}
+      y2={@axis.dimensions.height - @axis.dimensions.margin.bottom + @bottom_overdraw}
+      {@rest}
+    />
+    """
+  end
+
+  @doc """
+  Y-axis grid lines.
+  """
+  @doc type: :component
+
+  attr :axis, YAxis, required: true
+  attr :ticks, :any
+  attr :step, :any
+  attr :rest, :global, include: @svg_presentation_globals
+
+  def y_axis_grid_lines(assigns) do
+    ~H"""
+    <%= for value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step])) do %>
+      <.y_axis_grid_line axis={@axis} value={value} {@rest} />
+    <% end %>
+    """
+  end
+
+  @doc """
+  A single Y-axis grid line.
+  """
+  @doc type: :component
+
+  attr :axis, YAxis, required: true
+  attr :value, :any, required: true
+  attr :rest, :global, include: @svg_presentation_globals
+
+  def y_axis_grid_line(assigns) do
+    ~H"""
+    <line
+      x1={@axis.dimensions.margin.left}
+      y1={y = Axis.to_graph(@axis, @value)}
+      x2={@axis.dimensions.width - @axis.dimensions.margin.right}
+      y2={y}
+      {@rest}
+    />
+    """
+  end
+
+  @doc """
+  A connected line plot.
+  """
+  @doc type: :component
+
+  attr :dataset, Dataset, required: true
 
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+  attr :fill, :any, default: "none"
+  attr :rest, :global, include: @svg_presentation_globals
 
-  attr :width, :string, examples: ["1.5", "4"], default: "2"
-  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :solid
-  attr :color, :string, default: "#FF9330"
-  attr :type, :atom, values: [:line, :step_line], default: :line
-
-  def line_plot(%{type: :line} = assigns) do
+  def line_plot(assigns) do
     ~H"""
-    <polyline
-      points={@dataset |> GraphDataset.to_graph_points(@x, @y) |> polyline_points()}
-      fill="none"
-      stroke={@color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
+    <polyline points={line_points(@dataset, @x, @y)} fill={@fill} {@rest} />
     """
   end
 
-  def line_plot(%{type: :step_line} = assigns) do
+  defp line_points(dataset, x_key, y_key) do
+    dataset.data
+    |> Enum.map(fn data_point -> %{x: data_point.graph[x_key], y: data_point.graph[y_key]} end)
+    |> polyline_points()
+  end
+
+  @doc """
+  A connected step line plot.
+  """
+  @doc type: :component
+
+  attr :dataset, Dataset, required: true
+
+  attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
+  attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+  attr :fill, :any, default: "none"
+  attr :rest, :global, include: @svg_presentation_globals
+
+  def step_line_plot(assigns) do
     ~H"""
-    <polyline
-      points={@dataset |> step_points(@x, @y) |> polyline_points()}
-      fill="none"
-      stroke={@color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
+    <polyline points={step_line_points(@dataset, @x, @y)} fill={@fill} {@rest} />
     """
   end
 
-  defp step_points(%GraphDataset{} = graph_dataset, x_key, y_key) do
-    graph_dataset
-    |> GraphDataset.to_graph_points(x_key, y_key)
+  defp step_line_points(dataset, x_key, y_key) do
+    dataset.data
+    |> Enum.map(fn data_point -> %{x: data_point.graph[x_key], y: data_point.graph[y_key]} end)
     |> Enum.chunk_every(2, 1)
     |> Enum.flat_map(fn
       [point1, point2] -> [point1, %{point2 | y: point1.y}]
       [point] -> [point]
     end)
+    |> polyline_points()
   end
 
   defp polyline_points(points), do: Enum.map_join(points, " ", &"#{&1.x},#{&1.y}")
 
   @doc """
-  Points plot
+  Points plot.
   """
   @doc type: :component
 
@@ -222,39 +364,30 @@ defmodule Plox do
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
   attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
-  attr :radius, :string, examples: ["8", "24.5"], default: "4"
-  attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
-  attr :"phx-click", :any, default: nil
-  attr :"phx-target", :any, default: nil
+  attr :r, :any, examples: ["8", "24.5", :radius_axis], default: "4"
+  attr :fill, :any, examples: ["red", "#FF9330", :color_axis], default: nil
+  attr :rest, :global, include: @svg_presentation_globals
+  # attr :"phx-click", :any, default: nil
+  # attr :"phx-target", :any, default: nil
 
   def points_plot(assigns) do
     ~H"""
     <circle
-      :for={point <- GraphDataset.to_graph_points(@dataset, @x, @y)}
-      phx-click={
-        if assigns[:"phx-click"],
-          do:
-            JS.push(assigns[:"phx-click"],
-              value: %{
-                id: point.data_point.id,
-                dataset_id: @dataset.id,
-                x_pixel: point.x,
-                y_pixel: point.y
-              }
-            )
-      }
-      phx-target={assigns[:"phx-target"]}
-      style={if assigns[:"phx-click"], do: "cursor: pointer;"}
-      fill={GraphDataset.to_color(@dataset, @color, point.data_point)}
-      cx={point.x}
-      cy={point.y}
-      r={@radius}
+      :for={data_point <- @dataset.data}
+      fill={maybe_graph(@fill, data_point)}
+      cx={data_point.graph[@x]}
+      cy={data_point.graph[@y]}
+      r={maybe_graph(@r, data_point)}
+      {@rest}
     />
     """
   end
 
+  defp maybe_graph(assign, data_point) when is_atom(assign), do: data_point.graph[assign]
+  defp maybe_graph(assign, _data_point), do: assign
+
   @doc """
-  Bar plot
+  Bar plot.
   """
   @doc type: :component
 
@@ -310,7 +443,7 @@ defmodule Plox do
   defp bar_style(:square), do: "butt"
 
   @doc """
-  Tooltip
+  Tooltip.
   """
   @doc type: :component
 
@@ -328,7 +461,8 @@ defmodule Plox do
   slot :inner_block, required: true
 
   def tooltip(assigns) do
-    assigns = assign(assigns, data_point: GraphDataset.get_point(assigns.dataset, assigns.point_id))
+    assigns =
+      assign(assigns, data_point: GraphDataset.get_point(assigns.dataset, assigns.point_id))
 
     ~H"""
     <div
@@ -347,7 +481,7 @@ defmodule Plox do
   end
 
   @doc """
-  One-dimensional shaded areas, either horizontal or vertical
+  One-dimensional shaded areas, either horizontal or vertical.
   """
   @doc type: :component
 
@@ -439,148 +573,8 @@ defmodule Plox do
     |> Enum.chunk_every(2, 1, :discard)
   end
 
-  attr :dimensions, :map, required: true
-  attr :y_pixel, :float, required: true, doc: "Y pixel value for rendering this label"
-  attr :position, :atom, required: true, values: [:left, :right]
-
-  attr :color, :string, required: true
-  attr :style, :string, default: "font-size: 0.75rem; line-height: 1rem"
-  attr :rotation, :integer, default: nil
-
-  slot :inner_block, required: true
-
-  defp y_label(%{position: :left} = assigns) do
-    ~H"""
-    <text
-      x={@dimensions.margin.left - 16}
-      y={@y_pixel}
-      fill={@color}
-      dominant-baseline="middle"
-      text-anchor="end"
-      style={@style}
-      transform={
-        if @rotation,
-          do: "rotate(#{@rotation}, #{@dimensions.margin.left - 16}, #{@y_pixel})"
-      }
-    >
-      <%= render_slot(@inner_block) %>
-    </text>
-    """
-  end
-
-  defp y_label(%{position: :right} = assigns) do
-    ~H"""
-    <text
-      x={@dimensions.width - @dimensions.margin.right + 16}
-      y={@y_pixel}
-      fill={@color}
-      dominant-baseline="middle"
-      text-anchor="start"
-      style={@style}
-      transform={
-        if @rotation,
-          do:
-            "rotate(#{@rotation}, #{@dimensions.width - @dimensions.margin.right + 16}, #{@y_pixel})"
-      }
-    >
-      <%= render_slot(@inner_block) %>
-    </text>
-    """
-  end
-
-  attr :dimensions, :map, required: true
-  attr :x_pixel, :float, required: true, doc: "X pixel value for rendering this label"
-  attr :position, :atom, required: true, values: [:top, :bottom]
-
-  attr :color, :string, required: true
-  attr :style, :string, default: "font-size: 0.75rem; line-height: 1rem"
-  attr :rotation, :integer, default: nil
-
-  slot :inner_block, required: true
-
-  defp x_label(%{position: :bottom} = assigns) do
-    ~H"""
-    <text
-      x={@x_pixel}
-      y={@dimensions.height - @dimensions.margin.bottom + 16}
-      fill={@color}
-      dominant-baseline="hanging"
-      text-anchor="middle"
-      style={@style}
-      transform={
-        if @rotation,
-          do:
-            "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.height - @dimensions.margin.bottom + 16})"
-      }
-    >
-      <%= render_slot(@inner_block) %>
-    </text>
-    """
-  end
-
-  defp x_label(%{position: :top} = assigns) do
-    ~H"""
-    <text
-      x={@x_pixel}
-      y={@dimensions.margin.bottom - 16}
-      fill={@color}
-      dominant-baseline="text-bottom"
-      text-anchor="middle"
-      style={@style}
-      transform={
-        if @rotation,
-          do: "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.margin.bottom - 16})"
-      }
-    >
-      <%= render_slot(@inner_block) %>
-    </text>
-    """
-  end
-
-  attr :dimensions, :map, required: true
-  attr :y_pixel, :float, required: true
-  attr :width, :string, required: true
-
-  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :solid
-  attr :color, :string, required: true
-
-  defp horizontal_line(assigns) do
-    ~H"""
-    <line
-      x1={@dimensions.margin.left}
-      y1={@y_pixel}
-      x2={@dimensions.width - @dimensions.margin.right}
-      y2={@y_pixel}
-      stroke={@color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
-    """
-  end
-
-  attr :dimensions, :map, required: true
-  attr :x_pixel, :float, required: true
-  attr :width, :string, required: true
-
-  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :solid
-  attr :color, :string, required: true
-
-  defp vertical_line(assigns) do
-    ~H"""
-    <line
-      x1={@x_pixel}
-      y1={@dimensions.margin.top}
-      x2={@x_pixel}
-      y2={@dimensions.height - @dimensions.margin.bottom}
-      stroke={@color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
-    """
-  end
-
   @doc """
-  A horizontal or vertical marker line with a label
+  A horizontal or vertical marker line with a label.
   """
   @doc type: :component
 
@@ -660,7 +654,54 @@ defmodule Plox do
   end
 
   @doc """
-  Legend row
+  A horizontal or vertical marker line with a label.
+  """
+  @doc type: :component
+
+  attr :axis, XAxis, required: true
+  attr :value, :any, required: true
+
+  attr :width, :string, default: "1.5"
+  attr :orientation, :atom, values: [:vertical, :horizontal], default: :vertical
+
+  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :dotted
+  attr :line_color, :string, default: "#18191A"
+  attr :label_color, :string, default: "#18191A"
+  attr :label_style, :string, default: "font-size: 0.75rem; line-height: 1rem"
+  attr :label_rotation, :integer, default: nil
+
+  slot :inner_block, required: true
+
+  def x_marker(assigns) do
+    ~H"""
+    <line
+      x1={x = Axis.to_graph(@axis, @value)}
+      y1={@axis.dimensions.margin.top - 12}
+      x2={x}
+      y2={@axis.dimensions.height - @axis.dimensions.margin.bottom}
+      stroke={@line_color}
+      stroke-width={@width}
+      stroke-dasharray={stroke_dasharray(@line_style)}
+    />
+    <text
+      x={x}
+      y={@axis.dimensions.margin.top - 24}
+      fill={@label_color}
+      dominant-baseline="middle"
+      text-anchor="middle"
+      style={@label_style}
+      transform={
+        if @label_rotation,
+          do: "rotate(#{@label_rotation}, #{x}, #{@axis.dimensions.margin.top - 24})"
+      }
+    >
+      <%= render_slot(@inner_block) %>
+    </text>
+    """
+  end
+
+  @doc """
+  Legend row.
   """
   @doc type: :component
 
@@ -675,7 +716,7 @@ defmodule Plox do
   end
 
   @doc """
-  Legend item
+  Legend item.
   """
   @doc type: :component
 
@@ -692,7 +733,7 @@ defmodule Plox do
   end
 
   @doc """
-  A colored circle for legends
+  A colored circle for legends.
   """
   @doc type: :component
 
@@ -708,11 +749,17 @@ defmodule Plox do
   defp stroke_dasharray(:dotted), do: "2"
   defp stroke_dasharray(:dashed), do: "6"
 
-  defdelegate to_graph(scales_and_datasets), to: Graph, as: :new
-  defdelegate date_scale(range), to: DateScale, as: :new
-  defdelegate datetime_scale(first, last), to: DateTimeScale, as: :new
-  defdelegate number_scale(first, last), to: NumberScale, as: :new
-  defdelegate fixed_colors_scale(color_mapping), to: FixedColorsScale, as: :new
-  defdelegate fixed_values_scale(values), to: FixedValuesScale, as: :new
-  defdelegate dataset(data, aces), to: Dataset, as: :new
+  # def date_scale(graph, range), do: GraphScale.new(graph, DateScale.new(range))
+
+  # def number_scale(graph, first, last), do: GraphScale.new(graph, NumberScale.new(first, last))
+
+  # def dataset(data, axes), do: Dataset.new(data, axes)
+
+  # defdelegate graph(width, height, opts \\ []), to: Graph, as: :new
+  # # defdelegate date_scale(range), to: DateScale, as: :new
+  # defdelegate datetime_scale(first, last), to: DateTimeScale, as: :new
+  # # defdelegate number_scale(first, last), to: NumberScale, as: :new
+  # defdelegate fixed_colors_scale(color_mapping), to: FixedColorsScale, as: :new
+  # defdelegate fixed_values_scale(values), to: FixedValuesScale, as: :new
+  # # defdelegate dataset(data, aces), to: Dataset, as: :new
 end

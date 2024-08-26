@@ -8,12 +8,15 @@ defmodule Plox.Dimensions do
 
   defstruct [:width, :height, :margin, :padding]
 
-  def new(attrs) do
+  def new(width, height, opts \\ []) do
+    margin = Keyword.get(opts, :margin, {35, 70})
+    padding = Keyword.get(opts, :margin, 0)
+
     %__MODULE__{
-      width: number(attrs.width),
-      height: number(attrs.height),
-      margin: Box.new(attrs.margin),
-      padding: Box.new(attrs.padding)
+      width: number(width),
+      height: number(height),
+      margin: Box.new(margin),
+      padding: Box.new(padding)
     }
   end
 
