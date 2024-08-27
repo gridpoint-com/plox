@@ -14,11 +14,11 @@ defmodule PloxDemoWeb.GraphsLive do
     </header>
 
     <div class="space-y-8">
-      <.simple_line simple_line={@simple_line} />
+      <.simple_line {@simple_line} />
 
-      <.logo_graph logo_graph={@logo_graph} />
+      <.logo_graph {@logo_graph} />
 
-      <.math_stuff math_stuff={@math_stuff} />
+      <.math_stuff {@math_stuff} />
     </div>
     """
   end
@@ -32,21 +32,26 @@ defmodule PloxDemoWeb.GraphsLive do
       %{date: ~D[2023-08-05], value: 50.0}
     ]
 
-    date_scale = date_scale(Date.range(~D[2023-08-01], ~D[2023-08-05]))
-    number_scale = number_scale(0.0, 80.0)
+    dimensions = Plox.Dimensions.new(670, 250)
+
+    x_axis =
+      Plox.XAxis.new(Plox.DateScale.new(Date.range(~D[2023-08-01], ~D[2023-08-05])), dimensions)
+
+    y_axis = Plox.YAxis.new(Plox.NumberScale.new(0.0, 80.0), dimensions)
 
     dataset =
-      dataset(data,
-        x: {date_scale, & &1.date},
-        y: {number_scale, & &1.value}
+      Plox.Dataset.new(data,
+        x: {x_axis, & &1.date},
+        y: {y_axis, & &1.value}
       )
 
     assign(socket,
-      simple_line:
-        to_graph(
-          scales: [date_scale: date_scale, number_scale: number_scale],
-          datasets: [dataset: dataset]
-        )
+      simple_line: %{
+        dimensions: dimensions,
+        x_axis: x_axis,
+        y_axis: y_axis,
+        dataset: dataset
+      }
     )
   end
 
@@ -55,30 +60,34 @@ defmodule PloxDemoWeb.GraphsLive do
     <div>
       <.heading navigate={~p"/simple_line"}>1. Simple Line</.heading>
 
-      <.graph :let={graph} id="simple_line" for={@simple_line} width="670" height="250">
-        <:legend>
+      <.graph dimensions={@dimensions}>
+        <%!-- <:legend>
           <.legend_item color="#EC7E16" label="Data" />
-        </:legend>
+        </:legend> --%>
 
-        <.x_axis :let={date} scale={graph[:date_scale]}>
+        <.x_axis_labels :let={date} axis={@x_axis} class="text-sm">
           <%= Calendar.strftime(date, "%-m/%-d") %>
-        </.x_axis>
+        </.x_axis_labels>
 
-        <.y_axis :let={value} scale={graph[:number_scale]} ticks={5}>
+        <.y_axis_labels :let={value} axis={@y_axis} ticks={5} class="text-sm">
           <%= value %>
-        </.y_axis>
+        </.y_axis_labels>
 
-        <.line_plot dataset={graph[:dataset]} />
+        <.x_axis_grid_lines axis={@x_axis} class="stroke-gray-100 dark:stroke-gray-900" />
+        <.y_axis_grid_lines axis={@y_axis} ticks={5} class="stroke-gray-100 dark:stroke-gray-900" />
 
-        <.points_plot dataset={graph[:dataset]} />
+        <.line_plot dataset={@dataset} class="stroke-orange-500 dark:stroke-orange-400 stroke-2" />
+
+        <.points_plot dataset={@dataset} class="fill-orange-500 dark:fill-orange-400" />
       </.graph>
     </div>
     """
   end
 
   defp mount_logo_graph(socket) do
-    x_scale = number_scale(0.0, 10.0)
-    y_scale = number_scale(0.0, 6.0)
+    dimensions = Plox.Dimensions.new(440, 250)
+    x_axis = Plox.XAxis.new(Plox.NumberScale.new(0.0, 10.0), dimensions)
+    y_axis = Plox.YAxis.new(Plox.NumberScale.new(0.0, 6.0), dimensions)
 
     # Letter "P"
     p_data = [
@@ -89,9 +98,9 @@ defmodule PloxDemoWeb.GraphsLive do
     ]
 
     p_dataset =
-      dataset(p_data,
-        x: {x_scale, & &1.x},
-        y: {y_scale, & &1.y}
+      Plox.Dataset.new(p_data,
+        x: {x_axis, & &1.x},
+        y: {y_axis, & &1.y}
       )
 
     # Letter "L"
@@ -101,9 +110,9 @@ defmodule PloxDemoWeb.GraphsLive do
     ]
 
     l_dataset =
-      dataset(l_data,
-        x: {x_scale, & &1.x},
-        y: {y_scale, & &1.y}
+      Plox.Dataset.new(l_data,
+        x: {x_axis, & &1.x},
+        y: {y_axis, & &1.y}
       )
 
     # Letter "O"
@@ -116,9 +125,9 @@ defmodule PloxDemoWeb.GraphsLive do
     ]
 
     o_dataset =
-      dataset(o_data,
-        x: {x_scale, & &1.x},
-        y: {y_scale, & &1.y}
+      Plox.Dataset.new(o_data,
+        x: {x_axis, & &1.x},
+        y: {y_axis, & &1.y}
       )
 
     # Letter "X"
@@ -128,9 +137,9 @@ defmodule PloxDemoWeb.GraphsLive do
     ]
 
     x1_dataset =
-      dataset(x1_data,
-        x: {x_scale, & &1.x},
-        y: {y_scale, & &1.y}
+      Plox.Dataset.new(x1_data,
+        x: {x_axis, & &1.x},
+        y: {y_axis, & &1.y}
       )
 
     x2_data = [
@@ -139,23 +148,22 @@ defmodule PloxDemoWeb.GraphsLive do
     ]
 
     x2_dataset =
-      dataset(x2_data,
-        x: {x_scale, & &1.x},
-        y: {y_scale, & &1.y}
+      Plox.Dataset.new(x2_data,
+        x: {x_axis, & &1.x},
+        y: {y_axis, & &1.y}
       )
 
     assign(socket,
-      logo_graph:
-        to_graph(
-          scales: [x_scale: x_scale, y_scale: y_scale],
-          datasets: [
-            p_dataset: p_dataset,
-            l_dataset: l_dataset,
-            o_dataset: o_dataset,
-            x1_dataset: x1_dataset,
-            x2_dataset: x2_dataset
-          ]
-        )
+      logo_graph: %{
+        dimensions: dimensions,
+        x_axis: x_axis,
+        y_axis: y_axis,
+        p_dataset: p_dataset,
+        l_dataset: l_dataset,
+        o_dataset: o_dataset,
+        x1_dataset: x1_dataset,
+        x2_dataset: x2_dataset
+      }
     )
   end
 
@@ -164,34 +172,40 @@ defmodule PloxDemoWeb.GraphsLive do
     <div>
       <.heading navigate={~p"/logo"}>2. Logo</.heading>
 
-      <.graph :let={graph} id="logo_graph" for={@logo_graph} width="440" height="250">
-        <.x_axis :let={value} scale={graph[:x_scale]}>
+      <.graph dimensions={@dimensions}>
+        <.x_axis_labels :let={value} axis={@x_axis} class="text-sm">
           <%= value %>
-        </.x_axis>
-        <.y_axis :let={value} scale={graph[:y_scale]} ticks={7}>
+        </.x_axis_labels>
+
+        <.y_axis_labels :let={value} axis={@y_axis} ticks={7} class="text-sm">
           <%= value %>
-        </.y_axis>
+        </.y_axis_labels>
 
-        <.line_plot dataset={graph[:p_dataset]} width="5" />
-        <.points_plot dataset={graph[:p_dataset]} radius="8" />
+        <.x_axis_grid_lines axis={@x_axis} class="stroke-gray-100 dark:stroke-gray-900" />
+        <.y_axis_grid_lines axis={@y_axis} ticks={7} class="stroke-gray-100 dark:stroke-gray-900" />
 
-        <.line_plot dataset={graph[:l_dataset]} width="5" color="#78C348" />
-        <.points_plot dataset={graph[:l_dataset]} radius="8" color="#78C348" />
+        <.line_plot dataset={@p_dataset} stroke-width="5" stroke="#FF9330" />
+        <.points_plot dataset={@p_dataset} r="8" fill="#FF9330" />
 
-        <.line_plot dataset={graph[:o_dataset]} width="5" color="#71AEFF" />
-        <.points_plot dataset={graph[:o_dataset]} radius="8" color="#71AEFF" />
+        <.line_plot dataset={@l_dataset} stroke-width="5" stroke="#78C348" />
+        <.points_plot dataset={@l_dataset} r="8" fill="#78C348" />
 
-        <.line_plot dataset={graph[:x1_dataset]} width="5" color="#FF7167" />
-        <.points_plot dataset={graph[:x1_dataset]} radius="8" color="#FF7167" />
+        <.line_plot dataset={@o_dataset} stroke-width="5" stroke="#71AEFF" />
+        <.points_plot dataset={@o_dataset} r="8" fill="#71AEFF" />
 
-        <.line_plot dataset={graph[:x2_dataset]} width="5" color="#FF7167" />
-        <.points_plot dataset={graph[:x2_dataset]} radius="8" color="#FF7167" />
+        <.line_plot dataset={@x1_dataset} stroke-width="5" stroke="#FF7167" />
+        <.points_plot dataset={@x1_dataset} r="8" fill="#FF7167" />
+
+        <.line_plot dataset={@x2_dataset} stroke-width="5" stroke="#FF7167" />
+        <.points_plot dataset={@x2_dataset} r="8" fill="#FF7167" />
       </.graph>
     </div>
     """
   end
 
   defp mount_math_stuff(socket) do
+    dimensions = Plox.Dimensions.new(800, 250)
+
     sine_data =
       Enum.map(-360..360//30, fn deg ->
         %{degrees: deg, sin: :math.sin(deg * :math.pi() / 180)}
@@ -207,21 +221,26 @@ defmodule PloxDemoWeb.GraphsLive do
         %{degrees: deg, atan: :math.atan(deg * :math.pi() / 180)}
       end)
 
-    x_scale = number_scale(-360, 360)
-    y_scale = number_scale(-1.5, 1.5)
+    x_axis = Plox.XAxis.new(Plox.NumberScale.new(-360, 360), dimensions)
+    y_axis = Plox.YAxis.new(Plox.NumberScale.new(-1.5, 1.5), dimensions)
 
-    sine_dataset = dataset(sine_data, x: {x_scale, & &1.degrees}, y: {y_scale, & &1.sin})
-    cosine_dataset = dataset(cosine_data, x: {x_scale, & &1.degrees}, y: {y_scale, & &1.cos})
+    sine_dataset = Plox.Dataset.new(sine_data, x: {x_axis, & &1.degrees}, y: {y_axis, & &1.sin})
+
+    cosine_dataset =
+      Plox.Dataset.new(cosine_data, x: {x_axis, & &1.degrees}, y: {y_axis, & &1.cos})
 
     arctangent_dataset =
-      dataset(arctangent_data, x: {x_scale, & &1.degrees}, y: {y_scale, & &1.atan})
+      Plox.Dataset.new(arctangent_data, x: {x_axis, & &1.degrees}, y: {y_axis, & &1.atan})
 
     assign(socket,
-      math_stuff:
-        to_graph(
-          scales: [x_scale: x_scale, y_scale: y_scale],
-          datasets: [sine: sine_dataset, cosine: cosine_dataset, arctangent: arctangent_dataset]
-        )
+      math_stuff: %{
+        dimensions: dimensions,
+        x_axis: x_axis,
+        y_axis: y_axis,
+        sine: sine_dataset,
+        cosine: cosine_dataset,
+        arctangent: arctangent_dataset
+      }
     )
   end
 
@@ -230,30 +249,49 @@ defmodule PloxDemoWeb.GraphsLive do
     <div class="space-y-4">
       <.heading navigate={~p"/math"}>3. Sine/Cosine/ArcTangent</.heading>
 
-      <.graph :let={graph} id="math_stuff" for={@math_stuff} width={800} height={250}>
-        <.x_axis :let={degrees} scale={graph[:x_scale]} ticks={9}>
+      <.graph dimensions={@dimensions}>
+        <.x_axis_labels :let={degrees} axis={@x_axis} ticks={9} class="text-sm">
           <%= round(degrees) %>°
-        </.x_axis>
+        </.x_axis_labels>
 
-        <.y_axis :let={y} scale={graph[:y_scale]} ticks={7}>
+        <.y_axis_labels :let={y} axis={@y_axis} ticks={7} class="text-sm">
           <%= y %>
-        </.y_axis>
+        </.y_axis_labels>
 
-        <.line_plot dataset={graph[:sine]} color="#8FDA5D" line_style={:dashed} />
+        <.x_axis_grid_lines axis={@x_axis} ticks={9} class="stroke-gray-100 dark:stroke-gray-900" />
+        <.y_axis_grid_lines axis={@y_axis} ticks={7} class="stroke-gray-100 dark:stroke-gray-900" />
 
-        <.line_plot dataset={graph[:cosine]} color="#35A9C0" width="2" line_style={:dotted} />
-        <.points_plot dataset={graph[:cosine]} color="#35A9C0" />
+        <.line_plot dataset={@sine} stroke="#8FDA5D" stroke-dasharray="6" />
 
-        <.line_plot dataset={graph[:arctangent]} color="#FF5954" width="1" />
-        <.points_plot dataset={graph[:arctangent]} color="#FF5954" radius="3" />
+        <.line_plot dataset={@cosine} stroke="#35A9C0" stroke-width="2" stroke-dasharray="2" />
+        <.points_plot dataset={@cosine} fill="#35A9C0" />
 
-        <.marker at={-180} scale={graph[:x_scale]}>
+        <.line_plot dataset={@arctangent} stroke="#FF5954" stroke-width="1" />
+        <.points_plot dataset={@arctangent} fill="#FF5954" r="3" />
+
+        <.x_axis_label axis={@x_axis} value={-180} position={:top} class="text-sm" gap={20}>
           Start
-        </.marker>
+        </.x_axis_label>
 
-        <.marker at={180} scale={graph[:x_scale]}>
+        <.x_axis_grid_line
+          axis={@x_axis}
+          value={-180}
+          top_overdraw={12}
+          class="stroke-gray-800 dark:stroke-gray-100"
+          stroke-dasharray="2"
+        />
+
+        <.x_axis_label axis={@x_axis} value={180} position={:top} class="text-sm" gap={20}>
           End
-        </.marker>
+        </.x_axis_label>
+
+        <.x_axis_grid_line
+          axis={@x_axis}
+          value={180}
+          top_overdraw={12}
+          class="stroke-gray-800 dark:stroke-gray-100"
+          stroke-dasharray="2"
+        />
       </.graph>
     </div>
     """
@@ -264,7 +302,7 @@ defmodule PloxDemoWeb.GraphsLive do
 
   defp heading(assigns) do
     ~H"""
-    <h2 class="bg-slate-100 font-bold p-2 rounded-md w-fit">
+    <h2 class="bg-gray-100 dark:bg-gray-900 font-bold p-2 rounded-md w-fit">
       <.link navigate={@navigate} class="">
         <%= render_slot(@inner_block) %>
       </.link>

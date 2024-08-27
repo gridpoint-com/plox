@@ -68,24 +68,28 @@ defmodule Plox do
   @doc """
   X-axis labels along the bottom or top of the graph.
 
-  See `x_axis_label/1` for more details on the accepeted attributes.
+  See `x_axis_label/1` for more details on the accepted attributes.
   """
   @doc type: :component
 
   attr :axis, XAxis, required: true
   attr :ticks, :any
   attr :step, :any
+  attr :start, :any
   attr :rest, :global, include: ~w(gap rotation position) ++ @svg_presentation_globals
 
   slot :inner_block, required: true
 
   def x_axis_labels(assigns) do
     ~H"""
-    <%= for value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step])) do %>
-      <.x_axis_label axis={@axis} value={value} {@rest}>
-        <%= render_slot(@inner_block, value) %>
-      </.x_axis_label>
-    <% end %>
+    <.x_axis_label
+      :for={value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step, :start]))}
+      axis={@axis}
+      value={value}
+      {@rest}
+    >
+      <%= render_slot(@inner_block, value) %>
+    </.x_axis_label>
     """
   end
 
@@ -152,17 +156,21 @@ defmodule Plox do
   attr :axis, YAxis, required: true
   attr :ticks, :any
   attr :step, :any
+  attr :start, :any
   attr :rest, :global, include: ~w(gap rotation position) ++ @svg_presentation_globals
 
   slot :inner_block, required: true
 
   def y_axis_labels(assigns) do
     ~H"""
-    <%= for value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step])) do %>
-      <.y_axis_label axis={@axis} value={value} {@rest}>
-        <%= render_slot(@inner_block, value) %>
-      </.y_axis_label>
-    <% end %>
+    <.y_axis_label
+      :for={value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step, :start]))}
+      axis={@axis}
+      value={value}
+      {@rest}
+    >
+      <%= render_slot(@inner_block, value) %>
+    </.y_axis_label>
     """
   end
 
@@ -227,13 +235,17 @@ defmodule Plox do
   attr :axis, XAxis, required: true
   attr :ticks, :any
   attr :step, :any
+  attr :start, :any
   attr :rest, :global, include: @svg_presentation_globals
 
   def x_axis_grid_lines(assigns) do
     ~H"""
-    <%= for value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step])) do %>
-      <.x_axis_grid_line axis={@axis} value={value} {@rest} />
-    <% end %>
+    <.x_axis_grid_line
+      :for={value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step, :start]))}
+      axis={@axis}
+      value={value}
+      {@rest}
+    />
     """
   end
 
@@ -268,13 +280,17 @@ defmodule Plox do
   attr :axis, YAxis, required: true
   attr :ticks, :any
   attr :step, :any
+  attr :start, :any
   attr :rest, :global, include: @svg_presentation_globals
 
   def y_axis_grid_lines(assigns) do
     ~H"""
-    <%= for value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step])) do %>
-      <.y_axis_grid_line axis={@axis} value={value} {@rest} />
-    <% end %>
+    <.y_axis_grid_line
+      :for={value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step, :start]))}
+      axis={@axis}
+      value={value}
+      {@rest}
+    />
     """
   end
 

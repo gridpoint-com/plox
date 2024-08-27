@@ -20,10 +20,12 @@ defmodule Plox.DateTimeScale do
   @spec new(first :: datetime(), last :: datetime()) :: t()
   def new(first, last)
 
-  def new(%date_time_module{} = first, %date_time_module{} = last) when date_time_module in [DateTime, NaiveDateTime] do
+  def new(%date_time_module{} = first, %date_time_module{} = last)
+      when date_time_module in [DateTime, NaiveDateTime] do
     if date_time_module.diff(last, first) <= 0 do
       raise ArgumentError,
-        message: "Invalid DateTimeScale: The range must be at least 1 second long and `first` must come before `last`."
+        message:
+          "Invalid DateTimeScale: The range must be at least 1 second long and `first` must come before `last`."
     end
 
     %__MODULE__{first: first, last: last}
@@ -35,7 +37,8 @@ defmodule Plox.DateTimeScale do
   end
 
   defimpl Plox.Scale do
-    def values(%{first: %DateTime{time_zone: tz}} = scale, %{step: {step_days, :day}}) when tz != "Etc/UTC" do
+    def values(%{first: %DateTime{time_zone: tz}} = scale, %{step: {step_days, :day}})
+        when tz != "Etc/UTC" do
       scale.first
       |> Stream.unfold(fn current_dt ->
         if DateTime.after?(current_dt, scale.last) do
@@ -66,17 +69,23 @@ defmodule Plox.DateTimeScale do
         end)
       end
 
-      total_seconds = date_time_module.diff(scale.last, scale.first)
+      first_value = Map.get(opts, :start, scale.first)
+
+      total_seconds = date_time_module.diff(scale.last, first_value)
       ticks = trunc(total_seconds / step_seconds)
 
       0..ticks
-      |> Enum.map_reduce(scale.first, fn _i, acc ->
+      |> Enum.map_reduce(first_value, fn _i, acc ->
         {acc, date_time_module.add(acc, step_seconds)}
       end)
       |> elem(0)
     end
 
-    def convert_to_range(%{first: %date_time_module{}} = scale, %date_time_module{} = value, to_range)
+    def convert_to_range(
+          %{first: %date_time_module{}} = scale,
+          %date_time_module{} = value,
+          to_range
+        )
         when date_time_module in [DateTime, NaiveDateTime] do
       if date_time_module.compare(value, scale.first) == :lt or
            date_time_module.compare(value, scale.last) == :gt do
@@ -104,7 +113,8 @@ defmodule Plox.DateTimeScale do
     defp shift_by(%DateTime{} = datetime, 0, :days), do: datetime
 
     # Positive shifts
-    defp shift_by(%DateTime{year: year, month: month, day: day} = datetime, value, :days) when value > 0 do
+    defp shift_by(%DateTime{year: year, month: month, day: day} = datetime, value, :days)
+         when value > 0 do
       ldom = :calendar.last_day_of_the_month(year, month)
 
       cond do

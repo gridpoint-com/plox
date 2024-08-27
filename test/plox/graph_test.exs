@@ -1,7 +1,7 @@
-defmodule PloxTest do
+defmodule Plox.GraphTest do
   use ExUnit.Case
 
-  doctest Plox
+  doctest Plox.Graph
 
   test "the truth" do
     assert 1 + 1 == 2

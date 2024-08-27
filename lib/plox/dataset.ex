@@ -5,7 +5,6 @@ defmodule Plox.Dataset do
   alias Plox.Axis
   alias Plox.DataPoint
 
-  # defstruct [:data, :axes]
   defstruct [:data]
 
   def new(original_data, axis_fns) do
@@ -20,16 +19,6 @@ defmodule Plox.Dataset do
         DataPoint.new(original, graph)
       end)
 
-    # axes = Map.new(axis_fns, fn {key, {scale, _fun}} -> {key, scale} end)
-
     %__MODULE__{data: data}
-  end
-
-  def get_graph_values(%__MODULE__{data: data}, key_mapping) do
-    Enum.map(data, fn data_point ->
-      Map.new(key_mapping, fn {requested_key, axis_key} ->
-        {requested_key, Map.get(data_point.graph, axis_key)}
-      end)
-    end)
   end
 end
