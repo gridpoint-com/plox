@@ -30,7 +30,7 @@ defmodule Plox.DateScaleTest do
     end
   end
 
-  describe "implementation: Scale.values/1" do
+  describe "implementation: Scale.values/2" do
     test "returns a Date.Range struct representing the dates to be labeled" do
       range = Date.range(~D[2023-08-01], ~D[2023-08-04], 2)
 

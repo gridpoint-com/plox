@@ -34,7 +34,7 @@ defmodule Plox.DateTimeScaleTest do
     end
   end
 
-  describe "implementation: Scale.values/1" do
+  describe "implementation: Scale.values/2" do
     test "returns an ordered list of values representing the times to be labeled" do
       scale = DateTimeScale.new(~N[2023-03-12 09:00:00], ~N[2023-03-12 11:00:00])
       step_in_minutes = 30 * 60
