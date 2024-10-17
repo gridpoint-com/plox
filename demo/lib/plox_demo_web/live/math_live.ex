@@ -81,10 +81,10 @@
 #       <.line_plot dataset={graph[:sine]} color="#8FDA5D" line_style={:dashed} />
 
 #       <.line_plot dataset={graph[:cosine]} color="#35A9C0" width="2" line_style={:dotted} />
-#       <.points_plot dataset={graph[:cosine]} color="#35A9C0" />
+#       <.circles dataset={graph[:cosine]} color="#35A9C0" />
 
 #       <.line_plot dataset={graph[:arctangent]} color="#FF5954" width="1" />
-#       <.points_plot dataset={graph[:arctangent]} color="#FF5954" radius="3" />
+#       <.circles dataset={graph[:arctangent]} color="#FF5954" radius="3" />
 
 #       <.marker at={-180} scale={graph[:x_scale]}>
 #         Start
@@ -111,10 +111,10 @@
 #         <.line_plot dataset={graph[:sine]} color="#8FDA5D" line_style={:dashed} />
 
 #         <.line_plot dataset={graph[:cosine]} color="#35A9C0" width="2" line_style={:dotted} />
-#         <.points_plot dataset={graph[:cosine]} color="#35A9C0" />
+#         <.circles dataset={graph[:cosine]} color="#35A9C0" />
 
 #         <.line_plot dataset={graph[:arctangent]} color="#FF5954" width="1" />
-#         <.points_plot dataset={graph[:arctangent]} color="#FF5954" radius="3" />
+#         <.circles dataset={graph[:arctangent]} color="#FF5954" radius="3" />
 
 #         <.marker at={-180} scale={graph[:x_scale]}>
 #           Start

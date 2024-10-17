@@ -76,6 +76,6 @@
 
 
   <!-- <Plox.line_plot> lib/plox.ex:161 --><polyline points="16.333333333333332,8.666666666666666 31.666666666666668,16.333333333333332 16.333333333333332,24.0 16.333333333333332,39.333333333333336" fill="none" stroke="#FF9330" stroke-width="3"></polyline><!-- </Plox.line_plot> -->
-  <!-- <Plox.points_plot> lib/plox.ex:207 --><circle style="" fill="#FF9330" cx="16.333333333333332" cy="8.666666666666666" r="4"></circle><circle style="" fill="#FF9330" cx="31.666666666666668" cy="16.333333333333332" r="4"></circle><circle style="" fill="#FF9330" cx="16.333333333333332" cy="24.0" r="4"></circle><circle style="" fill="#FF9330" cx="16.333333333333332" cy="39.333333333333336" r="4"></circle><!-- </Plox.points_plot> -->
+  <!-- <Plox.circles> lib/plox.ex:207 --><circle style="" fill="#FF9330" cx="16.333333333333332" cy="8.666666666666666" r="4"></circle><circle style="" fill="#FF9330" cx="31.666666666666668" cy="16.333333333333332" r="4"></circle><circle style="" fill="#FF9330" cx="16.333333333333332" cy="24.0" r="4"></circle><circle style="" fill="#FF9330" cx="16.333333333333332" cy="39.333333333333336" r="4"></circle><!-- </Plox.circles> -->
 
     </svg>

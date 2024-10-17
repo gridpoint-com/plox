@@ -5,20 +5,22 @@ defmodule Plox.Dataset do
   alias Plox.Axis
   alias Plox.DataPoint
 
-  defstruct [:data]
+  defstruct [:data, :axes]
 
   def new(original_data, axis_fns) do
     data =
-      original_data
-      |> Enum.map(fn original ->
-        graph =
-          Map.new(axis_fns, fn {key, {axis, fun}} ->
-            {key, Axis.to_graph(axis, fun.(original))}
-          end)
+      Enum.map(original_data, fn original ->
+        graph = Map.new(axis_fns, fn {key, {axis, fun}} -> {key, Axis.to_graph(axis, fun.(original))} end)
 
         DataPoint.new(original, graph)
       end)
 
-    %__MODULE__{data: data}
+    # %{axis_name => {axis, function}, etc.}
+    axes =
+      Map.new(axis_fns, fn {key, {axis, _fun}} ->
+        {key, axis}
+      end)
+
+    %__MODULE__{data: data, axes: axes}
   end
 end

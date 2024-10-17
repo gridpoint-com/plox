@@ -76,6 +76,6 @@ Finally, render the `Plox.Graph` directly within your HEEx template:
 
   <.line_plot dataset={graph[:dataset]} color="#EC7E16" />
 
-  <.points_plot dataset={graph[:dataset]} color="#EC7E16" />
+  <.circles dataset={graph[:dataset]} color="#EC7E16" />
 </.graph>
 ```

@@ -27,9 +27,7 @@ defmodule PloxDemoWeb.SimpleLineLive do
     radius_axis = Plox.LinearAxis.new(Plox.NumberScale.new(10, 45), min: 4, max: 10)
 
     color_axis =
-      Plox.ColorAxis.new(
-        Plox.FixedColorsScale.new(%{cold: "#1E88E5", normal: "#43A047", warm: "#FFC107"})
-      )
+      Plox.ColorAxis.new(Plox.FixedColorsScale.new(%{cold: "#1E88E5", normal: "#43A047", warm: "#FFC107"}))
 
     dataset =
       Plox.Dataset.new(data,
@@ -38,7 +36,6 @@ defmodule PloxDemoWeb.SimpleLineLive do
         radius: {radius_axis, & &1.intensity},
         color: {color_axis, & &1.temperature}
       )
-      |> dbg()
 
     socket =
       assign(socket,
@@ -120,6 +117,7 @@ defmodule PloxDemoWeb.SimpleLineLive do
         <%= Calendar.strftime(date, "%-m/%-d") %>
       </.x_axis_labels>
 
+      <%!-- this wraps text... why does it take in `axis`?? if we want to follow the SVG, we need to pass in `x` --%>
       <.x_axis_label
         axis={@x_axis}
         value={~D[2023-08-02]}
@@ -139,12 +137,28 @@ defmodule PloxDemoWeb.SimpleLineLive do
 
       <.line_plot dataset={@dataset} class="stroke-orange-500 dark:stroke-orange-400 stroke-2" />
 
-      <.points_plot dataset={@dataset} x={:x} y={:y} fill={:color} r={:radius} />
+      <%!-- Access behavior with axes --%>
+      <%!-- <.polyline points={{@dataset[:x], @dataset[:y]}} class="stroke-orange-500 dark:stroke-orange-400 stroke-2" /> --%>
+
+      <%!-- constant y = 40 --%>
+      <%!-- <.polyline points={{@dataset[:x], @dataset[:y][40]}} class="stroke-orange-500 dark:stroke-orange-400 stroke-2" /> --%>
+
+      <.circles dataset={@dataset} cx={:x} cy={:y} fill={:color} r={:radius} />
+
+      <%!-- use the Access behavior --%>
+      <%!-- <.circles cx={@dataset[:x]} cy={@dataset[:y]} fill={@dataset[:color]} r={@dataset[:radius]} /> --%>
+
+      <%!-- pass in constant y-axis value --%>
+      <%!-- <.circles cx={@dataset[:x]} cy={@dataset[:y][40]} fill={@dataset[:color]} r={@dataset[:radius]} /> --%>
+
+      <%!-- this behaves as we like, we can now draw circles all at y = 40 --%>
+      <%!-- but the tuple looks weird... --%>
+      <.circles dataset={@dataset} cx={:x} cy={{:y, 40}} fill="red" r={10} />
     </.graph>
     """
   end
 
-  defp code() do
+  defp code do
     """
     <.graph :let={graph} id="simple_line" for={@graph} width="670" height="250">
       <:legend>
@@ -161,12 +175,12 @@ defmodule PloxDemoWeb.SimpleLineLive do
 
       <.line_plot dataset={graph[:dataset]} />
 
-      <.points_plot dataset={graph[:dataset]} />
+      <.circles dataset={graph[:dataset]} />
     </.graph>
     """
   end
 
-  defp setup() do
+  defp setup do
     """
     # 1. fetch data
 

@@ -377,8 +377,8 @@ defmodule Plox do
 
   attr :dataset, :any, required: true
 
-  attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
-  attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+  attr :cx, :atom, default: :x, doc: "The dataset axis key to use for x values"
+  attr :cy, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
   attr :r, :any, examples: ["8", "24.5", :radius_axis], default: "4"
   attr :fill, :any, examples: ["red", "#FF9330", :color_axis], default: nil
@@ -386,13 +386,22 @@ defmodule Plox do
   # attr :"phx-click", :any, default: nil
   # attr :"phx-target", :any, default: nil
 
-  def points_plot(assigns) do
+  def circles(assigns) do
     ~H"""
+    <%!-- <circle
+      :for={data_point <- @dataset.data}
+      fill={maybe_graph(@fill, data_point)}
+      cx={data_point.graph[@cx]}
+      cy={data_point.graph[@cy]}
+      r={maybe_graph(@r, data_point)}
+      {@rest}
+    /> --%>
+
     <circle
       :for={data_point <- @dataset.data}
       fill={maybe_graph(@fill, data_point)}
-      cx={data_point.graph[@x]}
-      cy={data_point.graph[@y]}
+      cx={maybe_axis(@cx, @dataset, data_point)}
+      cy={maybe_axis(@cy, @dataset, data_point)}
       r={maybe_graph(@r, data_point)}
       {@rest}
     />
@@ -401,6 +410,9 @@ defmodule Plox do
 
   defp maybe_graph(assign, data_point) when is_atom(assign), do: data_point.graph[assign]
   defp maybe_graph(assign, _data_point), do: assign
+
+  defp maybe_axis({axis_name, value}, dataset, _data_point), do: Axis.to_graph(dataset.axes[axis_name], value)
+  defp maybe_axis(axis_name, _dataset, data_point), do: data_point.graph[axis_name]
 
   @doc """
   Bar plot.

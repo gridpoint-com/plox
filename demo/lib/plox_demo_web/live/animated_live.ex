@@ -1,4 +1,5 @@
 defmodule PloxDemoWeb.AnimatedLive do
+  @moduledoc false
   use PloxDemoWeb, :live_view
 
   import Plox
@@ -39,7 +40,7 @@ defmodule PloxDemoWeb.AnimatedLive do
       <.line_plot dataset={@dataset2} class="stroke-blue-500" stroke-width="2" />
       <.line_plot dataset={@dataset3} class="stroke-green-500" stroke-width="2" />
 
-      <.points_plot dataset={@points_dataset} r={:r} fill={:color} />
+      <.circles dataset={@points_dataset} r={:r} fill={:color} />
     </.graph>
     """
   end
@@ -53,7 +54,7 @@ defmodule PloxDemoWeb.AnimatedLive do
       Process.send_after(self(), :add_point, :rand.uniform(10) * 1_000)
     end
 
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.truncate(DateTime.utc_now(), :second)
     soon = DateTime.add(now, 5, :second)
     start = DateTime.add(soon, -60, :second)
     nearest_5_second = get_nearest_5_second(start)
@@ -72,9 +73,7 @@ defmodule PloxDemoWeb.AnimatedLive do
     radius_axis = Plox.LinearAxis.new(Plox.NumberScale.new(1, 100), min: 5, max: 15)
 
     color_axis =
-      Plox.ColorAxis.new(
-        Plox.FixedColorsScale.new(%{cold: "#1E88E5AA", normal: "#43A047AA", warm: "#FFC107AA"})
-      )
+      Plox.ColorAxis.new(Plox.FixedColorsScale.new(%{cold: "#1E88E5AA", normal: "#43A047AA", warm: "#FFC107AA"}))
 
     {data1, dataset1} = init_line_data(now, x_axis, y_axis)
     {data2, dataset2} = init_line_data(now, x_axis, y_axis)
@@ -114,7 +113,7 @@ defmodule PloxDemoWeb.AnimatedLive do
   def handle_info(:tick, socket) do
     Process.send_after(self(), :tick, @interval)
 
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.truncate(DateTime.utc_now(), :second)
     soon = DateTime.add(now, 5, :second)
     start = DateTime.add(soon, -60, :second)
     nearest_5_second = get_nearest_5_second(start)

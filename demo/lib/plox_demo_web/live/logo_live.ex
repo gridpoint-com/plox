@@ -127,19 +127,19 @@
 #       </.y_axis>
 
 #       <.line_plot dataset={graph[:p_dataset]} width="5" />
-#       <.points_plot dataset={graph[:p_dataset]} radius="8" />
+#       <.circles dataset={graph[:p_dataset]} radius="8" />
 
 #       <.line_plot dataset={graph[:l_dataset]} width="5" color="#78C348" />
-#       <.points_plot dataset={graph[:l_dataset]} radius="8" color="#78C348" />
+#       <.circles dataset={graph[:l_dataset]} radius="8" color="#78C348" />
 
 #       <.line_plot dataset={graph[:o_dataset]} width="5" color="#71AEFF" />
-#       <.points_plot dataset={graph[:o_dataset]} radius="8" color="#71AEFF" />
+#       <.circles dataset={graph[:o_dataset]} radius="8" color="#71AEFF" />
 
 #       <.line_plot dataset={graph[:x1_dataset]} width="5" color="#FF7167" />
-#       <.points_plot dataset={graph[:x1_dataset]} radius="8" color="#FF7167" />
+#       <.circles dataset={graph[:x1_dataset]} radius="8" color="#FF7167" />
 
 #       <.line_plot dataset={graph[:x2_dataset]} width="5" color="#FF7167" />
-#       <.points_plot dataset={graph[:x2_dataset]} radius="8" color="#FF7167" />
+#       <.circles dataset={graph[:x2_dataset]} radius="8" color="#FF7167" />
 #     </.graph>
 #     """
 #   end
@@ -155,19 +155,19 @@
 #       </.y_axis>
 
 #       <.line_plot dataset={graph[:p_dataset]} width="5" />
-#       <.points_plot dataset={graph[:p_dataset]} radius="8" />
+#       <.circles dataset={graph[:p_dataset]} radius="8" />
 
 #       <.line_plot dataset={graph[:l_dataset]} width="5" color="#78C348" />
-#       <.points_plot dataset={graph[:l_dataset]} radius="8" color="#78C348" />
+#       <.circles dataset={graph[:l_dataset]} radius="8" color="#78C348" />
 
 #       <.line_plot dataset={graph[:o_dataset]} width="5" color="#71AEFF" />
-#       <.points_plot dataset={graph[:o_dataset]} radius="8" color="#71AEFF" />
+#       <.circles dataset={graph[:o_dataset]} radius="8" color="#71AEFF" />
 
 #       <.line_plot dataset={graph[:x1_dataset]} width="5" color="#FF7167" />
-#       <.points_plot dataset={graph[:x1_dataset]} radius="8" color="#FF7167" />
+#       <.circles dataset={graph[:x1_dataset]} radius="8" color="#FF7167" />
 
 #       <.line_plot dataset={graph[:x2_dataset]} width="5" color="#FF7167" />
-#       <.points_plot dataset={graph[:x2_dataset]} radius="8" color="#FF7167" />
+#       <.circles dataset={graph[:x2_dataset]} radius="8" color="#FF7167" />
 #     </.graph>
 #     """
 #   end
