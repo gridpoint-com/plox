@@ -27,7 +27,9 @@ defmodule PloxDemoWeb.SimpleLineLive do
     radius_axis = Plox.LinearAxis.new(Plox.NumberScale.new(10, 45), min: 4, max: 10)
 
     color_axis =
-      Plox.ColorAxis.new(Plox.FixedColorsScale.new(%{cold: "#1E88E5", normal: "#43A047", warm: "#FFC107"}))
+      Plox.ColorAxis.new(
+        Plox.FixedColorsScale.new(%{cold: "#1E88E5", normal: "#43A047", warm: "#FFC107"})
+      )
 
     dataset =
       Plox.Dataset.new(data,
@@ -143,17 +145,20 @@ defmodule PloxDemoWeb.SimpleLineLive do
       <%!-- constant y = 40 --%>
       <%!-- <.polyline points={{@dataset[:x], @dataset[:y][40]}} class="stroke-orange-500 dark:stroke-orange-400 stroke-2" /> --%>
 
-      <.circles dataset={@dataset} cx={:x} cy={:y} fill={:color} r={:radius} />
+      <%!-- <.circles dataset={@dataset} cx={:x} cy={:y} fill={:color} r={:radius} /> --%>
 
       <%!-- use the Access behavior --%>
-      <%!-- <.circles cx={@dataset[:x]} cy={@dataset[:y]} fill={@dataset[:color]} r={@dataset[:radius]} /> --%>
+      <.circle
+        cx={@dataset[:x]}
+        cy={@dataset[:y]}
+        stroke={@dataset[:color]}
+        fill="none"
+        stroke-width="2px"
+        r={@dataset[:radius]}
+      />
 
-      <%!-- pass in constant y-axis value --%>
-      <%!-- <.circles cx={@dataset[:x]} cy={@dataset[:y][40]} fill={@dataset[:color]} r={@dataset[:radius]} /> --%>
-
-      <%!-- this behaves as we like, we can now draw circles all at y = 40 --%>
-      <%!-- but the tuple looks weird... --%>
-      <.circles dataset={@dataset} cx={:x} cy={{:y, 40}} fill="red" r={10} />
+      <%!-- pass in constant y-axis and color value --%>
+      <.circle cx={@dataset[:x]} cy={@dataset[:y][40]} fill="red" r={@dataset[:radius]} />
     </.graph>
     """
   end

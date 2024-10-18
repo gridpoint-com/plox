@@ -40,7 +40,7 @@ defmodule PloxDemoWeb.AnimatedLive do
       <.line_plot dataset={@dataset2} class="stroke-blue-500" stroke-width="2" />
       <.line_plot dataset={@dataset3} class="stroke-green-500" stroke-width="2" />
 
-      <.circles dataset={@points_dataset} r={:r} fill={:color} />
+      <%!-- <.circles dataset={@points_dataset} r={:r} fill={:color} /> --%>
     </.graph>
     """
   end
@@ -73,7 +73,9 @@ defmodule PloxDemoWeb.AnimatedLive do
     radius_axis = Plox.LinearAxis.new(Plox.NumberScale.new(1, 100), min: 5, max: 15)
 
     color_axis =
-      Plox.ColorAxis.new(Plox.FixedColorsScale.new(%{cold: "#1E88E5AA", normal: "#43A047AA", warm: "#FFC107AA"}))
+      Plox.ColorAxis.new(
+        Plox.FixedColorsScale.new(%{cold: "#1E88E5AA", normal: "#43A047AA", warm: "#FFC107AA"})
+      )
 
     {data1, dataset1} = init_line_data(now, x_axis, y_axis)
     {data2, dataset2} = init_line_data(now, x_axis, y_axis)

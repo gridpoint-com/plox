@@ -79,7 +79,7 @@ defmodule PloxDemoWeb.GraphsLive do
 
         <.line_plot dataset={@dataset} class="stroke-orange-500 dark:stroke-orange-400 stroke-2" />
 
-        <.circles dataset={@dataset} class="fill-orange-500 dark:fill-orange-400" />
+        <%!-- <.circles dataset={@dataset} class="fill-orange-500 dark:fill-orange-400" /> --%>
       </.graph>
     </div>
     """
@@ -186,19 +186,19 @@ defmodule PloxDemoWeb.GraphsLive do
         <.y_axis_grid_lines axis={@y_axis} ticks={7} class="stroke-gray-100 dark:stroke-gray-900" />
 
         <.line_plot dataset={@p_dataset} stroke-width="5" stroke="#FF9330" />
-        <.circles dataset={@p_dataset} r="8" fill="#FF9330" />
+        <%!-- <.circles dataset={@p_dataset} r="8" fill="#FF9330" /> --%>
 
         <.line_plot dataset={@l_dataset} stroke-width="5" stroke="#78C348" />
-        <.circles dataset={@l_dataset} r="8" fill="#78C348" />
+        <%!-- <.circles dataset={@l_dataset} r="8" fill="#78C348" /> --%>
 
         <.line_plot dataset={@o_dataset} stroke-width="5" stroke="#71AEFF" />
-        <.circles dataset={@o_dataset} r="8" fill="#71AEFF" />
+        <%!-- <.circles dataset={@o_dataset} r="8" fill="#71AEFF" /> --%>
 
         <.line_plot dataset={@x1_dataset} stroke-width="5" stroke="#FF7167" />
-        <.circles dataset={@x1_dataset} r="8" fill="#FF7167" />
+        <%!-- <.circles dataset={@x1_dataset} r="8" fill="#FF7167" /> --%>
 
         <.line_plot dataset={@x2_dataset} stroke-width="5" stroke="#FF7167" />
-        <.circles dataset={@x2_dataset} r="8" fill="#FF7167" />
+        <%!-- <.circles dataset={@x2_dataset} r="8" fill="#FF7167" /> --%>
       </.graph>
     </div>
     """
@@ -265,10 +265,10 @@ defmodule PloxDemoWeb.GraphsLive do
         <.line_plot dataset={@sine} stroke="#8FDA5D" stroke-dasharray="6" />
 
         <.line_plot dataset={@cosine} stroke="#35A9C0" stroke-width="2" stroke-dasharray="2" />
-        <.circles dataset={@cosine} fill="#35A9C0" />
+        <%!-- <.circles dataset={@cosine} fill="#35A9C0" /> --%>
 
         <.line_plot dataset={@arctangent} stroke="#FF5954" stroke-width="1" />
-        <.circles dataset={@arctangent} fill="#FF5954" r="3" />
+        <%!-- <.circles dataset={@arctangent} fill="#FF5954" r="3" /> --%>
 
         <.x_axis_label axis={@x_axis} value={-180} position={:top} class="text-sm" gap={20}>
           Start

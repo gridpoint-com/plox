@@ -371,48 +371,96 @@ defmodule Plox do
   defp polyline_points(points), do: Enum.map_join(points, " ", &"#{&1.x},#{&1.y}")
 
   @doc """
-  Points plot.
+  Draws a single or set of SVG <circle> elements.
   """
   @doc type: :component
 
-  attr :dataset, :any, required: true
-
-  attr :cx, :atom, default: :x, doc: "The dataset axis key to use for x values"
-  attr :cy, :atom, default: :y, doc: "The dataset axis key to use for y values"
-
-  attr :r, :any, examples: ["8", "24.5", :radius_axis], default: "4"
-  attr :fill, :any, examples: ["red", "#FF9330", :color_axis], default: nil
+  # TODO: I wonder if we can more dynamically determine all "dynamic"-possible attributes
+  attr :cx, :any, required: true
+  attr :cy, :any, required: true
+  attr :r, :any, required: true
+  attr :fill, :any, default: nil
+  attr :stroke, :any, default: nil
+  attr :"stroke-width", :any, default: nil
   attr :rest, :global, include: @svg_presentation_globals
-  # attr :"phx-click", :any, default: nil
-  # attr :"phx-target", :any, default: nil
 
-  def circles(assigns) do
+  def circle(assigns) do
+    assigns
+    |> assign(dataset: validate_zero_or_one_dataset(Map.take(assigns, [:cx, :cy, :r, :fill])))
+    |> do_circle()
+  end
+
+  defp do_circle(%{dataset: :none} = assigns) do
     ~H"""
-    <%!-- <circle
-      :for={data_point <- @dataset.data}
-      fill={maybe_graph(@fill, data_point)}
-      cx={data_point.graph[@cx]}
-      cy={data_point.graph[@cy]}
-      r={maybe_graph(@r, data_point)}
-      {@rest}
-    /> --%>
+    <circle cx={@cx} cy={@cy} r={@r} fill={@fill} {@rest} />
+    """
+  end
 
+  defp do_circle(%{dataset: _dataset} = assigns) do
+    ~H"""
     <circle
       :for={data_point <- @dataset.data}
-      fill={maybe_graph(@fill, data_point)}
-      cx={maybe_axis(@cx, @dataset, data_point)}
-      cy={maybe_axis(@cy, @dataset, data_point)}
+      cx={maybe_graph(@cx, data_point)}
+      cy={maybe_graph(@cy, data_point)}
       r={maybe_graph(@r, data_point)}
+      fill={maybe_graph(@fill, data_point)}
+      stroke={maybe_graph(@stroke, data_point)}
+      stroke-width={maybe_graph(assigns[:"stroke-width"], data_point)}
       {@rest}
     />
     """
   end
 
-  defp maybe_graph(assign, data_point) when is_atom(assign), do: data_point.graph[assign]
-  defp maybe_graph(assign, _data_point), do: assign
+  defp validate_zero_or_one_dataset(assigns) do
+    datasets =
+      assigns
+      |> Enum.flat_map(fn
+        {_key, %Plox.DatasetAxis{} = dataset_axis} -> [dataset_axis.dataset]
+        {_key, _} -> []
+      end)
+      |> Enum.uniq()
 
-  defp maybe_axis({axis_name, value}, dataset, _data_point), do: Axis.to_graph(dataset.axes[axis_name], value)
-  defp maybe_axis(axis_name, _dataset, data_point), do: data_point.graph[axis_name]
+    case datasets do
+      [] -> :none
+      [dataset] -> dataset
+      _ -> raise "all dynamic values must be from the same dataset"
+    end
+  end
+
+  # TODO: can we make this work elegantly?
+  # would it be cool to allow mixed datasets?
+  # defp collect_values(values) do
+  #   {dynamics, constants} =
+  #     Enum.split_with(values, fn
+  #       {_key, %Plox.DatasetAxis{}} -> true
+  #       {_key, _value} -> false
+  #     end)
+
+  #   grouped_dynamics = dynamics |> Enum.group_by(fn {_key, value} -> value.dataset end, fn {key, value} -> {value.key, key} end) |> Enum.to_list()
+
+  #   constants_map = Map.new(constants)
+
+  #   case length(grouped_dynamics) do
+  #     0 ->
+  #       [constants_map]
+
+  #     1 ->
+  #       [{dataset, keys}] = grouped_dynamics
+  #       for data_point <- dataset.data do
+
+  #       end
+  #     _ ->
+  #       raise "all dynamic values must be from the same dataset"
+  #   end
+  # end
+
+  # TODO: a huge "dataset axis" struct just to get the key...
+  # I think this can be made way more elegant
+  defp maybe_graph(%Plox.DatasetAxis{key: key}, data_point), do: data_point.graph[key]
+  defp maybe_graph(value, _data_point), do: value
+
+  # defp maybe_axis({axis_name, value}, dataset, _data_point), do: Axis.to_graph(dataset.axes[axis_name], value)
+  # defp maybe_axis(axis_name, _dataset, data_point), do: data_point.graph[axis_name]
 
   @doc """
   Bar plot.
