@@ -58,15 +58,15 @@ defmodule Plox do
     <div id={@id}>
       <div style={"display: flex; flex-direction: column; align-items: flex-end; max-width: #{@graph.dimensions.width - @graph.dimensions.margin.right}px"}>
         <.legend :for={legend <- @legend}>
-          <%= render_slot(legend) %>
+          {render_slot(legend)}
         </.legend>
       </div>
       <div style={"position: relative; width: #{@width}px; height: #{@height}px"}>
         <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
-          <%= render_slot(@inner_block, @graph) %>
+          {render_slot(@inner_block, @graph)}
         </svg>
         <%= for tooltip <- @tooltips do %>
-          <%= render_slot(tooltip, @graph) %>
+          {render_slot(tooltip, @graph)}
         <% end %>
       </div>
     </div>
@@ -103,7 +103,7 @@ defmodule Plox do
         color={@label_color}
         rotation={@label_rotation}
       >
-        <%= render_slot(@inner_block, y_value) %>
+        {render_slot(@inner_block, y_value)}
       </.y_label>
       <.horizontal_line
         :if={@grid_lines}
@@ -146,7 +146,7 @@ defmodule Plox do
         color={@label_color}
         rotation={@label_rotation}
       >
-        <%= render_slot(@inner_block, x_value) %>
+        {render_slot(@inner_block, x_value)}
       </.x_label>
       <.vertical_line
         :if={@grid_lines}
@@ -340,7 +340,7 @@ defmodule Plox do
       phx-click-away={assigns[:"phx-click-away"]}
       phx-target={assigns[:"phx-target"]}
     >
-      <%= render_slot(@inner_block, @data_point.original) %>
+      {render_slot(@inner_block, @data_point.original)}
       <div style="transform: translate(-50%) rotate(45deg); position: absolute; left: 50%; bottom: -0.5rem; width: 1rem; height: 1rem; z-index: -10; background: #4B4C4D" />
     </div>
     """
@@ -463,7 +463,7 @@ defmodule Plox do
           do: "rotate(#{@rotation}, #{@dimensions.margin.left - 16}, #{@y_pixel})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -483,7 +483,7 @@ defmodule Plox do
             "rotate(#{@rotation}, #{@dimensions.width - @dimensions.margin.right + 16}, #{@y_pixel})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -513,7 +513,7 @@ defmodule Plox do
             "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.height - @dimensions.margin.bottom + 16})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -532,7 +532,7 @@ defmodule Plox do
           do: "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.margin.bottom - 16})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -623,7 +623,7 @@ defmodule Plox do
           do: "rotate(#{@label_rotation}, #{@x_pixel}, #{@dimensions.margin.top - 24})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -654,7 +654,7 @@ defmodule Plox do
           do: "rotate(#{@label_rotation}, #{@dimensions.margin.left - 24}, #{@y_pixel})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -669,7 +669,7 @@ defmodule Plox do
   def legend(assigns) do
     ~H"""
     <div style="display: flex; gap: 0.5rem">
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -686,7 +686,7 @@ defmodule Plox do
     ~H"""
     <div style="display: flex; align-items: baseline; column-gap: 0.5rem">
       <.color_bubble color={@color} />
-      <p style="font-size: 0.75rem; line-height: 1rem; color: #9D9E9F;"><%= @label %></p>
+      <p style="font-size: 0.75rem; line-height: 1rem; color: #9D9E9F;">{@label}</p>
     </div>
     """
   end
