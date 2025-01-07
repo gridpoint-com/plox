@@ -10,7 +10,7 @@ defmodule Plox.Dimensions do
 
   def new(width, height, opts \\ []) do
     margin = Keyword.get(opts, :margin, {35, 70})
-    padding = Keyword.get(opts, :margin, 0)
+    padding = Keyword.get(opts, :padding, 0)
 
     %__MODULE__{
       width: number(width),
