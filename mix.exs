@@ -1,7 +1,7 @@
 defmodule Plox.MixProject do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.2.0"
   @source_url "https://github.com/gridpoint-com/plox"
 
   def project do
@@ -86,7 +86,7 @@ defmodule Plox.MixProject do
     [
       {:decimal, "~> 2.0"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
-      {:phoenix_live_view, "~> 0.20"},
+      {:phoenix_live_view, "~> 0.20 or ~> 1.0"},
       {:styler, "~> 0.11", only: [:dev, :test], runtime: false}
     ]
   end
