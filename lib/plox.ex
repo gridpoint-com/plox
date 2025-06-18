@@ -58,15 +58,16 @@ defmodule Plox do
     <div id={@id}>
       <div style={"display: flex; flex-direction: column; align-items: flex-end; max-width: #{@graph.dimensions.width - @graph.dimensions.margin.right}px"}>
         <.legend :for={legend <- @legend}>
-          <%= render_slot(legend) %>
+          {render_slot(legend)}
         </.legend>
       </div>
       <div style={"position: relative; width: #{@width}px; height: #{@height}px"}>
         <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
-          <%= render_slot(@inner_block, @graph) %>
+          {render_slot(@inner_block, @graph)}
         </svg>
+
         <%= for tooltip <- @tooltips do %>
-          <%= render_slot(tooltip, @graph) %>
+          {render_slot(tooltip, @graph)}
         <% end %>
       </div>
     </div>
@@ -103,7 +104,7 @@ defmodule Plox do
         color={@label_color}
         rotation={@label_rotation}
       >
-        <%= render_slot(@inner_block, y_value) %>
+        {render_slot(@inner_block, y_value)}
       </.y_label>
       <.horizontal_line
         :if={@grid_lines}
@@ -146,7 +147,7 @@ defmodule Plox do
         color={@label_color}
         rotation={@label_rotation}
       >
-        <%= render_slot(@inner_block, x_value) %>
+        {render_slot(@inner_block, x_value)}
       </.x_label>
       <.vertical_line
         :if={@grid_lines}
@@ -327,21 +328,59 @@ defmodule Plox do
 
   slot :inner_block, required: true
 
-  def tooltip(assigns) do
-    assigns = assign(assigns, data_point: GraphDataset.get_point(assigns.dataset, assigns.point_id))
+  def tooltip(%{x_pixel: x_pixel, y_pixel: y_pixel} = assigns) do
+    height = assigns.dataset.dimensions.height
+    width = assigns.dataset.dimensions.width
+
+    {bubble_classes_lr, caret_classes_lr} =
+      if x_pixel < width / 2 do
+        # left half of the graph, move caret and bubble right of point
+        {"left: #{x_pixel + 10}px;", "left: #{x_pixel + 4}px;"}
+      else
+        # right half of the graph, move caret and bubble left of point
+        {"right: #{width - x_pixel + 10}px;", "right: #{width - x_pixel + 4}px;"}
+      end
+
+    bubble_classes_tb =
+      if y_pixel < height / 2 do
+        # top half of the graph, move bubble up 20px
+        "top: #{y_pixel - 20}px;"
+      else
+        # bottom half of the graph, move bubble below 20px
+        "bottom: #{height - y_pixel - 20}px;"
+      end
+
+    assigns =
+      assign(assigns,
+        data_point: GraphDataset.get_point(assigns.dataset, assigns.point_id),
+        bubble_classes_lr: bubble_classes_lr,
+        caret_classes_lr: caret_classes_lr,
+        bubble_classes_tb: bubble_classes_tb
+      )
 
     ~H"""
-    <div
-      style={[
-        "position: absolute; padding: 1rem; font-size: 0.75rem; background: #4B4C4D; color: #CACBCC; z-index: 10; border-radius: 0.75rem; transform: translate(-50%);",
-        "left: #{@x_pixel}px; bottom: #{@dataset.dimensions.height - @y_pixel + 12}px;",
-        "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
-      ]}
-      phx-click-away={assigns[:"phx-click-away"]}
-      phx-target={assigns[:"phx-target"]}
-    >
-      <%= render_slot(@inner_block, @data_point.original) %>
-      <div style="transform: translate(-50%) rotate(45deg); position: absolute; left: 50%; bottom: -0.5rem; width: 1rem; height: 1rem; z-index: -10; background: #4B4C4D" />
+    <div>
+      <%!-- caret --%>
+      <div style={[
+        "position: absolute; z-index: 10; width: 1rem; height: 1rem; background: #4B4C4D;",
+        "top: #{@y_pixel - 8}px; transform: rotate(45deg);",
+        @caret_classes_lr
+      ]} />
+
+      <%!-- bubble --%>
+      <div
+        style={[
+          "position: absolute; z-index: 15; padding: 1rem; border-radius: 0.75rem; width: max-content;",
+          "background: #4B4C4D; color: #CACBCC ; font-size: 0.75rem;",
+          "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);",
+          @bubble_classes_lr,
+          @bubble_classes_tb
+        ]}
+        phx-click-away={assigns[:"phx-click-away"]}
+        phx-target={assigns[:"phx-target"]}
+      >
+        {render_slot(@inner_block, @data_point.original)}
+      </div>
     </div>
     """
   end
@@ -463,7 +502,7 @@ defmodule Plox do
           do: "rotate(#{@rotation}, #{@dimensions.margin.left - 16}, #{@y_pixel})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -483,7 +522,7 @@ defmodule Plox do
             "rotate(#{@rotation}, #{@dimensions.width - @dimensions.margin.right + 16}, #{@y_pixel})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -513,7 +552,7 @@ defmodule Plox do
             "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.height - @dimensions.margin.bottom + 16})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -532,7 +571,7 @@ defmodule Plox do
           do: "rotate(#{@rotation}, #{@x_pixel}, #{@dimensions.margin.bottom - 16})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -623,7 +662,7 @@ defmodule Plox do
           do: "rotate(#{@label_rotation}, #{@x_pixel}, #{@dimensions.margin.top - 24})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -654,7 +693,7 @@ defmodule Plox do
           do: "rotate(#{@label_rotation}, #{@dimensions.margin.left - 24}, #{@y_pixel})"
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </text>
     """
   end
@@ -669,7 +708,7 @@ defmodule Plox do
   def legend(assigns) do
     ~H"""
     <div style="display: flex; gap: 0.5rem">
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -686,7 +725,7 @@ defmodule Plox do
     ~H"""
     <div style="display: flex; align-items: baseline; column-gap: 0.5rem">
       <.color_bubble color={@color} />
-      <p style="font-size: 0.75rem; line-height: 1rem; color: #9D9E9F;"><%= @label %></p>
+      <p style="font-size: 0.75rem; line-height: 1rem; color: #9D9E9F;">{@label}</p>
     </div>
     """
   end
