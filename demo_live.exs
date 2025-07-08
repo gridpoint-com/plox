@@ -13,17 +13,13 @@ defmodule DemoLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    {:ok, socket |> mount_simple_line_graph() |> mount_logo_graph()}
+    {:ok, mount_simple_line_graph(socket)}
   end
 
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <.simple_line_graph {@graph} />
-
-    <hr />
-
-    <.logo_graph {@logo_graph} />
     """
   end
 
@@ -108,123 +104,6 @@ defmodule DemoLive do
 
       <%!-- pass in constant y-axis and color value --%>
       <.circle cx={@dataset[:x]} cy={@dataset[:y][40]} fill="red" r={@dataset[:radius]} />
-    </.graph>
-    """
-  end
-
-  defp mount_logo_graph(socket) do
-    dimensions = Plox.Dimensions.new(440, 250)
-    x_axis = Plox.XAxis.new(Plox.NumberScale.new(0.0, 10.0), dimensions)
-    y_axis = Plox.YAxis.new(Plox.NumberScale.new(0.0, 6.0), dimensions)
-
-    # Letter "P"
-    p_data = [
-      %{x: 1, y: 5},
-      %{x: 2.5, y: 4},
-      %{x: 1, y: 3},
-      %{x: 1, y: 1}
-    ]
-
-    p_dataset =
-      Plox.Dataset.new(p_data,
-        x: {x_axis, & &1.x},
-        y: {y_axis, & &1.y}
-      )
-
-    # Letter "L"
-    l_data = [
-      %{x: 3.5, y: 4.5},
-      %{x: 3.5, y: 1}
-    ]
-
-    l_dataset =
-      Plox.Dataset.new(l_data,
-        x: {x_axis, & &1.x},
-        y: {y_axis, & &1.y}
-      )
-
-    # Letter "O"
-    o_data = [
-      %{x: 4.5, y: 2},
-      %{x: 5.5, y: 3},
-      %{x: 6.5, y: 2},
-      %{x: 5.5, y: 1},
-      %{x: 4.5, y: 2}
-    ]
-
-    o_dataset =
-      Plox.Dataset.new(o_data,
-        x: {x_axis, & &1.x},
-        y: {y_axis, & &1.y}
-      )
-
-    # Letter "X"
-    x1_data = [
-      %{x: 7, y: 3},
-      %{x: 9, y: 1}
-    ]
-
-    x1_dataset =
-      Plox.Dataset.new(x1_data,
-        x: {x_axis, & &1.x},
-        y: {y_axis, & &1.y}
-      )
-
-    x2_data = [
-      %{x: 7, y: 1},
-      %{x: 9, y: 3}
-    ]
-
-    x2_dataset =
-      Plox.Dataset.new(x2_data,
-        x: {x_axis, & &1.x},
-        y: {y_axis, & &1.y}
-      )
-
-    assign(socket,
-      logo_graph: %{
-        dimensions: dimensions,
-        x_axis: x_axis,
-        y_axis: y_axis,
-        p_dataset: p_dataset,
-        l_dataset: l_dataset,
-        o_dataset: o_dataset,
-        x1_dataset: x1_dataset,
-        x2_dataset: x2_dataset
-      }
-    )
-  end
-
-  defp logo_graph(assigns) do
-    ~H"""
-    <h2>Logo graph</h2>
-
-    <.graph dimensions={@dimensions}>
-      <.x_axis_labels :let={value} axis={@x_axis}>
-        {value}
-      </.x_axis_labels>
-
-      <.y_axis_labels :let={value} axis={@y_axis} ticks={7}>
-        {value}
-      </.y_axis_labels>
-
-      <.x_axis_grid_lines axis={@x_axis} stroke="#D3D3D3" />
-
-      <.y_axis_grid_lines axis={@y_axis} ticks={7} stroke="#D3D3D3" />
-
-      <.polyline points={Enum.zip(@p_dataset[:x], @p_dataset[:y])} stroke-width="5" stroke="#FF9330" />
-      <.polyline points={Enum.zip(@l_dataset[:x], @l_dataset[:y])} stroke-width="5" stroke="#78C348" />
-      <.polyline points={Enum.zip(@o_dataset[:x], @o_dataset[:y])} stroke-width="5" stroke="#71AEFF" />
-      <.polyline
-        points={Enum.zip(@x1_dataset[:x], @x1_dataset[:y])}
-        stroke-width="5"
-        stroke="#FF7167"
-      />
-      <.polyline
-        points={Enum.zip(@x2_dataset[:x], @x2_dataset[:y])}
-        stroke-width="5"
-        stroke="#FF7167"
-      />
     </.graph>
     """
   end

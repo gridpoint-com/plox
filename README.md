@@ -69,7 +69,7 @@ Once you have those, you can render a `graph` component within your HEEx templat
   <.x_axis_grid_lines axis={@x_axis} stroke="#D3D3D3" />
   <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
 
-  <.polyline dataset={@dataset} stroke="#EC7E16" stroke-width={2} />
+  <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="#EC7E16" stroke-width={2} />
 
   <.circle cx={@dataset[:x]} cy={@dataset[:y]} r={3} fill="#EC7E16" />
 </.graph>

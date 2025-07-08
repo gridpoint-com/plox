@@ -103,8 +103,10 @@ dataset =
   <.x_axis_grid_lines axis={@x_axis} stroke="#D3D3D3" />
   <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
 
-  <.polyline dataset={@dataset} stroke="#EC7E16" stroke-width={2} />
+  <!-- Use the `points/2` helper to generate a list of {x, y} tuples from our Dataset -->
+  <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="#EC7E16" stroke-width={2} />
 
+  <!-- Pass all the `x` values and the `y` values to render circles at each datapoint -->
   <.circle cx={@dataset[:x]} cy={@dataset[:y]} r={3} fill="#EC7E16" />
 </.graph>
 ```

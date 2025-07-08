@@ -85,25 +85,24 @@ defmodule AnimatedDemoLive do
         {value}
       </.y_axis_labels>
 
-      <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="grey" />
+      <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
 
       <.x_axis_labels :let={datetime} axis={@x_axis} step={5} start={@nearest_5_second}>
         {Calendar.strftime(datetime, "%-I:%M:%S")}
       </.x_axis_labels>
 
-      <.x_axis_grid_lines axis={@x_axis} step={5} start={@nearest_5_second} stroke="grey" />
-      <.x_axis_grid_line axis={@x_axis} value={@x_axis.scale.first} stroke="grey" />
-      <.x_axis_grid_line axis={@x_axis} value={@x_axis.scale.last} stroke="grey" />
-
-      <.x_axis_label axis={@x_axis} value={@now} position={:top} fill="red">
+      <.x_axis_grid_lines axis={@x_axis} step={5} start={@nearest_5_second} stroke="#D3D3D3" />
+      <.x_axis_grid_line axis={@x_axis} value={@x_axis.scale.first} stroke="#D3D3D3" />
+      <.x_axis_grid_line axis={@x_axis} value={@x_axis.scale.last} stroke="#D3D3D3" />
+      <.x_axis_label axis={@x_axis} value={@now} position={:top} color="red">
         Now ({Calendar.strftime(@now, "%-I:%M:%S")})
       </.x_axis_label>
 
       <.x_axis_grid_line axis={@x_axis} value={@now} stroke="red" />
 
-      <.polyline dataset={@dataset1} stroke="orange" stroke-width="2" />
-      <.polyline dataset={@dataset2} stroke="blue" stroke-width="2" />
-      <.polyline dataset={@dataset3} stroke="green" stroke-width="2" />
+      <.polyline points={Enum.zip(@dataset1[:x], @dataset1[:y])} stroke="orange" stroke-width="2" />
+      <.polyline points={Enum.zip(@dataset2[:x], @dataset2[:y])} stroke="blue" stroke-width="2" />
+      <.polyline points={Enum.zip(@dataset3[:x], @dataset3[:y])} stroke="green" stroke-width="2" />
       <%!-- <.circles dataset={@points_dataset} r={:r} fill={:color} /> --%>
     </.graph>
     """
