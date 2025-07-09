@@ -375,82 +375,54 @@ defmodule Plox do
   attr :rest, :global, include: @svg_presentation_globals
 
   def circle(assigns) do
-    assigns
-    |> assign(dataset: validate_zero_or_one_dataset(Map.take(assigns, [:cx, :cy, :r, :fill])))
-    |> do_circle()
-  end
-
-  defp do_circle(%{dataset: :none} = assigns) do
-    ~H"""
-    <circle cx={@cx} cy={@cy} r={@r} fill={@fill} {@rest} />
-    """
-  end
-
-  defp do_circle(%{dataset: _dataset} = assigns) do
     ~H"""
     <circle
-      :for={data_point <- @dataset.data}
-      cx={maybe_graph(@cx, data_point)}
-      cy={maybe_graph(@cy, data_point)}
-      r={maybe_graph(@r, data_point)}
-      fill={maybe_graph(@fill, data_point)}
-      stroke={maybe_graph(@stroke, data_point)}
-      stroke-width={maybe_graph(assigns[:"stroke-width"], data_point)}
+      :for={{cx, cy, r, fill, stroke, stroke_width} <- values([@cx, @cy, @r, @fill, @stroke, assigns[:"stroke-width"]])}
+      cx={cx}
+      cy={cy}
+      r={r}
+      fill={fill}
+      stroke={stroke}
+      stroke-width={stroke_width}
       {@rest}
     />
     """
   end
 
-  defp validate_zero_or_one_dataset(assigns) do
-    datasets =
-      assigns
-      |> Enum.flat_map(fn
-        {_key, %Plox.DatasetAxis{} = dataset_axis} -> [dataset_axis.dataset]
-        {_key, _} -> []
-      end)
-      |> Enum.uniq()
-
-    case datasets do
+  defp validate_zero_or_one_dataset(data) do
+    data
+    |> Enum.flat_map(fn
+      %Plox.DatasetAxis{} = dataset_axis -> [dataset_axis.dataset]
+      _ -> []
+    end)
+    |> Enum.uniq()
+    |> case do
       [] -> :none
-      [dataset] -> dataset
+      [_dataset] -> :ok
       _ -> raise "all dynamic values must be from the same dataset"
     end
   end
 
-  # TODO: can we make this work elegantly?
-  # would it be cool to allow mixed datasets?
-  # defp collect_values(values) do
-  #   {dynamics, constants} =
-  #     Enum.split_with(values, fn
-  #       {_key, %Plox.DatasetAxis{}} -> true
-  #       {_key, _value} -> false
-  #     end)
+  def points(x, y) do
+    values([x, y])
+  end
 
-  #   grouped_dynamics = dynamics |> Enum.group_by(fn {_key, value} -> value.dataset end, fn {key, value} -> {value.key, key} end) |> Enum.to_list()
+  def values(data) do
+    case validate_zero_or_one_dataset(data) do
+      :none ->
+        [List.to_tuple(data)]
 
-  #   constants_map = Map.new(constants)
+      :ok ->
+        enumerables =
+          data
+          |> Enum.map(fn
+            %Plox.DatasetAxis{} = axis -> axis
+            constant -> Stream.repeatedly(fn -> constant end)
+          end)
 
-  #   case length(grouped_dynamics) do
-  #     0 ->
-  #       [constants_map]
-
-  #     1 ->
-  #       [{dataset, keys}] = grouped_dynamics
-  #       for data_point <- dataset.data do
-
-  #       end
-  #     _ ->
-  #       raise "all dynamic values must be from the same dataset"
-  #   end
-  # end
-
-  # TODO: a huge "dataset axis" struct just to get the key...
-  # I think this can be made way more elegant
-  defp maybe_graph(%Plox.DatasetAxis{key: key}, data_point), do: data_point.graph[key]
-  defp maybe_graph(value, _data_point), do: value
-
-  # defp maybe_axis({axis_name, value}, dataset, _data_point), do: Axis.to_graph(dataset.axes[axis_name], value)
-  # defp maybe_axis(axis_name, _dataset, data_point), do: data_point.graph[axis_name]
+        Enum.zip(enumerables)
+    end
+  end
 
   @doc """
   Bar plot.

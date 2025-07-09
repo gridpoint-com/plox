@@ -100,9 +100,9 @@ defmodule AnimatedDemoLive do
 
       <.x_axis_grid_line axis={@x_axis} value={@now} stroke="red" />
 
-      <.polyline points={Enum.zip(@dataset1[:x], @dataset1[:y])} stroke="orange" stroke-width="2" />
-      <.polyline points={Enum.zip(@dataset2[:x], @dataset2[:y])} stroke="blue" stroke-width="2" />
-      <.polyline points={Enum.zip(@dataset3[:x], @dataset3[:y])} stroke="green" stroke-width="2" />
+      <.polyline points={points(@dataset1[:x], @dataset1[:y])} stroke="orange" stroke-width="2" />
+      <.polyline points={points(@dataset2[:x], @dataset2[:y])} stroke="blue" stroke-width="2" />
+      <.polyline points={points(@dataset3[:x], @dataset3[:y])} stroke="green" stroke-width="2" />
       <%!-- <.circles dataset={@points_dataset} r={:r} fill={:color} /> --%>
     </.graph>
     """
