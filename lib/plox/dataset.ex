@@ -6,7 +6,7 @@ defmodule Plox.DatasetAxis do
 
   @impl Access
   def fetch(%__MODULE__{axis: axis}, value) do
-    {:ok, Plox.Axis.to_graph(axis, value)}
+    {:ok, axis[value]}
   end
 
   @impl Access
@@ -47,7 +47,6 @@ defmodule Plox.Dataset do
   """
   @behaviour Access
 
-  alias Plox.Axis
   alias Plox.DataPoint
 
   defstruct [:data, :axes]
@@ -55,7 +54,7 @@ defmodule Plox.Dataset do
   def new(original_data, axis_fns) do
     data =
       Enum.map(original_data, fn original ->
-        graph = Map.new(axis_fns, fn {key, {axis, fun}} -> {key, Axis.to_graph(axis, fun.(original))} end)
+        graph = Map.new(axis_fns, fn {key, {axis, fun}} -> {key, axis[fun.(original)]} end)
 
         DataPoint.new(original, graph)
       end)

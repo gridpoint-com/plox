@@ -6,16 +6,9 @@ defmodule Plox do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  alias Plox.Axis
-  alias Plox.Dataset
-  # alias Plox.DateScale
-  # alias Plox.DateTimeScale
   alias Plox.Dimensions
-  # alias Plox.FixedColorsScale
-  # alias Plox.FixedValuesScale
   alias Plox.GraphDataset
   alias Plox.GraphScale
-  # alias Plox.NumberScale
   alias Plox.Scale
   alias Plox.XAxis
   alias Plox.YAxis
@@ -98,7 +91,7 @@ defmodule Plox do
   def x_axis_label(%{position: :bottom} = assigns) do
     ~H"""
     <text
-      x={x = Axis.to_graph(@axis, @value)}
+      x={x = @axis[@value]}
       y={@axis.dimensions.height - @axis.dimensions.margin.bottom + @gap}
       dominant-baseline={assigns[:"dominant-baseline"] || "hanging"}
       text-anchor={assigns[:"text-anchor"] || "middle"}
@@ -117,7 +110,7 @@ defmodule Plox do
   def x_axis_label(%{position: :top} = assigns) do
     ~H"""
     <text
-      x={x = Axis.to_graph(@axis, @value)}
+      x={x = @axis[@value]}
       y={@axis.dimensions.margin.bottom - @gap}
       dominant-baseline={assigns[:"dominant-baseline"] || "text-bottom"}
       text-anchor={assigns[:"text-anchor"] || "middle"}
@@ -180,7 +173,7 @@ defmodule Plox do
     ~H"""
     <text
       x={@axis.dimensions.margin.left - @gap}
-      y={y = Axis.to_graph(@axis, @value)}
+      y={y = @axis[@value]}
       dominant-baseline={assigns[:"dominant-baseline"] || "middle"}
       text-anchor={assigns[:"text-anchor"] || "end"}
       transform={
@@ -198,7 +191,7 @@ defmodule Plox do
     ~H"""
     <text
       x={@axis.dimensions.width - @axis.dimensions.margin.right + @gap}
-      y={y = Axis.to_graph(@axis, @value)}
+      y={y = @axis[@value]}
       dominant-baseline={assigns[:"dominant-baseline"] || "middle"}
       text-anchor={assigns[:"text-anchor"] || "start"}
       transform={
@@ -249,7 +242,7 @@ defmodule Plox do
   def x_axis_grid_line(assigns) do
     ~H"""
     <line
-      x1={x = Axis.to_graph(@axis, @value)}
+      x1={x = @axis[@value]}
       y1={@axis.dimensions.margin.top - @top_overdraw}
       x2={x}
       y2={@axis.dimensions.height - @axis.dimensions.margin.bottom + @bottom_overdraw}
@@ -293,7 +286,7 @@ defmodule Plox do
     ~H"""
     <line
       x1={@axis.dimensions.margin.left}
-      y1={y = Axis.to_graph(@axis, @value)}
+      y1={y = @axis[@value]}
       x2={@axis.dimensions.width - @axis.dimensions.margin.right}
       y2={y}
       {@rest}
@@ -785,7 +778,7 @@ defmodule Plox do
   def x_marker(assigns) do
     ~H"""
     <line
-      x1={x = Axis.to_graph(@axis, @value)}
+      x1={x = @axis[@value]}
       y1={@axis.dimensions.margin.top - 12}
       x2={x}
       y2={@axis.dimensions.height - @axis.dimensions.margin.bottom}

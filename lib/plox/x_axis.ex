@@ -4,6 +4,8 @@ defmodule Plox.XAxis do
   with, so it should be documented
   """
 
+  use Plox.Axis
+
   alias Plox.Scale
 
   defstruct [:scale, :dimensions]
@@ -14,7 +16,7 @@ defmodule Plox.XAxis do
 
   def values(%__MODULE__{scale: scale}, opts \\ %{}), do: Scale.values(scale, opts)
 
-  defimpl Plox.Axis do
+  defimpl Plox.Axis.Protocol do
     def to_graph(%{scale: scale, dimensions: dimensions}, value) do
       Scale.convert_to_range(
         scale,

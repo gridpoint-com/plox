@@ -1,25 +1,23 @@
-defprotocol Plox.Axis do
-  @moduledoc """
-  A protocol for graph axes.
+defmodule Plox.Axis do
+  @moduledoc false
+  defmacro __using__(_opts) do
+    quote do
+      @behaviour Access
 
-  TODO: docs
-  """
+      @impl Access
+      def fetch(axis, value) do
+        {:ok, Plox.Axis.Protocol.to_graph(axis, value)}
+      end
 
-  @typedoc """
-  Any struct that implements this protocol
+      @impl Access
+      def pop(_axis, _key) do
+        raise "Not implemented"
+      end
 
-  Built in implementations are:
-
-  * `Plox.XAxis`
-  * `Plox.YAxis`
-  * `Plox.RadiusAxis`
-  * `Plox.ColorAxis`
-  """
-  @type t :: any()
-
-  @doc """
-  Converts a specific scale value to a value usable by the graph components
-  """
-  @spec to_graph(axis :: t(), any()) :: any()
-  def to_graph(axis, value)
+      @impl Access
+      def get_and_update(_axis, _key, _function) do
+        raise "Not implemented"
+      end
+    end
+  end
 end
