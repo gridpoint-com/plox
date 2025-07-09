@@ -377,7 +377,10 @@ defmodule Plox do
   def circle(assigns) do
     ~H"""
     <circle
-      :for={{cx, cy, r, fill, stroke, stroke_width} <- values([@cx, @cy, @r, @fill, @stroke, assigns[:"stroke-width"]])}
+      :for={
+        {cx, cy, r, fill, stroke, stroke_width} <-
+          values([@cx, @cy, @r, @fill, @stroke, assigns[:"stroke-width"]])
+      }
       cx={cx}
       cy={cy}
       r={r}
@@ -387,6 +390,59 @@ defmodule Plox do
       {@rest}
     />
     """
+  end
+
+  @doc """
+  Returns a list of points as tuples for use in polyline or other SVG elements.
+
+  ## Example
+
+    iex> Plox.points(1, 2)
+    [{1, 2}]
+
+    iex> Plox.points([1, 2], [3, 4])
+    [{1, 3}, {2, 4}]
+
+    iex> Plox.points([1, 2], %Plox.DatasetAxis{values: [3, 4]})
+    [{1, 3}, {2, 4}]
+
+    iex> Plox.points(%Plox.DatasetAxis{values: [1, 2]}, %Plox.DatasetAxis{values: [3, 4]})
+    [{1, 3}, {2, 4}]
+  """
+  def points(x, y) do
+    values([x, y])
+  end
+
+  @doc """
+  Returns a list of tuples for use in polyline or other SVG elements.
+
+  ## Example
+
+    iex> Plox.values([1, 2])
+    [{1, 2}]
+
+    iex> Plox.values([1, 2], [3, 4])
+    [{1, 3}, {2, 4}]
+
+    iex> Plox.values([1, 2], %Plox.DatasetAxis{values: [3, 4]})
+    [{1, 3}, {2, 4}]
+
+    iex> Plox.values(%Plox.DatasetAxis{values: [1, 2]}, %Plox.DatasetAxis{values: [3, 4]})
+    [{1, 3}, {2, 4}]
+  """
+  def values(data) do
+    case validate_zero_or_one_dataset(data) do
+      :none ->
+        [List.to_tuple(data)]
+
+      :ok ->
+        data
+        |> Enum.map(fn
+          %Plox.DatasetAxis{} = axis -> axis
+          constant -> Stream.repeatedly(fn -> constant end)
+        end)
+        |> Enum.zip()
+    end
   end
 
   defp validate_zero_or_one_dataset(data) do
@@ -400,27 +456,6 @@ defmodule Plox do
       [] -> :none
       [_dataset] -> :ok
       _ -> raise "all dynamic values must be from the same dataset"
-    end
-  end
-
-  def points(x, y) do
-    values([x, y])
-  end
-
-  def values(data) do
-    case validate_zero_or_one_dataset(data) do
-      :none ->
-        [List.to_tuple(data)]
-
-      :ok ->
-        enumerables =
-          data
-          |> Enum.map(fn
-            %Plox.DatasetAxis{} = axis -> axis
-            constant -> Stream.repeatedly(fn -> constant end)
-          end)
-
-        Enum.zip(enumerables)
     end
   end
 

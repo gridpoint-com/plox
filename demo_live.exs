@@ -84,14 +84,12 @@ defmodule DemoLive do
 
       <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
 
-      <%!-- <.polyline dataset={@dataset} stroke="orange" stroke-width={2} /> --%>
-      <.polyline points={Enum.zip(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} />
+      <%!-- <.polyline points={Enum.zip(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} /> --%>
+      <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} />
 
-      <%!-- Access behavior with axes --%>
-      <%!-- <.polyline points={{@dataset[:x], @dataset[:y]}} class="stroke-orange-500 dark:stroke-orange-400 stroke-2" /> --%>
       <%!-- constant y = 40 --%>
-      <%!-- <.polyline points={{@dataset[:x], @dataset[:y][40]}} class="stroke-orange-500 dark:stroke-orange-400 stroke-2" /> --%>
-      <%!-- <.circles dataset={@dataset} cx={:x} cy={:y} fill={:color} r={:radius} /> --%>
+      <.polyline points={points(@dataset[:x], @dataset[:y][40])} stroke="purple" stroke-width="2" />
+
       <%!-- use the Access behavior --%>
       <.circle
         cx={@dataset[:x]}
