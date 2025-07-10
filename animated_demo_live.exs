@@ -94,7 +94,9 @@ defmodule AnimatedDemoLive do
       <.x_axis_grid_lines axis={@x_axis} step={5} start={@nearest_5_second} stroke="#D3D3D3" />
       <.x_axis_grid_line axis={@x_axis} value={@x_axis.scale.first} stroke="#D3D3D3" />
       <.x_axis_grid_line axis={@x_axis} value={@x_axis.scale.last} stroke="#D3D3D3" />
-      <.x_axis_label axis={@x_axis} value={@now} position={:top} color="red">
+
+      <%!-- vertical marker for "now" with a label --%>
+      <.x_axis_label axis={@x_axis} value={@now} position={:top} stroke="red">
         Now ({Calendar.strftime(@now, "%-I:%M:%S")})
       </.x_axis_label>
 
@@ -103,7 +105,12 @@ defmodule AnimatedDemoLive do
       <.polyline points={points(@dataset1[:x], @dataset1[:y])} stroke="orange" stroke-width="2" />
       <.polyline points={points(@dataset2[:x], @dataset2[:y])} stroke="blue" stroke-width="2" />
       <.polyline points={points(@dataset3[:x], @dataset3[:y])} stroke="green" stroke-width="2" />
-      <%!-- <.circles dataset={@points_dataset} r={:r} fill={:color} /> --%>
+      <.circle
+        cx={@points_dataset[:x]}
+        cy={@points_dataset[:y]}
+        r={@points_dataset[:r]}
+        fill={@points_dataset[:color]}
+      />
     </.graph>
     """
   end

@@ -1,6 +1,7 @@
 defmodule Plox do
   @moduledoc """
-  TODO:
+  Composable, customizable, and flexible SVG graphing components rendered server-side
+  for Phoenix and LiveView.
   """
 
   use Phoenix.Component
@@ -8,7 +9,6 @@ defmodule Plox do
   alias Phoenix.LiveView.JS
   alias Plox.Dimensions
   alias Plox.GraphDataset
-  alias Plox.GraphScale
   alias Plox.Scale
   alias Plox.XAxis
   alias Plox.YAxis
@@ -295,7 +295,7 @@ defmodule Plox do
   end
 
   @doc """
-  A connected line plot.
+  Draws a SVG `<polyline>` element connecting a series of points.
   """
   @doc type: :component
 
@@ -323,7 +323,7 @@ defmodule Plox do
   end
 
   @doc """
-  A connected step line plot.
+  Draws a SVG `<polyline>` element connecting a series of points in the form of a stepped line.
   """
   @doc type: :component
 
@@ -370,7 +370,7 @@ defmodule Plox do
   defp polyline_points(points), do: Enum.map_join(points, " ", &"#{&1.x},#{&1.y}")
 
   @doc """
-  Draws a single or set of SVG <circle> elements.
+  Draws a single or set of SVG `<circle>` elements.
   """
   @doc type: :component
 
@@ -693,133 +693,6 @@ defmodule Plox do
   end
 
   @doc """
-  A horizontal or vertical marker line with a label.
-  """
-  @doc type: :component
-
-  attr :at, :any, required: true
-  attr :scale, :any, required: true
-  attr :width, :string, default: "1.5"
-  attr :orientation, :atom, values: [:vertical, :horizontal], default: :vertical
-
-  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :dotted
-  attr :line_color, :string, default: "#18191A"
-  attr :label_color, :string, default: "#18191A"
-  attr :label_style, :string, default: "font-size: 0.75rem; line-height: 1rem"
-  attr :label_rotation, :integer, default: nil
-
-  slot :inner_block, required: true
-
-  def marker(%{orientation: :vertical} = assigns) do
-    x_pixel = GraphScale.to_graph_x(assigns.scale, assigns.at)
-    assigns = assign(assigns, dimensions: assigns.scale.dimensions, x_pixel: x_pixel)
-
-    ~H"""
-    <line
-      x1={@x_pixel}
-      y1={@dimensions.margin.top - 12}
-      x2={@x_pixel}
-      y2={@dimensions.height - @dimensions.margin.bottom}
-      stroke={@line_color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
-    <text
-      x={@x_pixel}
-      y={@dimensions.margin.top - 24}
-      fill={@label_color}
-      dominant-baseline="middle"
-      text-anchor="middle"
-      style={@label_style}
-      transform={
-        if @label_rotation,
-          do: "rotate(#{@label_rotation}, #{@x_pixel}, #{@dimensions.margin.top - 24})"
-      }
-    >
-      {render_slot(@inner_block)}
-    </text>
-    """
-  end
-
-  def marker(%{orientation: :horizontal} = assigns) do
-    y_pixel = GraphScale.to_graph_y(assigns.scale, assigns.at)
-    assigns = assign(assigns, dimensions: assigns.scale.dimensions, y_pixel: y_pixel)
-
-    ~H"""
-    <line
-      x1={@dimensions.margin.left - 12}
-      y1={@y_pixel}
-      x2={@dimensions.width - @dimensions.margin.right}
-      y2={@y_pixel}
-      stroke={@line_color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
-    <text
-      x={@dimensions.margin.left - 24}
-      y={@y_pixel}
-      fill={@label_color}
-      dominant-baseline="middle"
-      text-anchor="middle"
-      style={@label_style}
-      transform={
-        if @label_rotation,
-          do: "rotate(#{@label_rotation}, #{@dimensions.margin.left - 24}, #{@y_pixel})"
-      }
-    >
-      {render_slot(@inner_block)}
-    </text>
-    """
-  end
-
-  @doc """
-  A horizontal or vertical marker line with a label.
-  """
-  @doc type: :component
-
-  attr :axis, XAxis, required: true
-  attr :value, :any, required: true
-
-  attr :width, :string, default: "1.5"
-  attr :orientation, :atom, values: [:vertical, :horizontal], default: :vertical
-
-  attr :line_style, :atom, values: [:solid, :dashed, :dotted], default: :dotted
-  attr :line_color, :string, default: "#18191A"
-  attr :label_color, :string, default: "#18191A"
-  attr :label_style, :string, default: "font-size: 0.75rem; line-height: 1rem"
-  attr :label_rotation, :integer, default: nil
-
-  slot :inner_block, required: true
-
-  def x_marker(assigns) do
-    ~H"""
-    <line
-      x1={x = @axis[@value]}
-      y1={@axis.dimensions.margin.top - 12}
-      x2={x}
-      y2={@axis.dimensions.height - @axis.dimensions.margin.bottom}
-      stroke={@line_color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
-    <text
-      x={x}
-      y={@axis.dimensions.margin.top - 24}
-      fill={@label_color}
-      dominant-baseline="middle"
-      text-anchor="middle"
-      style={@label_style}
-      transform={
-        if @label_rotation,
-          do: "rotate(#{@label_rotation}, #{x}, #{@axis.dimensions.margin.top - 24})"
-      }
-    >
-      {render_slot(@inner_block)}
-    </text>
-    """
-  end
-
-  @doc """
   Legend row.
   """
   @doc type: :component
@@ -863,22 +736,4 @@ defmodule Plox do
     <div style={"background-color: #{@color}; height: 0.5rem; width: 0.5rem; flex: none; border-radius: 9999px;"} />
     """
   end
-
-  defp stroke_dasharray(:solid), do: false
-  defp stroke_dasharray(:dotted), do: "2"
-  defp stroke_dasharray(:dashed), do: "6"
-
-  # def date_scale(graph, range), do: GraphScale.new(graph, DateScale.new(range))
-
-  # def number_scale(graph, first, last), do: GraphScale.new(graph, NumberScale.new(first, last))
-
-  # def dataset(data, axes), do: Dataset.new(data, axes)
-
-  # defdelegate graph(width, height, opts \\ []), to: Graph, as: :new
-  # # defdelegate date_scale(range), to: DateScale, as: :new
-  # defdelegate datetime_scale(first, last), to: DateTimeScale, as: :new
-  # # defdelegate number_scale(first, last), to: NumberScale, as: :new
-  # defdelegate fixed_colors_scale(color_mapping), to: FixedColorsScale, as: :new
-  # defdelegate fixed_values_scale(values), to: FixedValuesScale, as: :new
-  # # defdelegate dataset(data, aces), to: Dataset, as: :new
 end
