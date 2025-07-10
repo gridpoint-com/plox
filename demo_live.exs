@@ -90,6 +90,15 @@ defmodule DemoLive do
       <%!-- constant y = 40 --%>
       <.polyline points={points(@dataset[:x], @dataset[:y][40])} stroke="purple" stroke-width="2" />
 
+      <%!-- <.step_polyline dataset={@dataset} x={:x} y={:y} stroke="pink" stroke-width="2" /> --%>
+      <.step_polyline points={points(@dataset[:x], @dataset[:y])} stroke="pink" stroke-width="2" />
+
+      <%!-- you can manually add points like how the polyline SVG accepts them, but it'll turn them into a step line --%>
+      <%!-- <.step_polyline points="50,60 100,20 150,40" stroke="pink" stroke-width="2" /> --%>
+
+      <%!-- you can also manually build a list of {x, y} tuples and pass that in --%>
+      <%!-- <.step_polyline points={@step_points} stroke="green" stroke-width="2" /> --%>
+
       <%!-- use the Access behavior --%>
       <.circle
         cx={@dataset[:x]}

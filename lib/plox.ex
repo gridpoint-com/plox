@@ -299,7 +299,7 @@ defmodule Plox do
   """
   @doc type: :component
 
-  attr :points, :any, required: true, doc: "String of coordinates or list of {x, y} tuples"
+  attr :points, :any, required: true, doc: "String of coordinates (x1,y1 x2,y2...) or list of {x, y} tuples"
   attr :fill, :any, default: "none"
   attr :rest, :global, include: @svg_presentation_globals
 
@@ -327,22 +327,38 @@ defmodule Plox do
   """
   @doc type: :component
 
-  attr :dataset, Dataset, required: true
-
-  attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
-  attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+  attr :points, :any, required: true, doc: "String of coordinates (x1,y1 x2,y2...) or list of {x, y} tuples"
   attr :fill, :any, default: "none"
   attr :rest, :global, include: @svg_presentation_globals
 
-  def step_polyline(assigns) do
-    ~H"""
-    <polyline points={step_line_points(@dataset, @x, @y)} fill={@fill} {@rest} />
-    """
+  def step_polyline(%{points: points} = assigns) when is_binary(points) do
+    points =
+      points
+      |> String.split(" ")
+      |> Enum.map(fn point ->
+        [x, y] = String.split(point, ",")
+        %{x: String.to_integer(x), y: String.to_integer(y)}
+      end)
+      |> step_line_points()
+
+    assigns
+    |> assign(points: points)
+    |> do_polyline()
   end
 
-  defp step_line_points(dataset, x_key, y_key) do
-    dataset.data
-    |> Enum.map(fn data_point -> %{x: data_point.graph[x_key], y: data_point.graph[y_key]} end)
+  def step_polyline(assigns) do
+    points =
+      assigns.points
+      |> Enum.map(fn {x, y} -> %{x: x, y: y} end)
+      |> step_line_points()
+
+    assigns
+    |> assign(points: points)
+    |> do_polyline()
+  end
+
+  defp step_line_points(points) do
+    points
     |> Enum.chunk_every(2, 1)
     |> Enum.flat_map(fn
       [point1, point2] -> [point1, %{point2 | y: point1.y}]
