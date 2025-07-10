@@ -1,10 +1,11 @@
 defmodule Plox.DataPoint do
-  @moduledoc false
-  # TODO: I dunno about docs yet
+  @moduledoc """
+  Data structure for containing raw data and its mapped coordinate values for graphing.
+  """
 
-  alias Plox.GraphPoint
-  alias Plox.GraphScalar
-  alias Plox.GraphScale
+  # alias Plox.GraphPoint
+  # alias Plox.GraphScalar
+  # alias Plox.GraphScale
 
   defstruct [:original, :graph]
 

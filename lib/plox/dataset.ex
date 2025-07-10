@@ -43,7 +43,29 @@ end
 
 defmodule Plox.Dataset do
   @moduledoc """
-  A collection of data points and some metadata for a graph
+  A collection of `Plox.DataPoint`s and `Plox.Axis` implementations to convert
+  the `Plox.DataPoint`s to graphable coordinates.
+
+  This module implements the `Access` behaviour, allowing access to axes
+  using the `[]` syntax.
+
+  ## Example
+
+      iex> dataset = %Plox.Dataset{data: [], axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}}
+      iex> dataset[:x]
+      %Plox.DatasetAxis{axis: %Plox.XAxis{}, key: :x}
+
+      iex> dataset = %Plox.Dataset{data: [], axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}}
+      iex> dataset[:y]
+      %Plox.DatasetAxis{axis: %Plox.YAxis{}, key: :y}
+
+  Since `Plox.Axis` also implements the `Access` behaviour, you can access
+  the coordinate values more ergonomically when rendering elements in a graph:
+
+  ## Example
+
+      <!-- Draw red circles for every x value, but only at y = 40 on the graph -->
+      <.circle cx={@dataset[:x]} cy={@dataset[:y][40]} fill="red" r="3" />
   """
   @behaviour Access
 

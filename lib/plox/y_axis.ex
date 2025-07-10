@@ -18,14 +18,14 @@ defmodule Plox.YAxis do
 
   defimpl Plox.Axis.Protocol do
     def to_graph(%{scale: scale, dimensions: dimensions}, value) do
-      Scale.convert_to_range(
-        scale,
-        value,
-        (dimensions.height -
-           dimensions.margin.bottom -
-           dimensions.padding.bottom)..(dimensions.margin.top +
-                                          dimensions.padding.top)
-      )
+      range =
+        Range.new(
+          dimensions.height - dimensions.margin.bottom - dimensions.padding.bottom,
+          dimensions.margin.top + dimensions.padding.top,
+          -1
+        )
+
+      Scale.convert_to_range(scale, value, range)
     end
   end
 end
