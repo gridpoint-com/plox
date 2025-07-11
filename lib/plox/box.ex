@@ -1,7 +1,22 @@
 defmodule Plox.Box do
   @moduledoc """
-  TODO: this is a public module that graph component implementers will interact
-  with, so it should be documented
+  Data structure for defining a rectangular box with top, right, bottom, and
+  left sides. This is useful for specifying margins and paddings in a format
+  similar to CSS margin and padding properties.
+
+  ## Examples
+
+      iex> Plox.Box.new(10)
+      %Plox.Box{top: 10, right: 10, bottom: 10, left: 10}
+
+      iex> Plox.Box.new({5, 15})
+      %Plox.Box{top: 5, right: 15, bottom: 5, left: 15}
+
+      iex> Plox.Box.new({5, 15, 10})
+      %Plox.Box{top: 5, right: 15, bottom: 10, left: 15}
+
+      iex> Plox.Box.new({5, 15, 10, 20})
+      %Plox.Box{top: 5, right: 15, bottom: 10, left: 20}
   """
 
   defstruct [:top, :right, :bottom, :left]

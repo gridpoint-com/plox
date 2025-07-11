@@ -1,7 +1,7 @@
 defmodule Plox.Dimensions do
   @moduledoc """
-  TODO: this is a public module that graph component implementers will interact
-  with, so it should be documented
+  Data structure for defining the dimensions of a graph, including width,
+  height, margin, and padding.
   """
 
   alias Plox.Box

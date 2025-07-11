@@ -6,9 +6,8 @@ defmodule Plox.DataPointTest do
   doctest DataPoint
 
   test "new/3" do
-    data_point = DataPoint.new(1, %{foo: 1, bar: 2}, %{x: 1, y: 2})
-    assert data_point.id == 1
+    data_point = DataPoint.new(%{foo: 1, bar: 2}, %{x: 1, y: 2})
     assert data_point.original == %{foo: 1, bar: 2}
-    assert data_point.mapped == %{x: 1, y: 2}
+    assert data_point.graph == %{x: 1, y: 2}
   end
 end
