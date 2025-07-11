@@ -1,7 +1,25 @@
 defmodule Plox.YAxis do
   @moduledoc """
-  TODO: this is a public module that graph component implementers will interact
-  with, so it should be documented
+  YAxis implements the `Plox.Axis.Protocol` and is used to convert scale values
+  to graphable y-coordinates.
+
+  This module implements the `Access` behaviour, allowing access to graphable
+  values using the `[]` syntax.
+
+  ## Example
+
+      iex> scale = Plox.NumberScale.new(0, 10)
+      iex> dimensions = Plox.Dimensions.new(100, 100, margin: 0)
+      iex> y_axis = %Plox.YAxis{scale: scale, dimensions: dimensions}
+      iex> y_axis[1]
+      90.0
+      iex> y_axis[2]
+      80.0
+
+  This is useful when rendering graph elements in a more intuitive way:
+
+      <!-- Draw a red circle where you expect y = 1 (at the given x-coordinate) -->
+      <.circle cx={50.0} cy={y_axis[1]} fill="red" r="3" />
   """
 
   use Plox.Axis
@@ -10,6 +28,18 @@ defmodule Plox.YAxis do
 
   defstruct [:scale, :dimensions]
 
+  @doc """
+  Creates a new `Plox.YAxis` struct.
+
+  Accepts a `Plox.Scale` struct and `Plox.Dimensions` struct.
+
+  ## Example
+
+      iex> scale = Plox.NumberScale.new(0, 10)
+      iex> dimensions = Plox.Dimensions.new(100, 100)
+      iex> Plox.YAxis.new(scale, dimensions)
+      %Plox.YAxis{scale: scale, dimensions: dimensions}
+  """
   def new(scale, dimensions) do
     %__MODULE__{scale: scale, dimensions: dimensions}
   end
@@ -17,6 +47,19 @@ defmodule Plox.YAxis do
   def values(%__MODULE__{scale: scale}, opts \\ %{}), do: Scale.values(scale, opts)
 
   defimpl Plox.Axis.Protocol do
+    @doc """
+    Converts the given `value` to a graphable y-coordinate.
+
+    ## Example
+
+        iex> scale = Plox.NumberScale.new(0, 10)
+        iex> dimensions = Plox.Dimensions.new(100, 100, margin: 0)
+        iex> y_axis = Plox.YAxis.new(scale, dimensions)
+        iex> Plox.Axis.Protocol.to_graph(y_axis, 1)
+        90.0
+        iex> Plox.Axis.Protocol.to_graph(y_axis, 2)
+        80.0
+    """
     def to_graph(%{scale: scale, dimensions: dimensions}, value) do
       range =
         Range.new(
