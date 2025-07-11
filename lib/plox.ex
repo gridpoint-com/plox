@@ -402,7 +402,7 @@ defmodule Plox do
   end
 
   @doc """
-  Returns a list of points as tuples for use in polyline or other SVG elements.
+  Returns a list of tuples for use in polyline or other SVG elements.
 
   ## Example
 
@@ -412,11 +412,19 @@ defmodule Plox do
     iex> Plox.points([1, 2], [3, 4])
     [{1, 3}, {2, 4}]
 
-    iex> Plox.points([1, 2], %Plox.DatasetAxis{values: [3, 4]})
-    [{1, 3}, {2, 4}]
+    iex> dataset = %Plox.Dataset{
+    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+    ...>}
+    iex> Plox.points([1, 2], dataset[:x])
+    [{1, 10}, {2, 30}]
 
-    iex> Plox.points(%Plox.DatasetAxis{values: [1, 2]}, %Plox.DatasetAxis{values: [3, 4]})
-    [{1, 3}, {2, 4}]
+    iex> dataset = %Plox.Dataset{
+    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+    ...>}
+    iex> Plox.points(dataset[:x], dataset[:y])
+    [{10, 20}, {30, 40}]
   """
   def points(x, y) do
     values([x, y])
@@ -433,38 +441,33 @@ defmodule Plox do
     iex> Plox.values([1, 2], [3, 4])
     [{1, 3}, {2, 4}]
 
-    iex> Plox.values([1, 2], %Plox.DatasetAxis{values: [3, 4]})
-    [{1, 3}, {2, 4}]
+    iex> dataset = %Plox.Dataset{
+    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+    ...>}
+    iex> Plox.values([[1, 2], dataset[:x]])
+    [{1, 10}, {2, 30}]
 
-    iex> Plox.values(%Plox.DatasetAxis{values: [1, 2]}, %Plox.DatasetAxis{values: [3, 4]})
-    [{1, 3}, {2, 4}]
+    iex> dataset = %Plox.Dataset{
+    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+    ...>}
+    iex> Plox.values([dataset[:x], dataset[:y]])
+    [{10, 20}, {30, 40}]
   """
   def values(data) do
-    case validate_zero_or_one_dataset(data) do
-      :none ->
-        [List.to_tuple(data)]
-
-      :ok ->
-        data
-        |> Enum.map(fn
-          %Plox.DatasetAxis{} = axis -> axis
-          constant -> Stream.repeatedly(fn -> constant end)
-        end)
-        |> Enum.zip()
-    end
-  end
-
-  defp validate_zero_or_one_dataset(data) do
-    data
-    |> Enum.flat_map(fn
-      %Plox.DatasetAxis{} = dataset_axis -> [dataset_axis.dataset]
-      _ -> []
-    end)
-    |> Enum.uniq()
-    |> case do
-      [] -> :none
-      [_dataset] -> :ok
-      _ -> raise "all dynamic values must be from the same dataset"
+    if Enum.any?(data, &Enumerable.impl_for/1) do
+      data
+      |> Enum.map(fn value ->
+        if Enumerable.impl_for(value) do
+          value
+        else
+          Stream.repeatedly(fn -> value end)
+        end
+      end)
+      |> Enum.zip()
+    else
+      [List.to_tuple(data)]
     end
   end
 
