@@ -48,7 +48,7 @@ defmodule Plox.MixProject do
       groups_for_functions: [
         Components: &(&1[:type] == :component)
       ],
-      extras: ["README.md", "LICENSE", "CODE_OF_CONDUCT.md"]
+      extras: ["README.md", "LICENSE", "CODE_OF_CONDUCT.md", "docs/migration_guide.md"]
     ]
   end
 
@@ -66,8 +66,14 @@ defmodule Plox.MixProject do
         Plox.GraphScale
       ],
       Protocols: [
+        Plox.Axis.Protocol,
         Plox.ColorScale,
         Plox.Scale
+      ],
+      Axes: [
+        Plox.ColorAxis,
+        Plox.XAxis,
+        Plox.YAxis
       ],
       Scales: [
         Plox.DateScale,

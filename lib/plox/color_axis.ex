@@ -1,7 +1,22 @@
 defmodule Plox.ColorAxis do
   @moduledoc """
-  TODO: this is a public module that graph component implementers will interact
-  with, so it should be documented
+  ColorAxis implements the `Plox.Axis.Protocol` and is used to convert `Plox.ColorScale`
+  values to graphable colors.
+
+  This module implements the `Access` behaviour, allowing access to graphable
+  values using the `[]` syntax.
+
+  ## Example
+
+      iex> color_scale = Plox.FixedColorsScale.new(%{red: "#ff0000", green: "#00ff00", blue: "#0000ff"})
+      iex> color_axis = Plox.ColorAxis.new(color_scale)
+      iex> color_axis[:green]
+      "#00ff00"
+
+  This is useful when rendering graph elements in a more intuitive way:
+
+      <!-- Draw a red circle (at the given coordinates) -->
+      <.circle cx={50.0} cy={75.0} fill={color_axis[:red]} r="3" />
   """
 
   use Plox.Axis
