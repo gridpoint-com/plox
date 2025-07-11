@@ -6,7 +6,7 @@ defmodule Plox.DatasetTest do
   alias Plox.DatasetAxis
 
   describe "DatasetAxis" do
-    test "fetch/2 returns graphable coordinates" do
+    test "fetch/2 returns graphable values" do
       data = [%{foo: 1, bar: 2}, %{foo: 2, bar: 3}]
       dimensions = Plox.Dimensions.new(100, 100, margin: 0)
       scale = Plox.NumberScale.new(0, 10)
@@ -26,7 +26,7 @@ defmodule Plox.DatasetTest do
       assert {:ok, 70.0} = DatasetAxis.fetch(dataset_axis_y, 3)
     end
 
-    test "fetches graphable coordinates using Access syntax" do
+    test "fetches graphable values using Access syntax" do
       data = [%{foo: 1, bar: 2}, %{foo: 2, bar: 3}]
       dimensions = Plox.Dimensions.new(100, 100, margin: 0)
       scale = Plox.NumberScale.new(0, 10)

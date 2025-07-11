@@ -1,6 +1,6 @@
 defmodule Plox.DataPoint do
   @moduledoc """
-  Data structure for containing raw data and its mapped coordinate values for graphing.
+  Data structure for containing raw data and its mapped values for graphing.
   """
 
   # alias Plox.GraphPoint

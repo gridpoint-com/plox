@@ -44,7 +44,7 @@ end
 defmodule Plox.Dataset do
   @moduledoc """
   A collection of `Plox.DataPoint`s and `Plox.Axis` implementations to convert
-  the `Plox.DataPoint`s to graphable coordinates.
+  the `Plox.DataPoint`s to graphable values.
 
   This module implements the `Access` behaviour, allowing access to axes
   using the `[]` syntax.
@@ -60,7 +60,7 @@ defmodule Plox.Dataset do
       %Plox.DatasetAxis{axis: %Plox.YAxis{}, key: :y}
 
   Since `Plox.Axis` also implements the `Access` behaviour, you can access
-  the coordinate values more ergonomically when rendering elements in a graph:
+  the graphable values more ergonomically when rendering elements in a graph:
 
   ## Example
 
