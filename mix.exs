@@ -67,6 +67,7 @@ defmodule Plox.MixProject do
       ],
       Axes: [
         Plox.ColorAxis,
+        Plox.LinearAxis,
         Plox.XAxis,
         Plox.YAxis
       ],

@@ -44,8 +44,6 @@ defmodule Plox.YAxis do
     %__MODULE__{scale: scale, dimensions: dimensions}
   end
 
-  def values(%__MODULE__{scale: scale}, opts \\ %{}), do: Scale.values(scale, opts)
-
   defimpl Plox.Axis.Protocol do
     @doc """
     Converts the given `value` to a graphable y-coordinate.

@@ -40,8 +40,6 @@ defmodule Plox.ColorAxis do
     %__MODULE__{scale: scale}
   end
 
-  # def values(%__MODULE__{scale: scale}, opts \\ %{}), do: Scale.values(scale, opts)
-
   defimpl Plox.Axis.Protocol do
     @doc """
     Converts the given `value` to a graphable color.

@@ -1,7 +1,24 @@
 defmodule Plox.LinearAxis do
   @moduledoc """
-  TODO: this is a public module that graph component implementers will interact
-  with, so it should be documented
+  LinearAxis implements the `Plox.Axis.Protocol` and is used to convert scale values
+  to graphable values in a linear range between a minimum and maximum.
+
+  This module implements the `Access` behaviour, allowing access to graphable
+  values using the `[]` syntax.
+
+  ## Example
+
+      iex> scale = Plox.NumberScale.new(0, 10)
+      iex> linear_axis = %Plox.LinearAxis{scale: scale, min: 0, max: 100}
+      iex> linear_axis[1]
+      10.0
+      iex> linear_axis[2]
+      20.0
+
+  This is useful when rendering graph elements in a more intuitive way:
+
+      <!-- Draw a red circle with a radius of 10 (at the given coordinates) -->
+      <.circle cx={25.0} cy={50.0} fill="red" r={linear_axis[1]} />
   """
 
   use Plox.Axis
@@ -28,8 +45,6 @@ defmodule Plox.LinearAxis do
 
     %__MODULE__{scale: scale, min: min, max: max}
   end
-
-  def values(%__MODULE__{scale: scale}, opts \\ %{}), do: Scale.values(scale, opts)
 
   defimpl Plox.Axis.Protocol do
     @doc """

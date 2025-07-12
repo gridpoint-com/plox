@@ -9,9 +9,10 @@ defprotocol Plox.Axis.Protocol do
 
   Built in implementations are:
 
+  * `Plox.ColorAxis`
+  * `Plox.LinearAxis`
   * `Plox.XAxis`
   * `Plox.YAxis`
-  * `Plox.ColorAxis`
   """
   @type t :: any()
 
