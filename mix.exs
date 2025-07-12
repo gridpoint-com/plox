@@ -58,12 +58,7 @@ defmodule Plox.MixProject do
         Plox.Box,
         Plox.DataPoint,
         Plox.Dataset,
-        Plox.Dimensions,
-        Plox.Graph,
-        Plox.GraphDataset,
-        Plox.GraphPoint,
-        Plox.GraphScalar,
-        Plox.GraphScale
+        Plox.Dimensions
       ],
       Protocols: [
         Plox.Axis.Protocol,
