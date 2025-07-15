@@ -1,6 +1,6 @@
 defmodule Plox.DateTimeScale do
   @moduledoc """
-  A scale made of elixir `DateTime` or `NaiveDateTime` values
+  A scale made of elixir `DateTime` or `NaiveDateTime` values.
 
   This struct implements the `Plox.Scale` protocol.
   """
@@ -12,10 +12,18 @@ defmodule Plox.DateTimeScale do
   @type datetime :: DateTime.t() | NaiveDateTime.t()
 
   @doc """
-  Creates a new `Plox.DateTimeScale` struct
+  Creates a new `Plox.DateTimeScale` struct.
 
   Accepts 2 elixir `DateTime` or `NaiveDateTime` structs as `first` and `last`.
   Negative ranges are not currently supported.
+
+  ## Example
+
+      iex> Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
+      %Plox.DateTimeScale{first: ~N[2019-01-01 00:00:00], last: ~N[2019-01-03 00:00:00]}
+
+      iex> Plox.DateTimeScale.new(~U[2019-01-01 00:00:00Z], ~U[2019-01-03 00:00:00Z])
+      %Plox.DateTimeScale{first: ~U[2019-01-01 00:00:00Z], last: ~U[2019-01-03 00:00:00Z]}
   """
   @spec new(first :: datetime(), last :: datetime()) :: t()
   def new(first, last)
@@ -31,10 +39,27 @@ defmodule Plox.DateTimeScale do
 
   def new(_first, _last) do
     raise ArgumentError,
-      message: "Invalid DateTimeScale: First and last must be DateTime or NaiveDateTime structs."
+      message: "Invalid DateTimeScale: First and last must both be DateTime or NaiveDateTime structs."
   end
 
   defimpl Plox.Scale do
+    @doc """
+    Returns a list of all `DateTime` or `NaiveDateTime` values in the scale,
+    stepping by the given interval.
+
+    Accepts an optional `:step` option, which can be a number of seconds, minutes,
+    hours, or days. The default step is 60 seconds.
+
+    ## Example
+
+        iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
+        iex> Plox.Scale.values(scale, %{step: {1, :day}})
+        [~N[2019-01-01 00:00:00], ~N[2019-01-02 00:00:00], ~N[2019-01-03 00:00:00]]
+
+        iex> scale = Plox.DateTimeScale.new(~U[2019-01-01 00:00:00Z], ~U[2019-01-03 00:00:00Z])
+        iex> Plox.Scale.values(scale, %{step: {1, :hour}})
+        [~U[2019-01-01 00:00:00Z], ~U[2019-01-01 01:00:00Z], ..., ~U[2019-01-03 23:00:00Z]]
+    """
     def values(%{first: %DateTime{time_zone: tz}} = scale, %{step: {step_days, :day}}) when tz != "Etc/UTC" do
       scale.first
       |> Stream.unfold(fn current_dt ->
@@ -47,9 +72,7 @@ defmodule Plox.DateTimeScale do
       |> Enum.to_list()
     end
 
-    def values(scale, opts) do
-      %{first: %date_time_module{}} = scale
-
+    def values(%{first: %date_time_module{}} = scale, opts) do
       step_seconds =
         case Map.get(opts, :step, {60, :second}) do
           seconds when is_integer(seconds) -> seconds
@@ -78,6 +101,17 @@ defmodule Plox.DateTimeScale do
       |> elem(0)
     end
 
+    @doc """
+    Converts a datetime `value` from the `scale` to a number in the given `to_range`.
+    The given `value` must be a `DateTime` or `NaiveDateTime` inclusively within the
+    `scale` bounds.
+
+    ## Example
+
+        iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
+        iex> Plox.Scale.convert_to_range(scale, ~N[2019-01-02 12:00:00], 0..100)
+        50.0
+    """
     def convert_to_range(%{first: %date_time_module{}} = scale, %date_time_module{} = value, to_range)
         when date_time_module in [DateTime, NaiveDateTime] do
       if date_time_module.compare(value, scale.first) == :lt or
