@@ -11,9 +11,25 @@ defmodule Plox.FixedValuesScale do
   @type t :: %__MODULE__{}
 
   @doc """
-  Creates a new `Plox.FixedValuesScale` struct
+  Creates a new `Plox.FixedValuesScale` struct.
 
-  Accepts any enumerable.
+  Accepts any enumerable with at least two values.
+
+  ## Example
+
+      iex> Plox.FixedValuesScale.new([1, 2, 3, 4])
+      %Plox.FixedValuesScale{
+        values: [1, 2, 3, 4],
+        index_map: %{1 => 0, 2 => 1, 3 => 2, 4 => 3},
+        max_index: 3
+      }
+
+      iex> Plox.FixedValuesScale.new(["a", "b", "c"])
+      %Plox.FixedValuesScale{
+        values: ["a", "b", "c"],
+        index_map: %{"a" => 0, "b" => 1, "c" => 2},
+        max_index: 2
+      }
   """
   @spec new(values :: Enumerable.t()) :: t()
   def new(values) do
@@ -35,8 +51,26 @@ defmodule Plox.FixedValuesScale do
   end
 
   defimpl Plox.Scale do
+    @doc """
+    Returns an enumerable of the `values` in the scale.
+
+    ## Example
+
+        iex> scale = Plox.FixedValuesScale.new([:a, :b, :c])
+        iex> Plox.Scale.values(scale)
+        [:a, :b, :c]
+    """
     def values(scale, _opts), do: scale.values
 
+    @doc """
+    Converts a given `value` from the scale to a number in the given `to_range`.
+
+    ## Example
+
+        iex> scale = Plox.FixedValuesScale.new([:a, :b, :c])
+        iex> Plox.Scale.convert_to_range(scale, :b, 0..100)
+        50.0
+    """
     def convert_to_range(scale, value, to_range) do
       case Map.fetch(scale.index_map, value) do
         {:ok, value_index} ->
