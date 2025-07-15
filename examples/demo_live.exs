@@ -6,6 +6,8 @@ Mix.install([
 defmodule DemoLive do
   @moduledoc """
   Example graph rendered within a Phoenix Playground application.
+
+  $ iex demo_live.exs
   """
   use Phoenix.LiveView
 

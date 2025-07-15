@@ -1,11 +1,13 @@
 Mix.install([
-  {:phoenix_playground, "~> 0.1.6"},
+  {:phoenix_playground, "~> 0.1.7"},
   {:plox, path: "."}
 ])
 
 defmodule AnimatedDemoLive do
   @moduledoc """
   Example animated graph rendered within a Phoenix Playground application.
+
+  $ iex animated_demo_live.exs
   """
   use Phoenix.LiveView
 
