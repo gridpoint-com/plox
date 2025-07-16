@@ -18,6 +18,8 @@ defmodule Plox.NumberScale do
   Accepts 2 numbers as `first` and `last` values. Dynamically determines
   if the scale is backwards (i.e. `first` is greater than `last`).
 
+  Raises if given equivalent numbers or if either `first` or `last` is not a number.
+
   ## Example
 
       iex> Plox.NumberScale.new(0, 10)
@@ -37,7 +39,7 @@ defmodule Plox.NumberScale do
 
   def new(_first, _last) do
     raise ArgumentError,
-      message: "Invalid NumberScale: First and last must be numbers and cannot be equivalent."
+      message: "Invalid NumberScale: First and last must be numbers and cannot be equivalent"
   end
 
   defimpl Plox.Scale do
@@ -46,7 +48,7 @@ defmodule Plox.NumberScale do
     number of `ticks` to specify how many values to return. The in-between values are
     dynamically calculated based on `first`, `last`, and `ticks`.
 
-    `ticks` must be at least `2` (default is `11`).
+    Raises if `ticks` is less than `2` (default is `11`).
 
     ## Example
 
@@ -77,8 +79,10 @@ defmodule Plox.NumberScale do
     end
 
     @doc """
-    Converts a number from the `scale` to a number in the given `to_range`. The given
+    Converts a number from the scale to a number in the given `to_range`. The given
     `input_value` must be a number inclusively within the `scale` bounds.
+
+    Raises if `input_value` is out of bounds or not a number.
 
     ## Example
 

@@ -11,7 +11,7 @@ defmodule Plox.FixedColorsScale do
   @doc """
   Creates a new `Plox.FixedColorsScale` struct.
 
-  Accepts a map with at least two entries.
+  Raises if the given `mapping` is not a map or contains fewer than two entries.
 
   ## Example
 
@@ -31,7 +31,9 @@ defmodule Plox.FixedColorsScale do
 
   defimpl Plox.ColorScale do
     @doc """
-    Converts a given `value` from the `scale` to its corresponding color.
+    Converts a given `value` from the scale to its corresponding color.
+
+    Raises if `value` is not a key within the scale.
 
     ## Example
 

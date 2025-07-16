@@ -1,6 +1,6 @@
 defmodule Plox.DateTimeScale do
   @moduledoc """
-  A scale made of elixir `DateTime` or `NaiveDateTime` values.
+  A scale of datetime values (`t:DateTime.t/0` or `t:NaiveDateTime.t/0`).
 
   This struct implements the `Plox.Scale` protocol.
   """
@@ -14,7 +14,8 @@ defmodule Plox.DateTimeScale do
   @doc """
   Creates a new `Plox.DateTimeScale` struct.
 
-  Accepts 2 elixir `DateTime` or `NaiveDateTime` structs as `first` and `last`.
+  Accepts 2 datetime structs as `first` and `last` (`t:DateTime.t/0` or `t:NaiveDateTime.t/0`).
+  Raises if `first` and `last` are not the same struct or if `first` is not before `last`.
   Negative ranges are not currently supported.
 
   ## Example
@@ -31,7 +32,7 @@ defmodule Plox.DateTimeScale do
   def new(%date_time_module{} = first, %date_time_module{} = last) when date_time_module in [DateTime, NaiveDateTime] do
     if date_time_module.diff(last, first) <= 0 do
       raise ArgumentError,
-        message: "Invalid DateTimeScale: The range must be at least 1 second long and `first` must come before `last`."
+        message: "Invalid DateTimeScale: The range must be at least 1 second long and `first` must come before `last`"
     end
 
     %__MODULE__{first: first, last: last}
@@ -39,7 +40,7 @@ defmodule Plox.DateTimeScale do
 
   def new(_first, _last) do
     raise ArgumentError,
-      message: "Invalid DateTimeScale: First and last must both be DateTime or NaiveDateTime structs."
+      message: "Invalid DateTimeScale: First and last must both be DateTime or NaiveDateTime structs"
   end
 
   defimpl Plox.Scale do
@@ -47,8 +48,8 @@ defmodule Plox.DateTimeScale do
     Returns a list of all `DateTime` or `NaiveDateTime` values in the scale,
     stepping by the given interval.
 
-    Accepts an optional `:step` option, which can be a number of seconds, minutes,
-    hours, or days. The default step is 60 seconds.
+    Accepts a `:step` option, which can be a number of seconds, minutes, hours,
+    or days. The default step is 60 seconds.
 
     ## Example
 
@@ -102,9 +103,9 @@ defmodule Plox.DateTimeScale do
     end
 
     @doc """
-    Converts a datetime `value` from the `scale` to a number in the given `to_range`.
-    The given `value` must be a `DateTime` or `NaiveDateTime` inclusively within the
-    `scale` bounds.
+    Converts a datetime `value` from the scale to a number in the given `to_range`.
+
+    Raises if `value` is not a valid datetime included in the scale.
 
     ## Example
 

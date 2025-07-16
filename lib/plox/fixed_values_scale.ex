@@ -13,7 +13,7 @@ defmodule Plox.FixedValuesScale do
   @doc """
   Creates a new `Plox.FixedValuesScale` struct.
 
-  Accepts any enumerable with at least two values.
+  Raises if given an enumerable with less than two values.
 
   ## Example
 
@@ -64,6 +64,8 @@ defmodule Plox.FixedValuesScale do
 
     @doc """
     Converts a given `value` from the scale to a number in the given `to_range`.
+
+    Raises if `value` is not within the scale.
 
     ## Example
 
