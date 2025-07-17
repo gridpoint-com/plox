@@ -20,6 +20,15 @@ defmodule Plox.XAxis do
 
       <!-- Draw a red circle where you expect x = 1 (at the given y-coordinate) -->
       <.circle cx={x_axis[1]} cy={50.0} fill="red" r="3" />
+
+  This module implements the `Plox.Axis.Protocol` and defines the `Plox.Axis.Protocol.to_graph/2`
+  function. This function is called by the `Access` behaviour:
+
+      iex> scale = Plox.NumberScale.new(0, 10)
+      iex> dimensions = Plox.Dimensions.new(100, 100, margin: 0)
+      iex> x_axis = Plox.XAxis.new(scale, dimensions)
+      iex> x_axis[1] == Plox.Axis.Protocol.to_graph(x_axis, 1)
+      true
   """
 
   use Plox.Axis
@@ -47,16 +56,6 @@ defmodule Plox.XAxis do
   defimpl Plox.Axis.Protocol do
     @doc """
     Converts the given `value` to a graphable x-coordinate.
-
-    ## Example
-
-        iex> scale = Plox.NumberScale.new(0, 10)
-        iex> dimensions = Plox.Dimensions.new(100, 100, margin: 0)
-        iex> x_axis = Plox.XAxis.new(scale, dimensions)
-        iex> Plox.Axis.Protocol.to_graph(x_axis, 1)
-        10.0
-        iex> Plox.Axis.Protocol.to_graph(x_axis, 2)
-        20.0
     """
     def to_graph(%{scale: scale, dimensions: dimensions}, value) do
       range =

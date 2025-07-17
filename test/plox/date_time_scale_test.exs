@@ -45,6 +45,16 @@ defmodule Plox.DateTimeScaleTest do
   end
 
   describe "values/2" do
+    test "with default step (60s)" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert Scale.values(scale) == [
+               ~N[2019-01-01 00:00:00],
+               ~N[2019-01-01 00:01:00],
+               ~N[2019-01-01 00:02:00]
+             ]
+    end
+
     test "with valid step in days" do
       scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
 
@@ -82,16 +92,6 @@ defmodule Plox.DateTimeScaleTest do
                ~N[2019-01-01 00:00:01],
                ~N[2019-01-01 00:00:02],
                ~N[2019-01-01 00:00:03]
-             ]
-    end
-
-    test "with default step (60s)" do
-      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
-
-      assert Scale.values(scale) == [
-               ~N[2019-01-01 00:00:00],
-               ~N[2019-01-01 00:01:00],
-               ~N[2019-01-01 00:02:00]
              ]
     end
   end

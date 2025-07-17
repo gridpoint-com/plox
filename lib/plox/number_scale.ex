@@ -2,11 +2,31 @@ defmodule Plox.NumberScale do
   @moduledoc """
   An arbitrary precision number scale.
 
+  Although internally we use `Decimal` for arbitrary precision and accurate
+  math, this scale expects floats as input and produces floats as output,
+  which may lead to floating point imprecision.
+
   This struct implements the `Plox.Scale` protocol.
 
-  Although internally we use `Decimal` for arbitrary precision and accurate
-  math, this scale expects floats as input and produces floats as output, so
-  there's still some room for floating point imprecision.
+  `Plox.Scale.values/2` returns an enumerable of the numerical values in the scale:
+
+      iex> scale = Plox.NumberScale.new(0, 10)
+      iex> Plox.Scale.values(scale)
+      [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+
+      iex> scale = Plox.NumberScale.new(10, 0)
+      iex> Plox.Scale.values(scale, %{ticks: 6})
+      [10.0, 8.0, 6.0, 4.0, 2.0, 0.0]
+
+  `Plox.Scale.convert_to_range/3` returns a number in the given range:
+
+      iex> scale = Plox.NumberScale.new(0, 10)
+      iex> Plox.Scale.convert_to_range(scale, 5, 0..100)
+      50.0
+
+      iex> scale = Plox.NumberScale.new(10, 0)
+      iex> Plox.Scale.convert_to_range(scale, 2, 0..100)
+      80.0
   """
   defstruct [:first, :last, :backwards?]
 
@@ -49,16 +69,6 @@ defmodule Plox.NumberScale do
     dynamically calculated based on `first`, `last`, and `ticks`.
 
     Raises if `ticks` is less than `2` (default is `11`).
-
-    ## Example
-
-        iex> scale = Plox.NumberScale.new(0, 10)
-        iex> Plox.Scale.values(scale)
-        [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-
-        iex> scale = Plox.NumberScale.new(10, 0)
-        iex> Plox.Scale.values(scale, %{ticks: 6})
-        [10.0, 8.0, 6.0, 4.0, 2.0, 0.0]
     """
     def values(scale, opts) do
       ticks = Map.get(opts, :ticks, 11)
@@ -83,16 +93,6 @@ defmodule Plox.NumberScale do
     `input_value` must be a number inclusively within the `scale` bounds.
 
     Raises if `input_value` is out of bounds or not a number.
-
-    ## Example
-
-        iex> scale = Plox.NumberScale.new(0, 10)
-        iex> Plox.Scale.convert_to_range(scale, 5, 0..100)
-        50.0
-
-        iex> scale = Plox.NumberScale.new(10, 0)
-        iex> Plox.Scale.convert_to_range(scale, 2, 0..100)
-        80.0
     """
     def convert_to_range(scale, input_value, to_range) when is_number(input_value) do
       value = Decimal.from_float(input_value / 1.0)

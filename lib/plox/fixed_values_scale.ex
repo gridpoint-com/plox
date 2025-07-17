@@ -5,6 +5,18 @@ defmodule Plox.FixedValuesScale do
   It places the values in the given order with equal distance between them.
 
   This struct implements the `Plox.Scale` protocol.
+
+  `Plox.Scale.values/2` returns an enumerable of the `values` in the scale:
+
+      iex> scale = Plox.FixedValuesScale.new([1, 2, 3, 4])
+      iex> Plox.Scale.values(scale)
+      [1, 2, 3, 4]
+
+  `Plox.Scale.convert_to_range/3` returns a number in the given range:
+
+      iex> scale = Plox.FixedValuesScale.new([:a, :b, :c])
+      iex> Plox.Scale.convert_to_range(scale, :b, 0..100)
+      50.0
   """
   defstruct [:values, :index_map, :max_index]
 
@@ -53,12 +65,6 @@ defmodule Plox.FixedValuesScale do
   defimpl Plox.Scale do
     @doc """
     Returns an enumerable of the `values` in the scale.
-
-    ## Example
-
-        iex> scale = Plox.FixedValuesScale.new([:a, :b, :c])
-        iex> Plox.Scale.values(scale)
-        [:a, :b, :c]
     """
     def values(scale, _opts), do: scale.values
 
@@ -66,12 +72,6 @@ defmodule Plox.FixedValuesScale do
     Converts a given `value` from the scale to a number in the given `to_range`.
 
     Raises if `value` is not within the scale.
-
-    ## Example
-
-        iex> scale = Plox.FixedValuesScale.new([:a, :b, :c])
-        iex> Plox.Scale.convert_to_range(scale, :b, 0..100)
-        50.0
     """
     def convert_to_range(scale, value, to_range) do
       case Map.fetch(scale.index_map, value) do

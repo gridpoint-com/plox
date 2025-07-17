@@ -3,6 +3,22 @@ defmodule Plox.DateTimeScale do
   A scale of datetime values (`t:DateTime.t/0` or `t:NaiveDateTime.t/0`).
 
   This struct implements the `Plox.Scale` protocol.
+
+  `Plox.Scale.values/2` returns a list of all datetime values:
+
+      iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:03:00])
+      iex> Plox.Scale.values(scale)
+      [~N[2019-01-01 00:00:00], ~N[2019-01-01 00:01:00], ~N[2019-01-01 00:02:00], ~N[2019-01-01 00:03:00]]
+
+      iex> scale = Plox.DateTimeScale.new(~U[2019-01-01 00:00:00Z], ~U[2019-01-03 00:00:00Z])
+      iex> Plox.Scale.values(scale, %{step: {1, :day}})
+      [~U[2019-01-01 00:00:00Z], ~U[2019-01-02 00:00:00Z], ~U[2019-01-03 00:00:00Z]]
+
+  `Plox.Scale.convert_to_range/3` returns a number in the given range:
+
+    iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
+    iex> Plox.Scale.convert_to_range(scale, ~N[2019-01-02 00:00:00], 0..100)
+    50.0
   """
   require Logger
 
@@ -50,16 +66,6 @@ defmodule Plox.DateTimeScale do
 
     Accepts a `:step` option, which can be a number of seconds, minutes, hours,
     or days. The default step is 60 seconds.
-
-    ## Example
-
-        iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
-        iex> Plox.Scale.values(scale, %{step: {1, :day}})
-        [~N[2019-01-01 00:00:00], ~N[2019-01-02 00:00:00], ~N[2019-01-03 00:00:00]]
-
-        iex> scale = Plox.DateTimeScale.new(~U[2019-01-01 00:00:00Z], ~U[2019-01-03 00:00:00Z])
-        iex> Plox.Scale.values(scale, %{step: {1, :hour}})
-        [~U[2019-01-01 00:00:00Z], ~U[2019-01-01 01:00:00Z], ..., ~U[2019-01-03 23:00:00Z]]
     """
     def values(%{first: %DateTime{time_zone: tz}} = scale, %{step: {step_days, :day}}) when tz != "Etc/UTC" do
       scale.first
@@ -106,12 +112,6 @@ defmodule Plox.DateTimeScale do
     Converts a datetime `value` from the scale to a number in the given `to_range`.
 
     Raises if `value` is not a valid datetime included in the scale.
-
-    ## Example
-
-        iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
-        iex> Plox.Scale.convert_to_range(scale, ~N[2019-01-02 12:00:00], 0..100)
-        50.0
     """
     def convert_to_range(%{first: %date_time_module{}} = scale, %date_time_module{} = value, to_range)
         when date_time_module in [DateTime, NaiveDateTime] do

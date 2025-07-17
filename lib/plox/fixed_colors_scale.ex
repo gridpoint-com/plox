@@ -4,6 +4,12 @@ defmodule Plox.FixedColorsScale do
   colors.
 
   This struct implements the `Plox.ColorScale` protocol.
+
+  `Plox.ColorScale.convert_to_color/2` returns the color for a given value:
+
+      iex> scale = Plox.FixedColorsScale.new(%{red: "#ff0000", green: "#00ff00", blue: "#0000ff"})
+      iex> Plox.ColorScale.convert_to_color(scale, :red)
+      "#ff0000"
   """
 
   defstruct [:mapping]
@@ -34,12 +40,6 @@ defmodule Plox.FixedColorsScale do
     Converts a given `value` from the scale to its corresponding color.
 
     Raises if `value` is not a key within the scale.
-
-    ## Example
-
-        iex> scale = Plox.FixedColorsScale.new(%{red: "#ff0000", green: "#00ff00", blue: "#0000ff"})
-        iex> Plox.ColorScale.convert_to_color(scale, :red)
-        "#ff0000"
     """
     def convert_to_color(scale, value) do
       case Map.fetch(scale.mapping, value) do
