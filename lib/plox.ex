@@ -6,9 +6,7 @@ defmodule Plox do
 
   use Phoenix.Component
 
-  alias Phoenix.LiveView.JS
   alias Plox.Dimensions
-  alias Plox.GraphDataset
   alias Plox.Scale
   alias Plox.XAxis
   alias Plox.YAxis
@@ -402,7 +400,7 @@ defmodule Plox do
   end
 
   @doc """
-  Returns a list of points as tuples for use in polyline or other SVG elements.
+  Returns a list of tuples for use in polyline or other SVG elements.
 
   ## Example
 
@@ -412,11 +410,19 @@ defmodule Plox do
     iex> Plox.points([1, 2], [3, 4])
     [{1, 3}, {2, 4}]
 
-    iex> Plox.points([1, 2], %Plox.DatasetAxis{values: [3, 4]})
-    [{1, 3}, {2, 4}]
+    iex> dataset = %Plox.Dataset{
+    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+    ...>}
+    iex> Plox.points([1, 2], dataset[:x])
+    [{1, 10}, {2, 30}]
 
-    iex> Plox.points(%Plox.DatasetAxis{values: [1, 2]}, %Plox.DatasetAxis{values: [3, 4]})
-    [{1, 3}, {2, 4}]
+    iex> dataset = %Plox.Dataset{
+    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+    ...>}
+    iex> Plox.points(dataset[:x], dataset[:y])
+    [{10, 20}, {30, 40}]
   """
   def points(x, y) do
     values([x, y])
@@ -433,264 +439,259 @@ defmodule Plox do
     iex> Plox.values([1, 2], [3, 4])
     [{1, 3}, {2, 4}]
 
-    iex> Plox.values([1, 2], %Plox.DatasetAxis{values: [3, 4]})
-    [{1, 3}, {2, 4}]
+    iex> dataset = %Plox.Dataset{
+    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+    ...>}
+    iex> Plox.values([[1, 2], dataset[:x]])
+    [{1, 10}, {2, 30}]
 
-    iex> Plox.values(%Plox.DatasetAxis{values: [1, 2]}, %Plox.DatasetAxis{values: [3, 4]})
-    [{1, 3}, {2, 4}]
+    iex> dataset = %Plox.Dataset{
+    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+    ...>}
+    iex> Plox.values([dataset[:x], dataset[:y]])
+    [{10, 20}, {30, 40}]
   """
   def values(data) do
-    case validate_zero_or_one_dataset(data) do
-      :none ->
-        [List.to_tuple(data)]
-
-      :ok ->
-        data
-        |> Enum.map(fn
-          %Plox.DatasetAxis{} = axis -> axis
-          constant -> Stream.repeatedly(fn -> constant end)
-        end)
-        |> Enum.zip()
+    if Enum.any?(data, &Enumerable.impl_for/1) do
+      data
+      |> Enum.map(fn value ->
+        if Enumerable.impl_for(value) do
+          value
+        else
+          Stream.repeatedly(fn -> value end)
+        end
+      end)
+      |> Enum.zip()
+    else
+      [List.to_tuple(data)]
     end
   end
 
-  defp validate_zero_or_one_dataset(data) do
-    data
-    |> Enum.flat_map(fn
-      %Plox.DatasetAxis{} = dataset_axis -> [dataset_axis.dataset]
-      _ -> []
-    end)
-    |> Enum.uniq()
-    |> case do
-      [] -> :none
-      [_dataset] -> :ok
-      _ -> raise "all dynamic values must be from the same dataset"
-    end
-  end
+  # @doc """
+  # Bar plot.
+  # """
+  # @doc type: :component
 
-  @doc """
-  Bar plot.
-  """
-  @doc type: :component
+  # attr :dataset, :any, required: true
 
-  attr :dataset, :any, required: true
+  # attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
+  # attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
-  attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
-  attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+  # attr :width, :string, examples: ["1.5", "4"], default: "16"
+  # attr :bar_style, :atom, values: [:round, :square], default: :round
+  # attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
 
-  attr :width, :string, examples: ["1.5", "4"], default: "16"
-  attr :bar_style, :atom, values: [:round, :square], default: :round
-  attr :color, :any, examples: ["red", "#FF9330", :color_axis], default: "#FF9330"
+  # attr :"phx-click", :any, default: nil
+  # attr :"phx-target", :any, default: nil
 
-  attr :"phx-click", :any, default: nil
-  attr :"phx-target", :any, default: nil
+  # # TODO:
+  # # support for several groups of bars
 
-  # TODO:
-  # support for several groups of bars
+  # def bar_plot(assigns) do
+  #   ~H"""
+  #   <%= for point <- GraphDataset.to_graph_points(@dataset, @x, @y) do %>
+  #     <line
+  #       phx-click={
+  #         if assigns[:"phx-click"],
+  #           do:
+  #             JS.push(assigns[:"phx-click"],
+  #               value: %{
+  #                 id: point.data_point.id,
+  #                 dataset_id: @dataset.id,
+  #                 x_pixel: point.x,
+  #                 y_pixel: point.y
+  #               }
+  #             )
+  #       }
+  #       phx-target={assigns[:"phx-target"]}
+  #       style={if assigns[:"phx-click"], do: "cursor: pointer;"}
+  #       x1={point.x}
+  #       y1={point.y}
+  #       x2={point.x}
+  #       y2={
+  #         @dataset.dimensions.height - @dataset.dimensions.margin.bottom -
+  #           @dataset.dimensions.padding.bottom
+  #       }
+  #       stroke={GraphDataset.to_color(@dataset, @color, point.data_point)}
+  #       stroke-width={@width}
+  #       stroke-linecap={bar_style(@bar_style)}
+  #     />
+  #   <% end %>
+  #   """
+  # end
 
-  def bar_plot(assigns) do
-    ~H"""
-    <%= for point <- GraphDataset.to_graph_points(@dataset, @x, @y) do %>
-      <line
-        phx-click={
-          if assigns[:"phx-click"],
-            do:
-              JS.push(assigns[:"phx-click"],
-                value: %{
-                  id: point.data_point.id,
-                  dataset_id: @dataset.id,
-                  x_pixel: point.x,
-                  y_pixel: point.y
-                }
-              )
-        }
-        phx-target={assigns[:"phx-target"]}
-        style={if assigns[:"phx-click"], do: "cursor: pointer;"}
-        x1={point.x}
-        y1={point.y}
-        x2={point.x}
-        y2={
-          @dataset.dimensions.height - @dataset.dimensions.margin.bottom -
-            @dataset.dimensions.padding.bottom
-        }
-        stroke={GraphDataset.to_color(@dataset, @color, point.data_point)}
-        stroke-width={@width}
-        stroke-linecap={bar_style(@bar_style)}
-      />
-    <% end %>
-    """
-  end
+  # defp bar_style(:round), do: "round"
+  # defp bar_style(:square), do: "butt"
 
-  defp bar_style(:round), do: "round"
-  defp bar_style(:square), do: "butt"
+  # @doc """
+  # Tooltip.
+  # """
+  # @doc type: :component
 
-  @doc """
-  Tooltip.
-  """
-  @doc type: :component
+  # attr :dataset, :any, required: true
+  # attr :point_id, :any, required: true
+  # attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
+  # attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
 
-  attr :dataset, :any, required: true
-  attr :point_id, :any, required: true
-  attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
-  attr :y, :atom, default: :y, doc: "The dataset axis key to use for y values"
+  # attr :x_pixel, :any, required: true
+  # attr :y_pixel, :any, required: true
 
-  attr :x_pixel, :any, required: true
-  attr :y_pixel, :any, required: true
+  # attr :"phx-click-away", :any
+  # attr :"phx-target", :any, default: nil
 
-  attr :"phx-click-away", :any
-  attr :"phx-target", :any, default: nil
+  # slot :inner_block, required: true
 
-  slot :inner_block, required: true
+  # def tooltip(%{x_pixel: x_pixel, y_pixel: y_pixel} = assigns) do
+  #   height = assigns.dataset.dimensions.height
+  #   width = assigns.dataset.dimensions.width
 
-  def tooltip(%{x_pixel: x_pixel, y_pixel: y_pixel} = assigns) do
-    height = assigns.dataset.dimensions.height
-    width = assigns.dataset.dimensions.width
+  #   {bubble_classes_lr, caret_classes_lr} =
+  #     if x_pixel < width / 2 do
+  #       # left half of the graph, move caret and bubble right of point
+  #       {"left: #{x_pixel + 10}px;", "left: #{x_pixel + 4}px;"}
+  #     else
+  #       # right half of the graph, move caret and bubble left of point
+  #       {"right: #{width - x_pixel + 10}px;", "right: #{width - x_pixel + 4}px;"}
+  #     end
 
-    {bubble_classes_lr, caret_classes_lr} =
-      if x_pixel < width / 2 do
-        # left half of the graph, move caret and bubble right of point
-        {"left: #{x_pixel + 10}px;", "left: #{x_pixel + 4}px;"}
-      else
-        # right half of the graph, move caret and bubble left of point
-        {"right: #{width - x_pixel + 10}px;", "right: #{width - x_pixel + 4}px;"}
-      end
+  #   bubble_classes_tb =
+  #     if y_pixel < height / 2 do
+  #       # top half of the graph, move bubble up 20px
+  #       "top: #{y_pixel - 20}px;"
+  #     else
+  #       # bottom half of the graph, move bubble below 20px
+  #       "bottom: #{height - y_pixel - 20}px;"
+  #     end
 
-    bubble_classes_tb =
-      if y_pixel < height / 2 do
-        # top half of the graph, move bubble up 20px
-        "top: #{y_pixel - 20}px;"
-      else
-        # bottom half of the graph, move bubble below 20px
-        "bottom: #{height - y_pixel - 20}px;"
-      end
+  #   assigns =
+  #     assign(assigns,
+  #       data_point: GraphDataset.get_point(assigns.dataset, assigns.point_id),
+  #       bubble_classes_lr: bubble_classes_lr,
+  #       caret_classes_lr: caret_classes_lr,
+  #       bubble_classes_tb: bubble_classes_tb
+  #     )
 
-    assigns =
-      assign(assigns,
-        data_point: GraphDataset.get_point(assigns.dataset, assigns.point_id),
-        bubble_classes_lr: bubble_classes_lr,
-        caret_classes_lr: caret_classes_lr,
-        bubble_classes_tb: bubble_classes_tb
-      )
+  #   ~H"""
+  #   <div>
+  #     <%!-- caret --%>
+  #     <div style={[
+  #       "position: absolute; z-index: 10; width: 1rem; height: 1rem; background: #4B4C4D;",
+  #       "top: #{@y_pixel - 8}px; transform: rotate(45deg);",
+  #       @caret_classes_lr
+  #     ]} />
 
-    ~H"""
-    <div>
-      <%!-- caret --%>
-      <div style={[
-        "position: absolute; z-index: 10; width: 1rem; height: 1rem; background: #4B4C4D;",
-        "top: #{@y_pixel - 8}px; transform: rotate(45deg);",
-        @caret_classes_lr
-      ]} />
+  #     <%!-- bubble --%>
+  #     <div
+  #       style={[
+  #         "position: absolute; z-index: 15; padding: 1rem; border-radius: 0.75rem; width: max-content;",
+  #         "background: #4B4C4D; color: #CACBCC ; font-size: 0.75rem;",
+  #         "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);",
+  #         @bubble_classes_lr,
+  #         @bubble_classes_tb
+  #       ]}
+  #       phx-click-away={assigns[:"phx-click-away"]}
+  #       phx-target={assigns[:"phx-target"]}
+  #     >
+  #       {render_slot(@inner_block, @data_point.original)}
+  #     </div>
+  #   </div>
+  #   """
+  # end
 
-      <%!-- bubble --%>
-      <div
-        style={[
-          "position: absolute; z-index: 15; padding: 1rem; border-radius: 0.75rem; width: max-content;",
-          "background: #4B4C4D; color: #CACBCC ; font-size: 0.75rem;",
-          "box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);",
-          @bubble_classes_lr,
-          @bubble_classes_tb
-        ]}
-        phx-click-away={assigns[:"phx-click-away"]}
-        phx-target={assigns[:"phx-target"]}
-      >
-        {render_slot(@inner_block, @data_point.original)}
-      </div>
-    </div>
-    """
-  end
+  # @doc """
+  # One-dimensional shaded areas, either horizontal or vertical.
+  # """
+  # @doc type: :component
 
-  @doc """
-  One-dimensional shaded areas, either horizontal or vertical.
-  """
-  @doc type: :component
+  # attr :dataset, :any, required: true
 
-  attr :dataset, :any, required: true
+  # attr :area, :atom, required: true, doc: "The dataset axis key to use for the area plots"
+  # attr :color, :atom, required: true, doc: "The dataset axis key to use for colors"
 
-  attr :area, :atom, required: true, doc: "The dataset axis key to use for the area plots"
-  attr :color, :atom, required: true, doc: "The dataset axis key to use for colors"
+  # attr :orientation, :atom, values: [:vertical, :horizontal], default: :horizontal
 
-  attr :orientation, :atom, values: [:vertical, :horizontal], default: :horizontal
+  # attr :"phx-click", :any, default: nil
+  # attr :"phx-target", :any, default: nil
 
-  attr :"phx-click", :any, default: nil
-  attr :"phx-target", :any, default: nil
+  # def area_plot(%{orientation: :horizontal} = assigns) do
+  #   ~H"""
+  #   <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
+  #     <rect
+  #       :if={!is_nil(rect_color)}
+  #       fill={rect_color}
+  #       height={
+  #         @dataset.dimensions.height - @dataset.dimensions.margin.top -
+  #           @dataset.dimensions.margin.bottom
+  #       }
+  #       width={scalar2.value - scalar1.value}
+  #       x={scalar1.value}
+  #       y={@dataset.dimensions.margin.top}
+  #       phx-click={
+  #         if assigns[:"phx-click"],
+  #           do:
+  #             JS.push(assigns[:"phx-click"],
+  #               value: %{
+  #                 start_area_point_id: scalar1.data_point.id,
+  #                 end_area_point_id: scalar2.data_point.id,
+  #                 dataset_id: @dataset.id,
+  #                 x_pixel: scalar1.value + (scalar2.value - scalar1.value) / 2,
+  #                 y_pixel: @dataset.dimensions.margin.top + @dataset.dimensions.height / 2
+  #               }
+  #             )
+  #       }
+  #       style={if assigns[:"phx-click"], do: "cursor: pointer;"}
+  #       phx-target={assigns[:"phx-target"]}
+  #     />
+  #   <% end %>
+  #   """
+  # end
 
-  def area_plot(%{orientation: :horizontal} = assigns) do
-    ~H"""
-    <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
-      <rect
-        :if={!is_nil(rect_color)}
-        fill={rect_color}
-        height={
-          @dataset.dimensions.height - @dataset.dimensions.margin.top -
-            @dataset.dimensions.margin.bottom
-        }
-        width={scalar2.value - scalar1.value}
-        x={scalar1.value}
-        y={@dataset.dimensions.margin.top}
-        phx-click={
-          if assigns[:"phx-click"],
-            do:
-              JS.push(assigns[:"phx-click"],
-                value: %{
-                  start_area_point_id: scalar1.data_point.id,
-                  end_area_point_id: scalar2.data_point.id,
-                  dataset_id: @dataset.id,
-                  x_pixel: scalar1.value + (scalar2.value - scalar1.value) / 2,
-                  y_pixel: @dataset.dimensions.margin.top + @dataset.dimensions.height / 2
-                }
-              )
-        }
-        style={if assigns[:"phx-click"], do: "cursor: pointer;"}
-        phx-target={assigns[:"phx-target"]}
-      />
-    <% end %>
-    """
-  end
+  # def area_plot(%{orientation: :vertical} = assigns) do
+  #   ~H"""
+  #   <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
+  #     <rect
+  #       :if={!is_nil(rect_color)}
+  #       fill={rect_color}
+  #       height={scalar1.value - scalar2.value}
+  #       width={
+  #         @dataset.dimensions.width - @dataset.dimensions.margin.left -
+  #           @dataset.dimensions.margin.right
+  #       }
+  #       x={@dataset.dimensions.margin.left}
+  #       y={scalar1.value - (scalar1.value - scalar2.value)}
+  #       phx-click={
+  #         if assigns[:"phx-click"],
+  #           do:
+  #             JS.push(assigns[:"phx-click"],
+  #               value: %{
+  #                 start_area_point_id: scalar1.data_point.id,
+  #                 end_area_point_id: scalar2.data_point.id,
+  #                 dataset_id: @dataset.id,
+  #                 x_pixel: @dataset.dimensions.margin.left + @dataset.dimensions.width / 2,
+  #                 y_pixel: scalar2.value + (scalar1.value - scalar2.value) / 2
+  #               }
+  #             )
+  #       }
+  #       style={if assigns[:"phx-click"], do: "cursor: pointer;"}
+  #       phx-target={assigns[:"phx-target"]}
+  #     />
+  #   <% end %>
+  #   """
+  # end
 
-  def area_plot(%{orientation: :vertical} = assigns) do
-    ~H"""
-    <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
-      <rect
-        :if={!is_nil(rect_color)}
-        fill={rect_color}
-        height={scalar1.value - scalar2.value}
-        width={
-          @dataset.dimensions.width - @dataset.dimensions.margin.left -
-            @dataset.dimensions.margin.right
-        }
-        x={@dataset.dimensions.margin.left}
-        y={scalar1.value - (scalar1.value - scalar2.value)}
-        phx-click={
-          if assigns[:"phx-click"],
-            do:
-              JS.push(assigns[:"phx-click"],
-                value: %{
-                  start_area_point_id: scalar1.data_point.id,
-                  end_area_point_id: scalar2.data_point.id,
-                  dataset_id: @dataset.id,
-                  x_pixel: @dataset.dimensions.margin.left + @dataset.dimensions.width / 2,
-                  y_pixel: scalar2.value + (scalar1.value - scalar2.value) / 2
-                }
-              )
-        }
-        style={if assigns[:"phx-click"], do: "cursor: pointer;"}
-        phx-target={assigns[:"phx-target"]}
-      />
-    <% end %>
-    """
-  end
+  # defp area_points(%GraphDataset{} = graph_dataset, key, :horizontal) do
+  #   graph_dataset
+  #   |> GraphDataset.to_graph_xs(key)
+  #   |> Enum.chunk_every(2, 1, :discard)
+  # end
 
-  defp area_points(%GraphDataset{} = graph_dataset, key, :horizontal) do
-    graph_dataset
-    |> GraphDataset.to_graph_xs(key)
-    |> Enum.chunk_every(2, 1, :discard)
-  end
-
-  defp area_points(%GraphDataset{} = graph_dataset, key, :vertical) do
-    graph_dataset
-    |> GraphDataset.to_graph_ys(key)
-    |> Enum.chunk_every(2, 1, :discard)
-  end
+  # defp area_points(%GraphDataset{} = graph_dataset, key, :vertical) do
+  #   graph_dataset
+  #   |> GraphDataset.to_graph_ys(key)
+  #   |> Enum.chunk_every(2, 1, :discard)
+  # end
 
   @doc """
   Legend row.

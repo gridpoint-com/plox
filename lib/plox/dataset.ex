@@ -43,7 +43,29 @@ end
 
 defmodule Plox.Dataset do
   @moduledoc """
-  A collection of data points and some metadata for a graph
+  A collection of `Plox.DataPoint`s and `Plox.Axis` implementations to convert
+  the `Plox.DataPoint`s to graphable values.
+
+  This module implements the `Access` behaviour, allowing access to each axis
+  using the `[]` syntax.
+
+  ## Example
+
+      iex> dataset = %Plox.Dataset{data: [], axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}}
+      iex> dataset[:x]
+      %Plox.DatasetAxis{axis: %Plox.XAxis{}, key: :x}
+
+      iex> dataset = %Plox.Dataset{data: [], axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}}
+      iex> dataset[:y]
+      %Plox.DatasetAxis{axis: %Plox.YAxis{}, key: :y}
+
+  Since `Plox.Axis` also implements the `Access` behaviour, you can access
+  the graphable values more ergonomically when rendering elements in a graph:
+
+  ## Example
+
+      <!-- Draw red circles for every x value, but only at y = 40 on the graph -->
+      <.circle cx={@dataset[:x]} cy={@dataset[:y][40]} fill="red" r="3" />
   """
   @behaviour Access
 
@@ -51,6 +73,25 @@ defmodule Plox.Dataset do
 
   defstruct [:data, :axes]
 
+  @doc """
+  Creates a new `Plox.Dataset` struct.
+
+  Accepts an enumerable of raw data and a mapping of axis keys to tuples
+  containing the axis and a function to extract the value from the raw data.
+
+  ## Example
+
+      iex> data = [%{foo: 1, bar: 2}, %{foo: 2, bar: 3}]
+      iex> axis_fns = %{x: {%Plox.XAxis{}, & &1.foo}, y: {%Plox.YAxis{}, & &1.bar}}
+      iex> dataset = Plox.Dataset.new(data, axis_fns)
+      %Plox.Dataset{
+        data: [
+          %Plox.DataPoint{original: %{foo: 1, bar: 2}, graph: %{x: ..., y: ...}},
+          %Plox.DataPoint{original: %{foo: 2, bar: 3}, graph: %{x: ..., y: ...}}
+        ],
+        axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+      }
+  """
   def new(original_data, axis_fns) do
     data =
       Enum.map(original_data, fn original ->
