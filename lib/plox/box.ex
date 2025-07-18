@@ -13,20 +13,20 @@ defmodule Plox.Box do
 
   ## Examples
 
-    iex> Plox.Box.new(10)
-    %Plox.Box{top: 10, right: 10, bottom: 10, left: 10}
+      iex> Plox.Box.new(10)
+      %Plox.Box{top: 10, right: 10, bottom: 10, left: 10}
 
-    iex> Plox.Box.new({5, 15})
-    %Plox.Box{top: 5, right: 15, bottom: 5, left: 15}
+      iex> Plox.Box.new({5, 15})
+      %Plox.Box{top: 5, right: 15, bottom: 5, left: 15}
 
-    iex> Plox.Box.new({5, 15, 10})
-    %Plox.Box{top: 5, right: 15, bottom: 10, left: 15}
+      iex> Plox.Box.new({5, 15, 10})
+      %Plox.Box{top: 5, right: 15, bottom: 10, left: 15}
 
-    iex> Plox.Box.new({5, 15, 10, 20})
-    %Plox.Box{top: 5, right: 15, bottom: 10, left: 20}
+      iex> Plox.Box.new({5, 15, 10, 20})
+      %Plox.Box{top: 5, right: 15, bottom: 10, left: 20}
 
-    iex> Plox.Box.new("5 15 10 20")
-    %Plox.Box{top: 5, right: 15, bottom: 10, left: 20}
+      iex> Plox.Box.new("5 15 10 20")
+      %Plox.Box{top: 5, right: 15, bottom: 10, left: 20}
   """
   def new(string) when is_binary(string) do
     string

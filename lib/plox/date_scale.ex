@@ -6,23 +6,23 @@ defmodule Plox.DateScale do
 
   `Plox.Scale.values/2` returns a `t:Date.Range.t/0` enumerable:
 
-    iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-10], 1))
-    iex> scale |> Plox.Scale.values(%{step: 2}) |> Enum.to_list()
-    [~D[2020-01-01], ~D[2020-01-03], ~D[2020-01-05], ~D[2020-01-07], ~D[2020-01-09]]
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-10], 1))
+      iex> scale |> Plox.Scale.values(%{step: 2}) |> Enum.to_list()
+      [~D[2020-01-01], ~D[2020-01-03], ~D[2020-01-05], ~D[2020-01-07], ~D[2020-01-09]]
 
-    iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-10], ~D[2020-01-01], -1))
-    iex> scale |> Plox.Scale.values(%{step: 3}) |> Enum.to_list()
-    [~D[2020-01-10], ~D[2020-01-07], ~D[2020-01-04], ~D[2020-01-01]]
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-10], ~D[2020-01-01], -1))
+      iex> scale |> Plox.Scale.values(%{step: 3}) |> Enum.to_list()
+      [~D[2020-01-10], ~D[2020-01-07], ~D[2020-01-04], ~D[2020-01-01]]
 
   `Plox.Scale.convert_to_range/3` returns a number in the given range:
 
-    iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-09], 1))
-    iex> Plox.Scale.convert_to_range(scale, ~D[2020-01-05], 0..100)
-    50.0
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-09], 1))
+      iex> Plox.Scale.convert_to_range(scale, ~D[2020-01-05], 0..100)
+      50.0
 
-    iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-09], ~D[2020-01-01], -1))
-    iex> Plox.Scale.convert_to_range(scale, ~D[2020-01-07], 0..100)
-    25.0
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-09], ~D[2020-01-01], -1))
+      iex> Plox.Scale.convert_to_range(scale, ~D[2020-01-07], 0..100)
+      25.0
   """
   defstruct [:range]
 

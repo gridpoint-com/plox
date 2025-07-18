@@ -4,9 +4,7 @@ defmodule Plox.XAxis do
   to graphable x-coordinates.
 
   This module implements the `Access` behaviour, allowing access to graphable
-  values using the `[]` syntax.
-
-  ## Example
+  values using the `[]` syntax:
 
       iex> scale = Plox.NumberScale.new(0, 10)
       iex> dimensions = Plox.Dimensions.new(100, 100, margin: 0)

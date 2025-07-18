@@ -5,9 +5,7 @@ defmodule Plox.YAxis do
 
   This module implements the `Access` behaviour, allowing access to graphable
   values using the `[]` syntax. Note that y-coordinates go from top to bottom,
-  meaning that lower y values correspond to higher y-coordinates and vice versa.
-
-  ## Example
+  meaning that lower y values correspond to higher y-coordinates and vice versa:
 
       iex> scale = Plox.NumberScale.new(0, 10)
       iex> dimensions = Plox.Dimensions.new(100, 100, margin: 0)

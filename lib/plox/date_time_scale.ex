@@ -16,9 +16,9 @@ defmodule Plox.DateTimeScale do
 
   `Plox.Scale.convert_to_range/3` returns a number in the given range:
 
-    iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
-    iex> Plox.Scale.convert_to_range(scale, ~N[2019-01-02 00:00:00], 0..100)
-    50.0
+      iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-03 00:00:00])
+      iex> Plox.Scale.convert_to_range(scale, ~N[2019-01-02 00:00:00], 0..100)
+      50.0
   """
   require Logger
 

@@ -47,9 +47,7 @@ defmodule Plox.Dataset do
   the `Plox.DataPoint`s to graphable values.
 
   This module implements the `Access` behaviour, allowing access to each axis
-  using the `[]` syntax.
-
-  ## Example
+  using the `[]` syntax:
 
       iex> dataset = %Plox.Dataset{data: [], axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}}
       iex> dataset[:x]
@@ -61,8 +59,6 @@ defmodule Plox.Dataset do
 
   Since `Plox.Axis` also implements the `Access` behaviour, you can access
   the graphable values more ergonomically when rendering elements in a graph:
-
-  ## Example
 
       <!-- Draw red circles for every x value, but only at y = 40 on the graph -->
       <.circle cx={@dataset[:x]} cy={@dataset[:y][40]} fill="red" r="3" />

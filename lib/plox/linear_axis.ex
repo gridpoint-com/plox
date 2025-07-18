@@ -4,9 +4,7 @@ defmodule Plox.LinearAxis do
   to graphable values in a linear range between a minimum and maximum.
 
   This module implements the `Access` behaviour, allowing access to graphable
-  values using the `[]` syntax.
-
-  ## Example
+  values using the `[]` syntax:
 
       iex> scale = Plox.NumberScale.new(0, 10)
       iex> linear_axis = %Plox.LinearAxis{scale: scale, min: 0, max: 100}

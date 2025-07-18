@@ -1,4 +1,4 @@
-# Plox Migration Guide (0.2.0 to 0.3.0)
+# Plox Migration Guide (0.2.0 to X.X.X)
 
 Plox has gone through a major philosophical rewrite since its initial publication. This
 guide will help users convert their current Plox graphs over to the new approach.
@@ -54,7 +54,7 @@ example_graph =
 </.graph>
 ```
 
-## Example of 0.3.0 usage
+## Example of X.X.X usage
 
 1. Set up data, dimensions, axes, and dataset:
 

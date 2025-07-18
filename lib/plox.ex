@@ -1,7 +1,6 @@
 defmodule Plox do
   @moduledoc """
-  Composable, customizable, and flexible SVG graphing components rendered server-side
-  for Phoenix and LiveView.
+  Server-side rendered SVG graphing components for Phoenix and LiveView.
   """
 
   use Phoenix.Component
@@ -23,8 +22,6 @@ defmodule Plox do
   # FIXME:
   attr :rest, :global
 
-  slot :legend
-  slot :tooltips
   slot :inner_block, required: true
 
   def graph(assigns) do
@@ -404,25 +401,25 @@ defmodule Plox do
 
   ## Example
 
-    iex> Plox.points(1, 2)
-    [{1, 2}]
+      iex> Plox.points(1, 2)
+      [{1, 2}]
 
-    iex> Plox.points([1, 2], [3, 4])
-    [{1, 3}, {2, 4}]
+      iex> Plox.points([1, 2], [3, 4])
+      [{1, 3}, {2, 4}]
 
-    iex> dataset = %Plox.Dataset{
-    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
-    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
-    ...>}
-    iex> Plox.points([1, 2], dataset[:x])
-    [{1, 10}, {2, 30}]
+      iex> dataset = %Plox.Dataset{
+      ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+      ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+      ...>}
+      iex> Plox.points([1, 2], dataset[:x])
+      [{1, 10}, {2, 30}]
 
-    iex> dataset = %Plox.Dataset{
-    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
-    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
-    ...>}
-    iex> Plox.points(dataset[:x], dataset[:y])
-    [{10, 20}, {30, 40}]
+      iex> dataset = %Plox.Dataset{
+      ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+      ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+      ...>}
+      iex> Plox.points(dataset[:x], dataset[:y])
+      [{10, 20}, {30, 40}]
   """
   def points(x, y) do
     values([x, y])
@@ -433,25 +430,25 @@ defmodule Plox do
 
   ## Example
 
-    iex> Plox.values([1, 2])
-    [{1, 2}]
+      iex> Plox.values([1, 2])
+      [{1, 2}]
 
-    iex> Plox.values([1, 2], [3, 4])
-    [{1, 3}, {2, 4}]
+      iex> Plox.values([1, 2], [3, 4])
+      [{1, 3}, {2, 4}]
 
-    iex> dataset = %Plox.Dataset{
-    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
-    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
-    ...>}
-    iex> Plox.values([[1, 2], dataset[:x]])
-    [{1, 10}, {2, 30}]
+      iex> dataset = %Plox.Dataset{
+      ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+      ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+      ...>}
+      iex> Plox.values([[1, 2], dataset[:x]])
+      [{1, 10}, {2, 30}]
 
-    iex> dataset = %Plox.Dataset{
-    ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
-    ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
-    ...>}
-    iex> Plox.values([dataset[:x], dataset[:y]])
-    [{10, 20}, {30, 40}]
+      iex> dataset = %Plox.Dataset{
+      ...>  data: [%{x: 10, y: 20}, %{x: 30, y: 40}],
+      ...>  axes: %{x: %Plox.XAxis{}, y: %Plox.YAxis{}}
+      ...>}
+      iex> Plox.values([dataset[:x], dataset[:y]])
+      [{10, 20}, {30, 40}]
   """
   def values(data) do
     if Enum.any?(data, &Enumerable.impl_for/1) do
@@ -693,48 +690,48 @@ defmodule Plox do
   #   |> Enum.chunk_every(2, 1, :discard)
   # end
 
-  @doc """
-  Legend row.
-  """
-  @doc type: :component
+  # @doc """
+  # Legend row.
+  # """
+  # @doc type: :component
 
-  slot :inner_block, required: true
+  # slot :inner_block, required: true
 
-  def legend(assigns) do
-    ~H"""
-    <div style="display: flex; gap: 0.5rem">
-      {render_slot(@inner_block)}
-    </div>
-    """
-  end
+  # def legend(assigns) do
+  #   ~H"""
+  #   <div style="display: flex; gap: 0.5rem">
+  #     {render_slot(@inner_block)}
+  #   </div>
+  #   """
+  # end
 
-  @doc """
-  Legend item.
-  """
-  @doc type: :component
+  # @doc """
+  # Legend item.
+  # """
+  # @doc type: :component
 
-  attr :color, :string, required: true
-  attr :label, :string, required: true
+  # attr :color, :string, required: true
+  # attr :label, :string, required: true
 
-  def legend_item(assigns) do
-    ~H"""
-    <div style="display: flex; align-items: baseline; column-gap: 0.5rem">
-      <.color_bubble color={@color} />
-      <p style="font-size: 0.75rem; line-height: 1rem; color: #9D9E9F;">{@label}</p>
-    </div>
-    """
-  end
+  # def legend_item(assigns) do
+  #   ~H"""
+  #   <div style="display: flex; align-items: baseline; column-gap: 0.5rem">
+  #     <.color_bubble color={@color} />
+  #     <p style="font-size: 0.75rem; line-height: 1rem; color: #9D9E9F;">{@label}</p>
+  #   </div>
+  #   """
+  # end
 
-  @doc """
-  A colored circle for legends.
-  """
-  @doc type: :component
+  # @doc """
+  # A colored circle for legends.
+  # """
+  # @doc type: :component
 
-  attr :color, :string, required: true
+  # attr :color, :string, required: true
 
-  def color_bubble(assigns) do
-    ~H"""
-    <div style={"background-color: #{@color}; height: 0.5rem; width: 0.5rem; flex: none; border-radius: 9999px;"} />
-    """
-  end
+  # def color_bubble(assigns) do
+  #   ~H"""
+  #   <div style={"background-color: #{@color}; height: 0.5rem; width: 0.5rem; flex: none; border-radius: 9999px;"} />
+  #   """
+  # end
 end

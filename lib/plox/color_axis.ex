@@ -3,9 +3,7 @@ defmodule Plox.ColorAxis do
   ColorAxis converts `Plox.ColorScale` values to graphable colors.
 
   This module implements the `Access` behaviour, allowing access to graphable
-  values using the `[]` syntax.
-
-  ## Example
+  values using the `[]` syntax:
 
       iex> color_scale = Plox.FixedColorsScale.new(%{red: "#ff0000", green: "#00ff00", blue: "#0000ff"})
       iex> color_axis = Plox.ColorAxis.new(color_scale)
