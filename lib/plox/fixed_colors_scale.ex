@@ -26,7 +26,7 @@ defmodule Plox.FixedColorsScale do
         mapping: %{red: "#ff0000", green: "#00ff00", blue: "#0000ff"}
       }
   """
-  def new(mapping) when is_non_struct_map(mapping) and map_size(mapping) >= 2 do
+  def new(mapping) when not is_struct(mapping) and map_size(mapping) >= 2 do
     %__MODULE__{mapping: mapping}
   end
 
