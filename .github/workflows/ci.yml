@@ -8,45 +8,43 @@ on:
 
 env:
   MIX_ENV: test
-  OTP_VERSION_SPEC: "27.x"
-  ELIXIR_VERSION_SPEC: "1.18.x"
 
-jobs:
-  compile:
-    name: Compile
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          otp-version: ${{ env.OTP_VERSION_SPEC }}
-          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
-      - name: Install dependencies
-        run: mix deps.get
-      - name: Compile dependencies
-        run: mix deps.compile
-      - name: Compile
-        run: mix compile --warnings-as-errors
-
+jobs:        
   test:
     name: Test
     runs-on: ubuntu-latest
 
+    # Test on the 3 latest Elixir versions with the latest OTP version that each supports
+    strategy:
+      matrix:
+        include:
+          - elixir: 1.16.x
+            otp: 26.x
+
+          - elixir: 1.17.x
+            otp: 27.x
+
+          - elixir: 1.18.x
+            otp: 28.x
+            lint: true
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ env.OTP_VERSION_SPEC }}
-          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+      
       - name: Install dependencies
         run: mix deps.get
-      - name: Compile dependencies
-        run: mix deps.compile
+      
+      # We only check for warnings on latest Elixir version
+      - name: Compile & lint
+        run: mix compile --warnings-as-errors
+        if: ${{ matrix.lint }}
+      
       - name: Run tests
         run: mix test
 
@@ -54,73 +52,28 @@ jobs:
     name: Check Formatted
     runs-on: ubuntu-latest
 
+    # Check formatting on the latest Elixir version only
+    strategy:
+      matrix:
+        include:
+          - elixir: 1.18.x
+            otp: 28.x
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ env.OTP_VERSION_SPEC }}
-          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+
       - name: Install dependencies
         run: mix deps.get
-      - name: Compile dependencies
-        run: mix deps.compile
+
+      - name: Compile
+        run: mix compile
+
       - name: Check formatted
         run: mix format --check-formatted
-
-  # credo:
-  #   name: Credo
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #     - name: Set up Elixir
-  #       uses: erlef/setup-beam@v1
-  #       with:
-  #         otp-version: ${{ env.OTP_VERSION_SPEC }}
-  #         elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
-  #     - name: Install dependencies
-  #       run: mix deps.get
-  #     - name: Compile dependencies
-  #       run: mix deps.compile
-  #     - name: Run credo
-  #       run: mix credo --strict
-
-  # dialyzer:
-  #   name: Dialyzer
-  #   runs-on: ubuntu-latest
-
-  #   env:
-  #     MIX_ENV: dev
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #     - name: Set mix file hash
-  #       id: set_vars
-  #       run: |
-  #         mix_hash="${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}"
-  #         echo "::set-output name=mix_hash::$mix_hash"
-  #     - name: Cache PLT files
-  #       id: cache-plt
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: |
-  #           _build/dev/*.plt
-  #           _build/dev/*.plt.hash
-  #         key: plt-cache-${{ steps.set_vars.outputs.mix_hash }}
-  #         restore-keys: |
-  #           plt-cache-
-  #     - name: Set up Elixir
-  #       uses: erlef/setup-beam@v1
-  #       with:
-  #         otp-version: ${{ env.OTP_VERSION_SPEC }}
-  #         elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
-  #     - name: Install dependencies
-  #       run: mix deps.get
-  #     - name: Compile dependencies
-  #       run: mix deps.compile
-  #     - name: Run dialyzer
-  #       run: mix dialyzer
