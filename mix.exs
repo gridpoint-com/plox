@@ -8,7 +8,7 @@ defmodule Plox.MixProject do
     [
       app: :plox,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
@@ -48,7 +48,7 @@ defmodule Plox.MixProject do
       groups_for_functions: [
         Components: &(&1[:type] == :component)
       ],
-      extras: ["README.md", "LICENSE", "CODE_OF_CONDUCT.md"]
+      extras: ["README.md", "LICENSE", "CODE_OF_CONDUCT.md", "docs/migration_guide.md"]
     ]
   end
 
@@ -58,16 +58,18 @@ defmodule Plox.MixProject do
         Plox.Box,
         Plox.DataPoint,
         Plox.Dataset,
-        Plox.Dimensions,
-        Plox.Graph,
-        Plox.GraphDataset,
-        Plox.GraphPoint,
-        Plox.GraphScalar,
-        Plox.GraphScale
+        Plox.Dimensions
       ],
       Protocols: [
+        Plox.Axis.Protocol,
         Plox.ColorScale,
         Plox.Scale
+      ],
+      Axes: [
+        Plox.ColorAxis,
+        Plox.LinearAxis,
+        Plox.XAxis,
+        Plox.YAxis
       ],
       Scales: [
         Plox.DateScale,

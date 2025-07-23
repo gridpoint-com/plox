@@ -19,17 +19,17 @@ defprotocol Plox.Scale do
   @type t :: any()
 
   @doc """
-  Returns an enumerable of the "labeled values" in a scale
+  Returns an enumerable of the "labeled values" in a scale.
 
   Note: the returned values don't necessarily represent all the values in the
   scale, just the values meant to be labeled and rendered on the corresponding
   axis. e.g. the final value might not be equal to the scale's configured max.
   """
   @spec values(scale :: t(), opts :: map()) :: Enumerable.t()
-  def values(scale, opts)
+  def values(scale, opts \\ %{})
 
   @doc """
-  Converts a specific scale value to a number within the requested range
+  Converts a specific scale value to a number within the requested range.
 
   The destination range must be a valid integer range.
   """

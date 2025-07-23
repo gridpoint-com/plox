@@ -1,36 +1,48 @@
 defmodule Plox.DataPoint do
-  @moduledoc false
-  # TODO: I dunno about docs yet
+  @moduledoc """
+  Data structure for containing raw data and its mapped values for graphing.
 
-  alias Plox.GraphPoint
-  alias Plox.GraphScalar
-  alias Plox.GraphScale
+  Calculated by `Plox.Dataset.new/2` when processing the raw data:
 
-  defstruct [:id, :original, :mapped]
+      iex> data = [%{foo: 1, bar: 2}, %{foo: 2, bar: 3}]
+      iex> dimensions = Plox.Dimensions.new(100, 100, margin: 0)
+      iex> scale = Plox.NumberScale.new(0, 10)
+      iex> x_axis = Plox.XAxis.new(scale, dimensions)
+      iex> Plox.Dataset.new(data, %{x: {x_axis, & &1.foo}})
+      %Plox.Dataset{
+        data: [
+          %Plox.DataPoint{original: %{foo: 1, bar: 2}, graph: %{x: 10.0}},
+          %Plox.DataPoint{original: %{foo: 2, bar: 3}, graph: %{x: 20.0}}
+        ],
+        axes: %{
+          x: %Plox.XAxis{
+            scale: Plox.NumberScale.new(0.0, 10.0),
+            dimensions: %Plox.Dimensions{
+              width: 100,
+              height: 100,
+              margin: %Plox.Box{top: 0, right: 0, bottom: 0, left: 0},
+              padding: %Plox.Box{top: 0, right: 0, bottom: 0, left: 0}
+            }
+          }
+        }
+      }
+  """
 
-  def new(id, original, mapped) do
-    %__MODULE__{id: id, original: original, mapped: mapped}
-  end
+  defstruct [:original, :graph]
 
-  def to_graph_point(%__MODULE__{} = data_point, x_scale, x_key, y_scale, y_key) do
-    x_value = data_point.mapped[x_key]
-    y_value = data_point.mapped[y_key]
+  @doc """
+  Creates a new `Plox.DataPoint` struct.
 
-    x = GraphScale.to_graph_x(x_scale, x_value)
-    y = GraphScale.to_graph_y(y_scale, y_value)
+  Accepts the original data and a map of graphable values for each axis.
 
-    GraphPoint.new(x, y, data_point)
-  end
+  ## Example
 
-  def to_graph_x(%__MODULE__{} = data_point, scale, key) do
-    scale
-    |> GraphScale.to_graph_x(data_point.mapped[key])
-    |> GraphScalar.new(data_point)
-  end
-
-  def to_graph_y(%__MODULE__{} = data_point, scale, key) do
-    scale
-    |> GraphScale.to_graph_y(data_point.mapped[key])
-    |> GraphScalar.new(data_point)
+      iex> original = %{foo: 1, bar: 2}
+      iex> graph = %{x: 10.0, y: 20.0}
+      iex> Plox.DataPoint.new(original, graph)
+      %Plox.DataPoint{original: %{foo: 1, bar: 2}, graph: %{x: 10.0, y: 20.0}}
+  """
+  def new(original, graph) do
+    %__MODULE__{original: original, graph: graph}
   end
 end

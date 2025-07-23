@@ -1,18 +1,46 @@
 defmodule Plox.DateScale do
   @moduledoc """
-  A scale for elixir `Date` values
+  A scale of date values (`t:Date.t/0`).
 
   This struct implements the `Plox.Scale` protocol.
+
+  `Plox.Scale.values/2` returns a `t:Date.Range.t/0` enumerable:
+
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-10], 1))
+      iex> scale |> Plox.Scale.values(%{step: 2}) |> Enum.to_list()
+      [~D[2020-01-01], ~D[2020-01-03], ~D[2020-01-05], ~D[2020-01-07], ~D[2020-01-09]]
+
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-10], ~D[2020-01-01], -1))
+      iex> scale |> Plox.Scale.values(%{step: 3}) |> Enum.to_list()
+      [~D[2020-01-10], ~D[2020-01-07], ~D[2020-01-04], ~D[2020-01-01]]
+
+  `Plox.Scale.convert_to_range/3` returns a number in the given range:
+
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-09], 1))
+      iex> Plox.Scale.convert_to_range(scale, ~D[2020-01-05], 0..100)
+      50.0
+
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-09], ~D[2020-01-01], -1))
+      iex> Plox.Scale.convert_to_range(scale, ~D[2020-01-07], 0..100)
+      25.0
   """
   defstruct [:range]
 
   @type t :: %__MODULE__{}
 
   @doc """
-  Creates a new `Plox.DateScale` struct
+  Creates a new `Plox.DateScale` struct.
 
-  Accepts an elixir `Date.Range` struct. The range must contain at least two
-  dates. The step is ignored. Supports forward and backward ranges.
+  Raises if `range` is not a `t:Date.Range.t/0` struct or if it does not contain at least
+  two dates. The step is ignored. Supports forward and backward ranges.
+
+  ## Example
+
+      iex> Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-10], 1))
+      %Plox.DateScale{range: Date.range(~D[2020-01-01], ~D[2020-01-10], 1)}
+
+      iex> Plox.DateScale.new(Date.range(~D[2020-01-10], ~D[2020-01-01], -1))
+      %Plox.DateScale{range: Date.range(~D[2020-01-10], ~D[2020-01-01], -1)}
   """
   @spec new(range :: Date.Range.t()) :: t()
   def new(%Date.Range{} = range) do
@@ -26,19 +54,36 @@ defmodule Plox.DateScale do
     %__MODULE__{range: range}
   end
 
-  defp reduce_step(%Date.Range{step: step} = range) when step > 0, do: Date.range(range.first, range.last, 1)
+  def new(_range) do
+    raise ArgumentError,
+      message: "Invalid DateScale: must be a Date.Range struct with at least two dates"
+  end
 
+  defp reduce_step(%Date.Range{step: step} = range) when step > 0, do: Date.range(range.first, range.last, 1)
   defp reduce_step(%Date.Range{step: step} = range) when step < 0, do: Date.range(range.first, range.last, -1)
 
   defimpl Plox.Scale do
+    @doc """
+    Returns a `t:Date.Range.t/0` of all `t:Date.t/0` values in the scale,
+    stepping by the given interval.
+
+    Accepts a `step` option as a number of days. The default step is 1 day.
+    Raises if given `step` is not a positive integer greater than 1.
+    """
     def values(scale, opts) do
       case Map.fetch(opts, :step) do
         :error -> scale.range
+        {:ok, step} when step < 1 -> raise ArgumentError, message: "Step must be a positive integer"
         {:ok, step} when scale.range.step > 0 -> %{scale.range | step: step}
         {:ok, step} when scale.range.step < 0 -> %{scale.range | step: -step}
       end
     end
 
+    @doc """
+    Converts a date `value` from the scale to a number in the given `to_range`.
+
+    Raises if `value` is not a valid date included in the scale.
+    """
     def convert_to_range(scale, %Date{} = value, to_range) do
       range = scale.range
 
