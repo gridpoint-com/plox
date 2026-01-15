@@ -19,7 +19,6 @@ defmodule Plox do
   @doc type: :component
 
   attr :dimensions, Dimensions, required: true
-  # FIXME:
   attr :rest, :global
 
   slot :inner_block, required: true
@@ -27,7 +26,7 @@ defmodule Plox do
   def graph(assigns) do
     ~H"""
     <div {@rest}>
-      <div style={"position: relative; width: #{@dimensions.width}px; height: #{@dimensions.height}px"}>
+      <div style={"width: #{@dimensions.width}px; height: #{@dimensions.height}px"}>
         <svg
           viewBox={"0 0 #{@dimensions.width} #{@dimensions.height}"}
           xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +157,7 @@ defmodule Plox do
   attr :position, :atom, values: [:left, :right], default: :left
   attr :gap, :integer, default: 16
   attr :rotation, :integer, default: nil
-  attr :"dominant-baseline", :any, default: nil
+  attr :"dominant-baseline", :any, default: "middle"
   attr :"text-anchor", :any, default: nil
   attr :rest, :global, include: @svg_presentation_globals
 
@@ -169,7 +168,7 @@ defmodule Plox do
     <text
       x={@axis.dimensions.margin.left - @gap}
       y={y = @axis[@value]}
-      dominant-baseline={assigns[:"dominant-baseline"] || "middle"}
+      dominant-baseline={assigns[:"dominant-baseline"]}
       text-anchor={assigns[:"text-anchor"] || "end"}
       transform={
         if @rotation,
@@ -187,7 +186,7 @@ defmodule Plox do
     <text
       x={@axis.dimensions.width - @axis.dimensions.margin.right + @gap}
       y={y = @axis[@value]}
-      dominant-baseline={assigns[:"dominant-baseline"] || "middle"}
+      dominant-baseline={assigns[:"dominant-baseline"]}
       text-anchor={assigns[:"text-anchor"] || "start"}
       transform={
         if @rotation,

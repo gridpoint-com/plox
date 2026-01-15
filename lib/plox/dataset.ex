@@ -14,7 +14,6 @@ defmodule Plox.DatasetAxis do
     raise "Not implemented"
   end
 
-  # TODO: not currently being used, but maybe we can?
   @impl Access
   def get_and_update(_axis, _key, _function) do
     raise "Not implemented"

@@ -48,9 +48,9 @@ example_graph =
     {value}
   </.y_axis>
 
-  <.polyline dataset={graph[:dataset]} color="#EC7E16" />
+  <.line_plot dataset={graph[:dataset]} color="#EC7E16" />
 
-  <.circles dataset={graph[:dataset]} color="#EC7E16" />
+  <.points_plot dataset={graph[:dataset]} color="#EC7E16" />
 </.graph>
 ```
 

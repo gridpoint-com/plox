@@ -86,13 +86,11 @@ defmodule DemoLive do
 
       <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
 
-      <%!-- <.polyline points={Enum.zip(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} /> --%>
       <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} />
 
       <%!-- constant y = 40 --%>
       <.polyline points={points(@dataset[:x], @dataset[:y][40])} stroke="purple" stroke-width="2" />
 
-      <%!-- <.step_polyline dataset={@dataset} x={:x} y={:y} stroke="pink" stroke-width="2" /> --%>
       <.step_polyline points={points(@dataset[:x], @dataset[:y])} stroke="pink" stroke-width="2" />
 
       <%!-- you can manually add points like how the polyline SVG accepts them, but it'll turn them into a step line --%>
