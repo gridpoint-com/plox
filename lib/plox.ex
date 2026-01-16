@@ -289,6 +289,89 @@ defmodule Plox do
   end
 
   @doc """
+  Draws a single or set of SVG `<text>` elements.
+  """
+  @doc type: :component
+
+  attr :x, :any, required: true
+  attr :y, :any, required: true
+  attr :"text-anchor", :any, default: nil
+  attr :"dominant-baseline", :any, default: nil
+  attr :fill, :any, default: nil
+  attr :"font-size", :any, default: nil
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
+
+  slot :inner_block
+
+  def text(assigns) do
+    ~H"""
+    <text
+      :for={
+        {x, y, text_anchor, dominant_baseline, fill, font_size} <-
+          values([
+            @x,
+            @y,
+            assigns[:"text-anchor"],
+            assigns[:"dominant-baseline"],
+            @fill,
+            assigns[:"font-size"]
+          ])
+      }
+      x={x}
+      y={y}
+      text-anchor={text_anchor}
+      dominant-baseline={dominant_baseline}
+      fill={fill}
+      font-size={font_size}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </text>
+    """
+  end
+
+  @doc """
+  Draws a single or set of SVG `<line>` elements.
+  """
+  @doc type: :component
+
+  attr :x1, :any, required: true
+  attr :y1, :any, required: true
+  attr :x2, :any, required: true
+  attr :y2, :any, required: true
+  attr :stroke, :any, default: nil
+  attr :"stroke-width", :any, default: nil
+  attr :"stroke-dasharray", :any, default: nil
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
+
+  def line(assigns) do
+    ~H"""
+    <line
+      :for={
+        {x1, y1, x2, y2, stroke, stroke_width, stroke_dasharray} <-
+          values([
+            @x1,
+            @y1,
+            @x2,
+            @y2,
+            @stroke,
+            assigns[:"stroke-width"],
+            assigns[:"stroke-dasharray"]
+          ])
+      }
+      x1={x1}
+      y1={y1}
+      x2={x2}
+      y2={y2}
+      stroke={stroke}
+      stroke-width={stroke_width}
+      stroke-dasharray={stroke_dasharray}
+      {@rest}
+    />
+    """
+  end
+
+  @doc """
   Draws a SVG `<polyline>` element connecting a series of points.
   """
   @doc type: :component
@@ -464,6 +547,71 @@ defmodule Plox do
       [List.to_tuple(data)]
     end
   end
+
+  @doc """
+  Returns scale values for rendering labels and grid lines.
+
+  ## Example
+
+      iex> scale_values(x_axis, ticks: 5)
+      [~D[2023-08-01], ~D[2023-08-02], ...]
+  """
+  def scale_values(%{scale: scale}, opts \\ []) do
+    opts = Map.new(opts)
+    Scale.values(scale, opts)
+  end
+
+  @doc """
+  Returns the y-coordinate for positioning elements above the graph (e.g. x-axis labels at top).
+  See `Plox.Constants.default_label_gap/0` for default gap value.
+  """
+  def above_graph(dimensions, gap \\ 16) do
+    dimensions.margin.top - gap
+  end
+
+  @doc """
+  Returns the y-coordinate for positioning elements below the graph (e.g. x-axis labels at bottom).
+  See `Plox.Constants.default_label_gap/0` for default gap value.
+  """
+  def below_graph(dimensions, gap \\ Constants.default_label_gap()) do
+    dimensions.height - dimensions.margin.bottom + gap
+  end
+
+  @doc """
+  Returns the x-coordinate for positioning elements to the left of the graph (e.g. y-axis labels).
+  See `Plox.Constants.default_label_gap/0` for default gap value.
+  """
+  def left_of_graph(dimensions, gap \\ 16) do
+    dimensions.margin.left - gap
+  end
+
+  @doc """
+  Returns the x-coordinate for positioning elements to the right of the graph (e.g. y-axis labels).
+  See `Plox.Constants.default_label_gap/0` for default gap value.
+  """
+  def right_of_graph(dimensions, gap \\ 16) do
+    dimensions.width - dimensions.margin.right + gap
+  end
+
+  @doc """
+  Returns the top boundary of the graph area (for grid lines and other elements).
+  """
+  def graph_top(dimensions), do: dimensions.margin.top
+
+  @doc """
+  Returns the bottom boundary of the graph area (for grid lines and other elements).
+  """
+  def graph_bottom(dimensions), do: dimensions.height - dimensions.margin.bottom
+
+  @doc """
+  Returns the left boundary of the graph area (for grid lines and other elements).
+  """
+  def graph_left(dimensions), do: dimensions.margin.left
+
+  @doc """
+  Returns the right boundary of the graph area (for grid lines and other elements).
+  """
+  def graph_right(dimensions), do: dimensions.width - dimensions.margin.right
 
   # @doc """
   # Bar plot.

@@ -24,3 +24,6 @@ plox-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Ignore "Desktop Services Store" hidden file
+.DS_Store
