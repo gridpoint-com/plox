@@ -5,13 +5,11 @@ defmodule Plox do
 
   use Phoenix.Component
 
+  alias Plox.Constants
   alias Plox.Dimensions
   alias Plox.Scale
   alias Plox.XAxis
   alias Plox.YAxis
-
-  # copied from SVG spec: https://svgwg.org/svg2-draft/styling.html#TermPresentationAttribute
-  @svg_presentation_globals ~w(alignment-baseline baseline-shift clip-path clip-rule color color-interpolation color-interpolation-filters cursor direction display dominant-baseline fill-opacity fill-rule filter flood-color flood-opacity font-family font-size font-size-adjust font-stretch font-style font-variant font-weight glyph-orientation-horizontal glyph-orientation-vertical image-rendering letter-spacing lighting-color marker-end marker-mid marker-start mask mask-type opacity overflow paint-order pointer-events shape-rendering stop-color stop-opacity stroke stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit stroke-opacity stroke-width text-anchor text-decoration text-overflow text-rendering transform-origin unicode-bidi vector-effect visibility white-space word-spacing writing-mode)
 
   @doc """
   Entrypoint component for rendering graphs and plots.
@@ -49,7 +47,7 @@ defmodule Plox do
   attr :ticks, :any
   attr :step, :any
   attr :start, :any
-  attr :rest, :global, include: ~w(gap rotation position) ++ @svg_presentation_globals
+  attr :rest, :global, include: ~w(gap rotation position) ++ Constants.svg_presentation_attrs()
 
   slot :inner_block, required: true
 
@@ -77,8 +75,8 @@ defmodule Plox do
   attr :gap, :integer, default: 16
   attr :rotation, :integer, default: nil
   attr :"dominant-baseline", :any, default: nil
-  attr :"text-anchor", :any, default: nil
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :"text-anchor", :any, default: "middle"
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   slot :inner_block, required: true
 
@@ -88,7 +86,7 @@ defmodule Plox do
       x={x = @axis[@value]}
       y={@axis.dimensions.height - @axis.dimensions.margin.bottom + @gap}
       dominant-baseline={assigns[:"dominant-baseline"] || "hanging"}
-      text-anchor={assigns[:"text-anchor"] || "middle"}
+      text-anchor={assigns[:"text-anchor"]}
       transform={
         if @rotation,
           do:
@@ -107,7 +105,7 @@ defmodule Plox do
       x={x = @axis[@value]}
       y={@axis.dimensions.margin.bottom - @gap}
       dominant-baseline={assigns[:"dominant-baseline"] || "text-bottom"}
-      text-anchor={assigns[:"text-anchor"] || "middle"}
+      text-anchor={assigns[:"text-anchor"]}
       transform={
         if @rotation,
           do: "rotate(#{@rotation}, #{x}, #{@axis.dimensions.margin.bottom - @gap})"
@@ -130,7 +128,7 @@ defmodule Plox do
   attr :ticks, :any
   attr :step, :any
   attr :start, :any
-  attr :rest, :global, include: ~w(gap rotation position) ++ @svg_presentation_globals
+  attr :rest, :global, include: ~w(gap rotation position) ++ Constants.svg_presentation_attrs()
 
   slot :inner_block, required: true
 
@@ -159,7 +157,7 @@ defmodule Plox do
   attr :rotation, :integer, default: nil
   attr :"dominant-baseline", :any, default: "middle"
   attr :"text-anchor", :any, default: nil
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   slot :inner_block, required: true
 
@@ -209,7 +207,7 @@ defmodule Plox do
   attr :ticks, :any
   attr :step, :any
   attr :start, :any
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def x_axis_grid_lines(assigns) do
     ~H"""
@@ -231,7 +229,7 @@ defmodule Plox do
   attr :value, :any, required: true
   attr :top_overdraw, :integer, default: 0
   attr :bottom_overdraw, :integer, default: 0
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def x_axis_grid_line(assigns) do
     ~H"""
@@ -254,7 +252,7 @@ defmodule Plox do
   attr :ticks, :any
   attr :step, :any
   attr :start, :any
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def y_axis_grid_lines(assigns) do
     ~H"""
@@ -274,7 +272,7 @@ defmodule Plox do
 
   attr :axis, YAxis, required: true
   attr :value, :any, required: true
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def y_axis_grid_line(assigns) do
     ~H"""
@@ -378,7 +376,7 @@ defmodule Plox do
 
   attr :points, :any, required: true, doc: "String of coordinates (x1,y1 x2,y2...) or list of {x, y} tuples"
   attr :fill, :any, default: "none"
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def polyline(%{points: points} = assigns) when is_binary(points), do: do_polyline(assigns)
 
@@ -406,7 +404,7 @@ defmodule Plox do
 
   attr :points, :any, required: true, doc: "String of coordinates (x1,y1 x2,y2...) or list of {x, y} tuples"
   attr :fill, :any, default: "none"
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def step_polyline(%{points: points} = assigns) when is_binary(points) do
     points =
@@ -451,14 +449,13 @@ defmodule Plox do
   """
   @doc type: :component
 
-  # TODO: I wonder if we can more dynamically determine all "dynamic"-possible attributes
   attr :cx, :any, required: true
   attr :cy, :any, required: true
   attr :r, :any, required: true
   attr :fill, :any, default: nil
   attr :stroke, :any, default: nil
   attr :"stroke-width", :any, default: nil
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def circle(assigns) do
     ~H"""
@@ -565,7 +562,7 @@ defmodule Plox do
   Returns the y-coordinate for positioning elements above the graph (e.g. x-axis labels at top).
   See `Plox.Constants.default_label_gap/0` for default gap value.
   """
-  def above_graph(dimensions, gap \\ 16) do
+  def above_graph(dimensions, gap \\ Constants.default_label_gap()) do
     dimensions.margin.top - gap
   end
 
@@ -581,7 +578,7 @@ defmodule Plox do
   Returns the x-coordinate for positioning elements to the left of the graph (e.g. y-axis labels).
   See `Plox.Constants.default_label_gap/0` for default gap value.
   """
-  def left_of_graph(dimensions, gap \\ 16) do
+  def left_of_graph(dimensions, gap \\ Constants.default_label_gap()) do
     dimensions.margin.left - gap
   end
 
@@ -589,7 +586,7 @@ defmodule Plox do
   Returns the x-coordinate for positioning elements to the right of the graph (e.g. y-axis labels).
   See `Plox.Constants.default_label_gap/0` for default gap value.
   """
-  def right_of_graph(dimensions, gap \\ 16) do
+  def right_of_graph(dimensions, gap \\ Constants.default_label_gap()) do
     dimensions.width - dimensions.margin.right + gap
   end
 
