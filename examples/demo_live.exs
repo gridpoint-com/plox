@@ -70,7 +70,7 @@ defmodule DemoLive do
 
     <.graph dimensions={@dimensions}>
       <%!-- X-axis labels --%>
-      <.text
+      <text
         :for={date <- scale_values(@x_axis, ticks: 5)}
         x={@x_axis[date]}
         y={below_graph(@dimensions)}
@@ -78,20 +78,20 @@ defmodule DemoLive do
         text-anchor="middle"
       >
         {Calendar.strftime(date, "%-m/%-d")}
-      </.text>
+      </text>
 
       <%!-- Add label for a specific date above the graph --%>
-      <.text
+      <text
         x={@x_axis[~D[2023-08-02]]}
         y={above_graph(@dimensions)}
         dominant-baseline="text-bottom"
         text-anchor="middle"
       >
         {"Important Day"}
-      </.text>
+      </text>
 
       <%!-- X-axis grid lines --%>
-      <.line
+      <line
         :for={date <- scale_values(@x_axis, ticks: 5)}
         x1={@x_axis[date]}
         y1={graph_top(@dimensions)}
@@ -101,7 +101,7 @@ defmodule DemoLive do
       />
 
       <%!-- Y-axis labels --%>
-      <.text
+      <text
         :for={value <- scale_values(@y_axis, ticks: 5)}
         x={left_of_graph(@dimensions)}
         y={@y_axis[value]}
@@ -109,10 +109,10 @@ defmodule DemoLive do
         text-anchor="end"
       >
         {value}
-      </.text>
+      </text>
 
       <%!-- Y-axis grid lines --%>
-      <.line
+      <line
         :for={value <- scale_values(@y_axis, ticks: 5)}
         x1={graph_left(@dimensions)}
         y1={@y_axis[value]}
