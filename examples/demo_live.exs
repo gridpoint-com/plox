@@ -69,22 +69,57 @@ defmodule DemoLive do
     <h2>Example graph</h2>
 
     <.graph dimensions={@dimensions}>
-      <.x_axis_labels :let={date} axis={@x_axis}>
+      <%!-- X-axis labels --%>
+      <.text
+        :for={date <- scale_values(@x_axis, ticks: 5)}
+        x={@x_axis[date]}
+        y={below_graph(@dimensions)}
+        dominant-baseline="hanging"
+        text-anchor="middle"
+      >
         {Calendar.strftime(date, "%-m/%-d")}
-      </.x_axis_labels>
+      </.text>
 
-      <%!-- this wraps text... why does it take in `axis`?? if we want to follow the SVG, we need to pass in `x` --%>
-      <.x_axis_label axis={@x_axis} value={~D[2023-08-02]} position={:top} color="red">
+      <%!-- Add label for a specific date above the graph --%>
+      <.text
+        x={@x_axis[~D[2023-08-02]]}
+        y={above_graph(@dimensions)}
+        dominant-baseline="text-bottom"
+        text-anchor="middle"
+      >
         {"Important Day"}
-      </.x_axis_label>
+      </.text>
 
-      <.x_axis_grid_lines axis={@x_axis} stroke="#D3D3D3" />
+      <%!-- X-axis grid lines --%>
+      <.line
+        :for={date <- scale_values(@x_axis, ticks: 5)}
+        x1={@x_axis[date]}
+        y1={graph_top(@dimensions)}
+        x2={@x_axis[date]}
+        y2={graph_bottom(@dimensions)}
+        stroke="#D3D3D3"
+      />
 
-      <.y_axis_labels :let={value} axis={@y_axis} ticks={5}>
+      <%!-- Y-axis labels --%>
+      <.text
+        :for={value <- scale_values(@y_axis, ticks: 5)}
+        x={left_of_graph(@dimensions)}
+        y={@y_axis[value]}
+        dominant-baseline="middle"
+        text-anchor="end"
+      >
         {value}
-      </.y_axis_labels>
+      </.text>
 
-      <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
+      <%!-- Y-axis grid lines --%>
+      <.line
+        :for={value <- scale_values(@y_axis, ticks: 5)}
+        x1={graph_left(@dimensions)}
+        y1={@y_axis[value]}
+        x2={graph_right(@dimensions)}
+        y2={@y_axis[value]}
+        stroke="#D3D3D3"
+      />
 
       <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} />
 
