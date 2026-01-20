@@ -13,6 +13,9 @@ defmodule DemoLive do
 
   import Plox
 
+  alias Plox.Helpers.Axis
+  alias Plox.Helpers.Grid
+
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     {:ok, mount_simple_line_graph(socket)}
@@ -69,16 +72,9 @@ defmodule DemoLive do
     <h2>Example graph</h2>
 
     <.graph dimensions={@dimensions}>
-      <%!-- X-axis labels --%>
-      <text
-        :for={date <- scale_values(@x_axis, ticks: 5)}
-        x={@x_axis[date]}
-        y={below_graph(@dimensions)}
-        dominant-baseline="hanging"
-        text-anchor="middle"
-      >
+      <Axis.x_labels :let={date} axis={@x_axis} dimensions={@dimensions} ticks={5}>
         {Calendar.strftime(date, "%-m/%-d")}
-      </text>
+      </Axis.x_labels>
 
       <%!-- Add label for a specific date above the graph --%>
       <text
@@ -87,39 +83,19 @@ defmodule DemoLive do
         dominant-baseline="text-bottom"
         text-anchor="middle"
       >
-        {"Important Day"}
+        Important Day
       </text>
 
       <%!-- X-axis grid lines --%>
-      <line
-        :for={date <- scale_values(@x_axis, ticks: 5)}
-        x1={@x_axis[date]}
-        y1={graph_top(@dimensions)}
-        x2={@x_axis[date]}
-        y2={graph_bottom(@dimensions)}
-        stroke="#D3D3D3"
-      />
+      <Grid.x_lines axis={@x_axis} dimensions={@dimensions} ticks={5} />
 
       <%!-- Y-axis labels --%>
-      <text
-        :for={value <- scale_values(@y_axis, ticks: 5)}
-        x={left_of_graph(@dimensions)}
-        y={@y_axis[value]}
-        dominant-baseline="middle"
-        text-anchor="end"
-      >
+      <Axis.y_labels :let={value} axis={@y_axis} dimensions={@dimensions} ticks={5}>
         {value}
-      </text>
+      </Axis.y_labels>
 
       <%!-- Y-axis grid lines --%>
-      <line
-        :for={value <- scale_values(@y_axis, ticks: 5)}
-        x1={graph_left(@dimensions)}
-        y1={@y_axis[value]}
-        x2={graph_right(@dimensions)}
-        y2={@y_axis[value]}
-        stroke="#D3D3D3"
-      />
+      <Grid.y_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
 
       <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} />
 
