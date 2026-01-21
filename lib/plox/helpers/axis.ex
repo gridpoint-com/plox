@@ -32,6 +32,8 @@ defmodule Plox.Helpers.Axis do
   attr :ticks, :integer, doc: "Optional number of labels to render (not to be used with `:step`)"
   attr :step, :any, doc: "Optional size of step between label values (not to be used with `:ticks`)"
   attr :start, :any, doc: "Optional starting value for labels"
+  attr :"dominant-baseline", :any, default: nil
+  attr :"text-anchor", :any, default: "middle"
   attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   slot :inner_block, required: true
@@ -42,8 +44,8 @@ defmodule Plox.Helpers.Axis do
       :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step, :start]))}
       x={@axis[value]}
       y={below_graph(@axis.dimensions, @gap)}
-      text-anchor="middle"
-      dominant-baseline="hanging"
+      dominant-baseline={assigns[:"dominant-baseline"] || "hanging"}
+      text-anchor={assigns[:"text-anchor"]}
       {@rest}
     >
       {render_slot(@inner_block, value)}
@@ -57,8 +59,8 @@ defmodule Plox.Helpers.Axis do
       :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step, :start]))}
       x={@axis[value]}
       y={above_graph(@axis.dimensions, @gap)}
-      text-anchor="middle"
-      dominant-baseline="text-bottom"
+      dominant-baseline={assigns[:"dominant-baseline"] || "text-bottom"}
+      text-anchor={assigns[:"text-anchor"]}
       {@rest}
     >
       {render_slot(@inner_block, value)}
@@ -85,6 +87,8 @@ defmodule Plox.Helpers.Axis do
   attr :ticks, :integer, doc: "Optional number of labels to render (not to be used with `:step`)"
   attr :step, :any, doc: "Optional size of step between label values (not to be used with `:ticks`)"
   attr :start, :any, doc: "Optional starting value for labels"
+  attr :"dominant-baseline", :any, default: "middle"
+  attr :"text-anchor", :any, default: nil
   attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   slot :inner_block, required: true
@@ -95,8 +99,8 @@ defmodule Plox.Helpers.Axis do
       :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step, :start]))}
       x={left_of_graph(@axis.dimensions, @gap)}
       y={@axis[value]}
-      text-anchor="end"
-      dominant-baseline="middle"
+      dominant-baseline={assigns[:"dominant-baseline"]}
+      text-anchor={assigns[:"text-anchor"] || "end"}
       {@rest}
     >
       {render_slot(@inner_block, value)}
@@ -110,8 +114,8 @@ defmodule Plox.Helpers.Axis do
       :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step, :start]))}
       x={right_of_graph(@axis.dimensions, @gap)}
       y={@axis[value]}
-      text-anchor="start"
-      dominant-baseline="middle"
+      dominant-baseline={assigns[:"dominant-baseline"]}
+      text-anchor={assigns[:"text-anchor"] || "start"}
       {@rest}
     >
       {render_slot(@inner_block, value)}
