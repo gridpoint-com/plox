@@ -14,8 +14,8 @@ defmodule Plox.Helpers.Axis do
   alias Plox.Constants
 
   @doc """
-  Renders multiple X-axis labels below or above the graph.
-  Defaults to below.
+  Renders multiple labels below or above the graph, along the given
+  `axis`. Defaults to below.
 
   Not for use when rendering single labels. It is recommended to use
   SVG `<text>` elements directly for that purpose.
@@ -23,15 +23,16 @@ defmodule Plox.Helpers.Axis do
   ## Examples
 
       <Axis.x_labels :let={date} axis={@x_axis} dimensions={@dimensions} ticks={5}>
-        <%= Calendar.strftime(date, "%-m/%-d") %>
+        {Calendar.strftime(date, "%-m/%-d")}
       </Axis.x_labels>
   """
   attr :axis, :any, required: true
   attr :dimensions, :any, required: true
   attr :position, :atom, default: :below, values: [:below, :top]
   attr :gap, :integer, default: Constants.default_label_gap()
-  attr :ticks, :integer, required: true
-  attr :step, :any
+  attr :ticks, :integer, doc: "Optional number of labels to render (not to be used with `:step`)"
+  attr :step, :any, doc: "Optional size of step between label values (not to be used with `:ticks`)"
+  attr :start, :any, doc: "Optional starting value for labels"
   attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   slot :inner_block, required: true
@@ -39,7 +40,7 @@ defmodule Plox.Helpers.Axis do
   def x_labels(%{position: :below} = assigns) do
     ~H"""
     <text
-      :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step]))}
+      :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step, :start]))}
       x={@axis[value]}
       y={below_graph(@dimensions, @gap)}
       text-anchor="middle"
@@ -54,7 +55,7 @@ defmodule Plox.Helpers.Axis do
   def x_labels(%{position: :top} = assigns) do
     ~H"""
     <text
-      :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step]))}
+      :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step, :start]))}
       x={@axis[value]}
       y={above_graph(@dimensions, @gap)}
       text-anchor="middle"
@@ -67,8 +68,8 @@ defmodule Plox.Helpers.Axis do
   end
 
   @doc """
-  Renders multiple Y-axis labels on the left or right of the graph.
-  Defaults to the left.
+  Renders multiple labels on the left or right of the graph, along
+  the given `axis`. Defaults to the left.
 
   Not for use when rendering single labels. It is recommended to use
   SVG `<text>` elements directly for that purpose.
@@ -83,8 +84,9 @@ defmodule Plox.Helpers.Axis do
   attr :dimensions, :any, required: true
   attr :position, :atom, default: :left, values: [:left, :right]
   attr :gap, :integer, default: Constants.default_label_gap()
-  attr :ticks, :integer, required: true
-  attr :step, :any
+  attr :ticks, :integer, doc: "Optional number of labels to render (not to be used with `:step`)"
+  attr :step, :any, doc: "Optional size of step between label values (not to be used with `:ticks`)"
+  attr :start, :any, doc: "Optional starting value for labels"
   attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   slot :inner_block, required: true
@@ -92,7 +94,7 @@ defmodule Plox.Helpers.Axis do
   def y_labels(%{position: :left} = assigns) do
     ~H"""
     <text
-      :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step]))}
+      :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step, :start]))}
       x={left_of_graph(@dimensions, @gap)}
       y={@axis[value]}
       text-anchor="end"
@@ -107,7 +109,7 @@ defmodule Plox.Helpers.Axis do
   def y_labels(%{position: :right} = assigns) do
     ~H"""
     <text
-      :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step]))}
+      :for={value <- scale_values(@axis, Map.take(assigns, [:ticks, :step, :start]))}
       x={right_of_graph(@dimensions, @gap)}
       y={@axis[value]}
       text-anchor="start"

@@ -79,6 +79,10 @@ defmodule Plox.MixProject do
       ],
       "Color Scales": [
         Plox.FixedColorsScale
+      ],
+      Helpers: [
+        Plox.Helpers.Axis,
+        Plox.Helpers.Grid
       ]
     ]
   end

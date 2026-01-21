@@ -72,6 +72,7 @@ defmodule DemoLive do
     <h2>Example graph</h2>
 
     <.graph dimensions={@dimensions}>
+      <%!-- X-axis labels --%>
       <Axis.x_labels :let={date} axis={@x_axis} dimensions={@dimensions} ticks={5}>
         {Calendar.strftime(date, "%-m/%-d")}
       </Axis.x_labels>
@@ -87,7 +88,7 @@ defmodule DemoLive do
       </text>
 
       <%!-- X-axis grid lines --%>
-      <Grid.x_lines axis={@x_axis} dimensions={@dimensions} ticks={5} />
+      <Grid.vertical_lines axis={@x_axis} dimensions={@dimensions} ticks={5} />
 
       <%!-- Y-axis labels --%>
       <Axis.y_labels :let={value} axis={@y_axis} dimensions={@dimensions} ticks={5}>
@@ -95,7 +96,7 @@ defmodule DemoLive do
       </Axis.y_labels>
 
       <%!-- Y-axis grid lines --%>
-      <Grid.y_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
+      <Grid.horizontal_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
 
       <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} />
 
