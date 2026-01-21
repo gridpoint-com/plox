@@ -86,19 +86,13 @@ defmodule AnimatedDemoLive do
   def render(assigns) do
     ~H"""
     <.graph dimensions={@dimensions}>
-      <Axis.y_labels :let={value} axis={@y_axis} dimensions={@dimensions} ticks={5}>
+      <Axis.y_labels :let={value} axis={@y_axis} ticks={5}>
         {value}
       </Axis.y_labels>
 
       <Grid.horizontal_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
 
-      <Axis.x_labels
-        :let={datetime}
-        axis={@x_axis}
-        dimensions={@dimensions}
-        step={5}
-        start={@nearest_5_second}
-      >
+      <Axis.x_labels :let={datetime} axis={@x_axis} step={5} start={@nearest_5_second}>
         {Calendar.strftime(datetime, "%-I:%M:%S")}
       </Axis.x_labels>
 

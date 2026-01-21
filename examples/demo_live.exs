@@ -73,7 +73,7 @@ defmodule DemoLive do
 
     <.graph dimensions={@dimensions}>
       <%!-- X-axis labels --%>
-      <Axis.x_labels :let={date} axis={@x_axis} dimensions={@dimensions} ticks={5}>
+      <Axis.x_labels :let={date} axis={@x_axis}>
         {Calendar.strftime(date, "%-m/%-d")}
       </Axis.x_labels>
 
@@ -91,7 +91,7 @@ defmodule DemoLive do
       <Grid.vertical_lines axis={@x_axis} dimensions={@dimensions} ticks={5} />
 
       <%!-- Y-axis labels --%>
-      <Axis.y_labels :let={value} axis={@y_axis} dimensions={@dimensions} ticks={5}>
+      <Axis.y_labels :let={value} axis={@y_axis} ticks={5}>
         {value}
       </Axis.y_labels>
 
