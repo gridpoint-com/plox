@@ -58,16 +58,16 @@ Once you have those, you can render a `graph` component within your HEEx templat
 
 ```html
 <.graph id="example_graph" dimensions={@dimensions}>
-  <.x_axis_labels :let={date} axis={@x_axis}>
+  <Plox.Helpers.Axis.x_labels :let={date} axis={@x_axis}>
     {Calendar.strftime(date, "%-m/%-d")}
-  </.x_axis_labels>
+  </Plox.Helpers.Axis.x_labels>
 
-  <.y_axis_labels :let={value} axis={@y_axis} ticks={5}>
+  <Plox.Helpers.Axis.y_labels :let={value} axis={@y_axis} ticks={5}>
     {value}
-  </.y_axis_labels>
+  </Plox.Helpers.Axis.y_labels>
 
-  <.x_axis_grid_lines axis={@x_axis} stroke="#D3D3D3" />
-  <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
+  <Plox.Helpers.vertical_lines axis={@x_axis} dimensions={@dimensions} />
+  <Plox.Helpers.horizontal_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
 
   <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="#EC7E16" stroke-width={2} />
 
