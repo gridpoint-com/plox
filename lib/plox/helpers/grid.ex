@@ -2,7 +2,7 @@ defmodule Plox.Helpers.Grid do
   @moduledoc """
   Helper components for rendering grid lines.
 
-  These components wrap common patterns for axis labels using standard SVG elements
+  These components wrap common patterns for grid lines using standard SVG elements
   and Plox helper functions. They are convenience wrappers - you can always drop down
   to raw SVG for more control.
   """

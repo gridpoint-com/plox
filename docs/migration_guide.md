@@ -105,7 +105,7 @@ dataset =
     dimensions={@dimensions}
     stroke="#D3D3D3"
   />
-  
+
   <Plox.Helpers.Grid.horizontal_lines
     axis={@y_axis}
     dimensions={@dimensions}

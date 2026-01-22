@@ -66,8 +66,8 @@ Once you have those, you can render a `graph` component within your HEEx templat
     {value}
   </Plox.Helpers.Axis.y_labels>
 
-  <Plox.Helpers.vertical_lines axis={@x_axis} dimensions={@dimensions} />
-  <Plox.Helpers.horizontal_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
+  <Plox.Helpers.Grid.vertical_lines axis={@x_axis} dimensions={@dimensions} />
+  <Plox.Helpers.Grid.horizontal_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
 
   <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="#EC7E16" stroke-width={2} />
 
