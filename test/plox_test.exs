@@ -89,4 +89,64 @@ defmodule PloxTest do
                Plox.Scale.values(scale, %{start: ~N[2019-01-01 00:01:00]})
     end
   end
+
+  describe "positional helper functions" do
+    setup do
+      dimensions = Plox.Dimensions.new(800, 600, margin: {50, 40, 60, 70}, padding: {10, 20, 30, 40})
+
+      %{dimensions: dimensions}
+    end
+
+    test "above_graph/1 returns y-coordinate above graph with default gap", %{dimensions: dimensions} do
+      expected = 50 + 10 - Plox.Constants.default_label_gap()
+      assert Plox.above_graph(dimensions) == expected
+    end
+
+    test "above_graph/2 returns y-coordinate above graph with custom gap", %{dimensions: dimensions} do
+      assert Plox.above_graph(dimensions, 20) == 50 + 10 - 20
+    end
+
+    test "below_graph/1 returns y-coordinate below graph with default gap", %{dimensions: dimensions} do
+      expected = 600 - 60 - 30 + Plox.Constants.default_label_gap()
+      assert Plox.below_graph(dimensions) == expected
+    end
+
+    test "below_graph/2 returns y-coordinate below graph with custom gap", %{dimensions: dimensions} do
+      assert Plox.below_graph(dimensions, 15) == 600 - 60 - 30 + 15
+    end
+
+    test "left_of_graph/1 returns x-coordinate left of graph with default gap", %{dimensions: dimensions} do
+      expected = 70 + 40 - Plox.Constants.default_label_gap()
+      assert Plox.left_of_graph(dimensions) == expected
+    end
+
+    test "left_of_graph/2 returns x-coordinate left of graph with custom gap", %{dimensions: dimensions} do
+      assert Plox.left_of_graph(dimensions, 10) == 70 + 40 - 10
+    end
+
+    test "right_of_graph/1 returns x-coordinate right of graph with default gap", %{dimensions: dimensions} do
+      expected = 800 - 40 - 20 + Plox.Constants.default_label_gap()
+      assert Plox.right_of_graph(dimensions) == expected
+    end
+
+    test "right_of_graph/2 returns x-coordinate right of graph with custom gap", %{dimensions: dimensions} do
+      assert Plox.right_of_graph(dimensions, 20) == 800 - 40 - 20 + 20
+    end
+
+    test "graph_top/1 returns top boundary of graph area", %{dimensions: dimensions} do
+      assert Plox.graph_top(dimensions) == 50 + 10
+    end
+
+    test "graph_bottom/1 returns bottom boundary of graph area", %{dimensions: dimensions} do
+      assert Plox.graph_bottom(dimensions) == 600 - 60 - 30
+    end
+
+    test "graph_left/1 returns left boundary of graph area", %{dimensions: dimensions} do
+      assert Plox.graph_left(dimensions) == 70 + 40
+    end
+
+    test "graph_right/1 returns right boundary of graph area", %{dimensions: dimensions} do
+      assert Plox.graph_right(dimensions) == 800 - 40 - 20
+    end
+  end
 end

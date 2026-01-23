@@ -228,7 +228,7 @@ defmodule Plox do
   See `Plox.Constants.default_label_gap/0` for default gap value.
   """
   def above_graph(dimensions, gap \\ Constants.default_label_gap()) do
-    dimensions.margin.top - gap
+    dimensions.margin.top + dimensions.padding.top - gap
   end
 
   @doc """
@@ -236,7 +236,7 @@ defmodule Plox do
   See `Plox.Constants.default_label_gap/0` for default gap value.
   """
   def below_graph(dimensions, gap \\ Constants.default_label_gap()) do
-    dimensions.height - dimensions.margin.bottom + gap
+    dimensions.height - dimensions.margin.bottom - dimensions.padding.bottom + gap
   end
 
   @doc """
@@ -244,7 +244,7 @@ defmodule Plox do
   See `Plox.Constants.default_label_gap/0` for default gap value.
   """
   def left_of_graph(dimensions, gap \\ Constants.default_label_gap()) do
-    dimensions.margin.left - gap
+    dimensions.margin.left + dimensions.padding.left - gap
   end
 
   @doc """
@@ -252,28 +252,28 @@ defmodule Plox do
   See `Plox.Constants.default_label_gap/0` for default gap value.
   """
   def right_of_graph(dimensions, gap \\ Constants.default_label_gap()) do
-    dimensions.width - dimensions.margin.right + gap
+    dimensions.width - dimensions.margin.right - dimensions.padding.right + gap
   end
 
   @doc """
   Returns the top boundary of the graph area (for grid lines and other elements).
   """
-  def graph_top(dimensions), do: dimensions.margin.top
+  def graph_top(dimensions), do: dimensions.margin.top + dimensions.padding.top
 
   @doc """
   Returns the bottom boundary of the graph area (for grid lines and other elements).
   """
-  def graph_bottom(dimensions), do: dimensions.height - dimensions.margin.bottom
+  def graph_bottom(dimensions), do: dimensions.height - dimensions.margin.bottom - dimensions.padding.bottom
 
   @doc """
   Returns the left boundary of the graph area (for grid lines and other elements).
   """
-  def graph_left(dimensions), do: dimensions.margin.left
+  def graph_left(dimensions), do: dimensions.margin.left + dimensions.padding.left
 
   @doc """
   Returns the right boundary of the graph area (for grid lines and other elements).
   """
-  def graph_right(dimensions), do: dimensions.width - dimensions.margin.right
+  def graph_right(dimensions), do: dimensions.width - dimensions.margin.right - dimensions.padding.right
 
   # @doc """
   # Bar plot.
