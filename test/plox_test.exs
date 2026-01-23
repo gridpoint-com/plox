@@ -92,61 +92,107 @@ defmodule PloxTest do
 
   describe "positional helper functions" do
     setup do
-      dimensions = Plox.Dimensions.new(800, 600, margin: {50, 40, 60, 70}, padding: {10, 20, 30, 40})
+      margins = {50, 40, 60, 70}
+      paddings = {10, 20, 30, 40}
+      dimensions = Plox.Dimensions.new(800, 600, margin: margins, padding: paddings)
 
-      %{dimensions: dimensions}
+      %{dimensions: dimensions, margins: margins, paddings: paddings}
     end
 
-    test "above_graph/1 returns y-coordinate above graph with default gap", %{dimensions: dimensions} do
-      expected = 50 + 10 - Plox.Constants.default_label_gap()
-      assert Plox.above_graph(dimensions) == expected
+    test "above_graph/1 returns y-coordinate above graph with default gap", %{
+      dimensions: dimensions,
+      margins: {mt, _mr, _mb, _ml},
+      paddings: {pt, _pr, _pb, _pl}
+    } do
+      assert Plox.above_graph(dimensions) == mt + pt - Plox.Constants.default_label_gap()
     end
 
-    test "above_graph/2 returns y-coordinate above graph with custom gap", %{dimensions: dimensions} do
-      assert Plox.above_graph(dimensions, 20) == 50 + 10 - 20
+    test "above_graph/2 returns y-coordinate above graph with custom gap", %{
+      dimensions: dimensions,
+      margins: {mt, _mr, _mb, _ml},
+      paddings: {pt, _pr, _pb, _pl}
+    } do
+      assert Plox.above_graph(dimensions, 20) == mt + pt - 20
     end
 
-    test "below_graph/1 returns y-coordinate below graph with default gap", %{dimensions: dimensions} do
-      expected = 600 - 60 - 30 + Plox.Constants.default_label_gap()
-      assert Plox.below_graph(dimensions) == expected
+    test "below_graph/1 returns y-coordinate below graph with default gap", %{
+      dimensions: dimensions,
+      margins: {_mt, _mr, mb, _ml},
+      paddings: {_pt, _pr, pb, _pl}
+    } do
+      assert Plox.below_graph(dimensions) == 600 - mb - pb + Plox.Constants.default_label_gap()
     end
 
-    test "below_graph/2 returns y-coordinate below graph with custom gap", %{dimensions: dimensions} do
-      assert Plox.below_graph(dimensions, 15) == 600 - 60 - 30 + 15
+    test "below_graph/2 returns y-coordinate below graph with custom gap", %{
+      dimensions: dimensions,
+      margins: {_mt, _mr, mb, _ml},
+      paddings: {_pt, _pr, pb, _pl}
+    } do
+      assert Plox.below_graph(dimensions, 15) == 600 - mb - pb + 15
     end
 
-    test "left_of_graph/1 returns x-coordinate left of graph with default gap", %{dimensions: dimensions} do
-      expected = 70 + 40 - Plox.Constants.default_label_gap()
-      assert Plox.left_of_graph(dimensions) == expected
+    test "left_of_graph/1 returns x-coordinate left of graph with default gap", %{
+      dimensions: dimensions,
+      margins: {_mt, _mr, _mb, ml},
+      paddings: {_pt, _pr, _pb, pl}
+    } do
+      assert Plox.left_of_graph(dimensions) == ml + pl - Plox.Constants.default_label_gap()
     end
 
-    test "left_of_graph/2 returns x-coordinate left of graph with custom gap", %{dimensions: dimensions} do
-      assert Plox.left_of_graph(dimensions, 10) == 70 + 40 - 10
+    test "left_of_graph/2 returns x-coordinate left of graph with custom gap", %{
+      dimensions: dimensions,
+      margins: {_mt, _mr, _mb, ml},
+      paddings: {_pt, _pr, _pb, pl}
+    } do
+      assert Plox.left_of_graph(dimensions, 10) == ml + pl - 10
     end
 
-    test "right_of_graph/1 returns x-coordinate right of graph with default gap", %{dimensions: dimensions} do
-      expected = 800 - 40 - 20 + Plox.Constants.default_label_gap()
-      assert Plox.right_of_graph(dimensions) == expected
+    test "right_of_graph/1 returns x-coordinate right of graph with default gap", %{
+      dimensions: dimensions,
+      margins: {_mt, mr, _mb, _ml},
+      paddings: {_pt, pr, _pb, _pl}
+    } do
+      assert Plox.right_of_graph(dimensions) == 800 - mr - pr + Plox.Constants.default_label_gap()
     end
 
-    test "right_of_graph/2 returns x-coordinate right of graph with custom gap", %{dimensions: dimensions} do
-      assert Plox.right_of_graph(dimensions, 20) == 800 - 40 - 20 + 20
+    test "right_of_graph/2 returns x-coordinate right of graph with custom gap", %{
+      dimensions: dimensions,
+      margins: {_mt, mr, _mb, _ml},
+      paddings: {_pt, pr, _pb, _pl}
+    } do
+      assert Plox.right_of_graph(dimensions, 20) == 800 - mr - pr + 20
     end
 
-    test "graph_top/1 returns top boundary of graph area", %{dimensions: dimensions} do
-      assert Plox.graph_top(dimensions) == 50 + 10
+    test "graph_top/1 returns top boundary of graph area", %{
+      dimensions: dimensions,
+      margins: {mt, _mr, _mb, _ml},
+      paddings: {pt, _pr, _pb, _pl}
+    } do
+      assert Plox.graph_top(dimensions) == mt + pt
     end
 
-    test "graph_bottom/1 returns bottom boundary of graph area", %{dimensions: dimensions} do
-      assert Plox.graph_bottom(dimensions) == 600 - 60 - 30
+    test "graph_bottom/1 returns bottom boundary of graph area", %{
+      dimensions: dimensions,
+      margins: {_mt, _mr, mb, _ml},
+      paddings: {_pt, _pr, pb, _pl}
+    } do
+      assert Plox.graph_bottom(dimensions) == 600 - mb - pb
     end
 
-    test "graph_left/1 returns left boundary of graph area", %{dimensions: dimensions} do
-      assert Plox.graph_left(dimensions) == 70 + 40
+    test "graph_left/1 returns left boundary of graph area", %{
+      dimensions: dimensions,
+      margins: {_mt, _mr, _mb, ml},
+      paddings: {_pt, _pr, _pb, pl}
+    } do
+      assert Plox.graph_left(dimensions) == ml + pl
     end
 
-    test "graph_right/1 returns right boundary of graph area", %{dimensions: dimensions} do
-      assert Plox.graph_right(dimensions) == 800 - 40 - 20
+    test "graph_right/1 returns right boundary of graph area", %{
+      dimensions: dimensions,
+      margins: {_mt, mr, _mb, _ml},
+      paddings: {_pt, pr, _pb, _pl}
+    } do
+      assert Plox.graph_right(dimensions) == 800 - mr - pr
     end
   end
 end
