@@ -38,7 +38,7 @@ defmodule Plox.DateScaleTest do
   describe "values/2" do
     test "with default step (1d)" do
       scale = DateScale.new(Date.range(~D[2019-01-01], ~D[2019-01-03]))
-      assert %Date.Range{first: ~D[2019-01-01], last: ~D[2019-01-03], step: 1} = Scale.values(scale)
+      assert Scale.values(scale) == Date.range(~D[2019-01-01], ~D[2019-01-03], 1)
     end
 
     test "with positive custom step in days" do
@@ -56,6 +56,24 @@ defmodule Plox.DateScaleTest do
 
       assert_raise ArgumentError, fn ->
         Scale.values(scale, %{step: 0})
+      end
+    end
+
+    test "with default start" do
+      scale = DateScale.new(Date.range(~D[2019-01-01], ~D[2019-01-05]))
+      assert Scale.values(scale) == Date.range(~D[2019-01-01], ~D[2019-01-05])
+    end
+
+    test "with custom start" do
+      scale = DateScale.new(Date.range(~D[2019-01-01], ~D[2019-01-05]))
+      assert Scale.values(scale, %{start: ~D[2019-01-03]}) == Date.range(~D[2019-01-03], ~D[2019-01-05])
+    end
+
+    test "raises an error with start outside range" do
+      scale = DateScale.new(Date.range(~D[2019-01-01], ~D[2019-01-05]))
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{start: ~D[2018-12-31]})
       end
     end
   end

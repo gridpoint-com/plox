@@ -94,6 +94,49 @@ defmodule Plox.DateTimeScaleTest do
                ~N[2019-01-01 00:00:03]
              ]
     end
+
+    test "raises an error with zero step" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{step: 0})
+      end
+    end
+
+    test "raises an error with invalid step" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{step: {-500, :invalid}})
+      end
+    end
+
+    test "with default start" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert Scale.values(scale) == [
+               ~N[2019-01-01 00:00:00],
+               ~N[2019-01-01 00:01:00],
+               ~N[2019-01-01 00:02:00]
+             ]
+    end
+
+    test "with custom start" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert Scale.values(scale, %{start: ~N[2019-01-01 00:01:00]}) == [
+               ~N[2019-01-01 00:01:00],
+               ~N[2019-01-01 00:02:00]
+             ]
+    end
+
+    test "raises an error with start outside range" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{start: ~N[2019-01-01 00:03:00]})
+      end
+    end
   end
 
   describe "convert_to_range/3" do

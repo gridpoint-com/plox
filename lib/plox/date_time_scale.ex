@@ -71,7 +71,7 @@ defmodule Plox.DateTimeScale do
 
     ## Options
 
-      * `:step` - The step interval. Can be an integer number of seconds,
+      * `:step` - The step interval. Can be a non-zero integer number of seconds,
         or a tuple of `{integer, :second | :minute | :hour | :day}`.
         Defaults to `{60, :second}`.
 
@@ -93,14 +93,25 @@ defmodule Plox.DateTimeScale do
     def values(%{first: %date_time_module{}} = scale, opts) do
       step_seconds =
         case Map.get(opts, :step, {60, :second}) do
-          seconds when is_integer(seconds) -> seconds
-          {seconds, :second} -> seconds
-          {minutes, :minute} -> minutes * 60
-          {hours, :hour} -> hours * 3600
-          {days, :day} -> days * 86_400
+          seconds when is_integer(seconds) and seconds > 0 ->
+            seconds
+
+          {seconds, :second} ->
+            seconds
+
+          {minutes, :minute} ->
+            minutes * 60
+
+          {hours, :hour} ->
+            hours * 3600
+
+          {days, :day} ->
+            days * 86_400
+
           _ ->
             raise ArgumentError,
-              message: "DateTimeScale: step must be an integer or a {integer, :second | :minute | :hour | :day} tuple"
+              message:
+                "DateTimeScale: step must be a non-zero integer or a {integer, :second | :minute | :hour | :day} tuple"
         end
 
       if date_time_module == DateTime and scale.first.time_zone != "Etc/UTC" and
