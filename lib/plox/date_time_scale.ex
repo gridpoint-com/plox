@@ -4,7 +4,8 @@ defmodule Plox.DateTimeScale do
 
   This struct implements the `Plox.Scale` protocol.
 
-  `Plox.Scale.values/2` returns a list of all datetime values:
+  `Plox.Scale.values/2` returns a list of all datetime values and accepts
+  `step` and `start` options:
 
       iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:03:00])
       iex> Plox.Scale.values(scale)
@@ -13,6 +14,10 @@ defmodule Plox.DateTimeScale do
       iex> scale = Plox.DateTimeScale.new(~U[2019-01-01 00:00:00Z], ~U[2019-01-03 00:00:00Z])
       iex> Plox.Scale.values(scale, %{step: {1, :day}})
       [~U[2019-01-01 00:00:00Z], ~U[2019-01-02 00:00:00Z], ~U[2019-01-03 00:00:00Z]]
+
+      iex> scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:03:00])
+      iex> Plox.Scale.values(scale, %{start: ~N[2019-01-01 00:01:00]})
+      [~N[2019-01-01 00:01:00], ~N[2019-01-01 00:02:00], ~N[2019-01-01 00:03:00]]
 
   `Plox.Scale.convert_to_range/3` returns a number in the given range:
 
@@ -64,8 +69,14 @@ defmodule Plox.DateTimeScale do
     Returns a list of all `DateTime` or `NaiveDateTime` values in the scale,
     stepping by the given interval.
 
-    Accepts a `:step` option, which can be a number of seconds, minutes, hours,
-    or days. The default step is 60 seconds.
+    ## Options
+
+      * `:step` - The step interval. Can be an integer number of seconds,
+        or a tuple of `{integer, :second | :minute | :hour | :day}`.
+        Defaults to `{60, :second}`.
+
+      * `:start` - The starting datetime value. Must be included in the scale.
+        Defaults to the first value in the scale.
     """
     def values(%{first: %DateTime{time_zone: tz}} = scale, %{step: {step_days, :day}}) when tz != "Etc/UTC" do
       scale.first
@@ -87,6 +98,9 @@ defmodule Plox.DateTimeScale do
           {minutes, :minute} -> minutes * 60
           {hours, :hour} -> hours * 3600
           {days, :day} -> days * 86_400
+          _ ->
+            raise ArgumentError,
+              message: "DateTimeScale: step must be an integer or a {integer, :second | :minute | :hour | :day} tuple"
         end
 
       if date_time_module == DateTime and scale.first.time_zone != "Etc/UTC" and
@@ -97,6 +111,11 @@ defmodule Plox.DateTimeScale do
       end
 
       first_value = Map.get(opts, :start, scale.first)
+
+      unless date_time_module.compare(first_value, scale.first) != :lt and
+               date_time_module.compare(first_value, scale.last) != :gt do
+        raise ArgumentError, message: "DateTimeScale: start value must be within the range of the scale"
+      end
 
       total_seconds = date_time_module.diff(scale.last, first_value)
       ticks = trunc(total_seconds / step_seconds)
