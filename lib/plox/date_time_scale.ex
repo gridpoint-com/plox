@@ -123,8 +123,8 @@ defmodule Plox.DateTimeScale do
 
       first_value = Map.get(opts, :start, scale.first)
 
-      unless date_time_module.compare(first_value, scale.first) != :lt and
-               date_time_module.compare(first_value, scale.last) != :gt do
+      if date_time_module.compare(first_value, scale.first) == :lt or
+           date_time_module.compare(first_value, scale.last) == :gt do
         raise ArgumentError, message: "DateTimeScale: start value must be within the range of the scale"
       end
 
