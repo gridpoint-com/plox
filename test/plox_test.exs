@@ -50,4 +50,43 @@ defmodule PloxTest do
       assert Plox.values([[1, 2], dataset[:y]]) == [{1.0, 80.0}, {2.0, 70.0}]
     end
   end
+
+  describe "scale_values/2" do
+    test "delegates to Scale.values/2 with no options" do
+      scale = Plox.NumberScale.new(0, 10)
+      axis = Plox.XAxis.new(scale, Plox.Dimensions.new(100, 100))
+
+      assert Plox.scale_values(axis) == Plox.Scale.values(scale)
+    end
+
+    test "delegates to Scale.values/2 with ticks" do
+      scale = Plox.NumberScale.new(0, 10)
+      axis = Plox.XAxis.new(scale, Plox.Dimensions.new(100, 100))
+
+      assert Plox.scale_values(axis, %{ticks: 5}) == Plox.Scale.values(scale, %{ticks: 5})
+    end
+
+    test "delegates to Scale.values/2 with step" do
+      scale = Plox.DateScale.new(Date.range(~D[2019-01-01], ~D[2019-01-10]))
+      axis = Plox.XAxis.new(scale, Plox.Dimensions.new(100, 100))
+
+      assert Plox.scale_values(axis, %{step: 2}) == Plox.Scale.values(scale, %{step: 2})
+    end
+
+    test "delegates to Scale.values/2 with step tuple" do
+      scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:10:00])
+      axis = Plox.XAxis.new(scale, Plox.Dimensions.new(100, 100))
+
+      assert Plox.scale_values(axis, %{step: {2, :minute}}) ==
+               Plox.Scale.values(scale, %{step: {2, :minute}})
+    end
+
+    test "delegates to Scale.values/2 with start" do
+      scale = Plox.DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+      axis = Plox.XAxis.new(scale, Plox.Dimensions.new(100, 100))
+
+      assert Plox.scale_values(axis, %{start: ~N[2019-01-01 00:01:00]}) ==
+               Plox.Scale.values(scale, %{start: ~N[2019-01-01 00:01:00]})
+    end
+  end
 end
