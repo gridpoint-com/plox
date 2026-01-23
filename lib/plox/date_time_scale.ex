@@ -91,6 +91,13 @@ defmodule Plox.DateTimeScale do
     end
 
     def values(%{first: %date_time_module{}} = scale, opts) do
+      first_value = Map.get(opts, :start, scale.first)
+
+      if date_time_module.compare(first_value, scale.first) == :lt or
+           date_time_module.compare(first_value, scale.last) == :gt do
+        raise ArgumentError, message: "DateTimeScale: start value must be within the range of the scale"
+      end
+
       step_seconds =
         case Map.get(opts, :step, {60, :second}) do
           seconds when is_integer(seconds) and seconds > 0 ->
@@ -117,15 +124,8 @@ defmodule Plox.DateTimeScale do
       if date_time_module == DateTime and scale.first.time_zone != "Etc/UTC" and
            step_seconds > 3600 do
         Logger.warning(fn ->
-          "DateTimeScale: steps greater than an hour in seconds for non UTC DateTimes are not safe to use because of DST shifts"
+          "DateTimeScale: steps greater than an hour for non UTC DateTimes are not safe to use because of DST shifts"
         end)
-      end
-
-      first_value = Map.get(opts, :start, scale.first)
-
-      if date_time_module.compare(first_value, scale.first) == :lt or
-           date_time_module.compare(first_value, scale.last) == :gt do
-        raise ArgumentError, message: "DateTimeScale: start value must be within the range of the scale"
       end
 
       total_seconds = date_time_module.diff(scale.last, first_value)
