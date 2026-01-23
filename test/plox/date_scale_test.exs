@@ -69,11 +69,19 @@ defmodule Plox.DateScaleTest do
       assert Scale.values(scale, %{start: ~D[2019-01-03]}) == Date.range(~D[2019-01-03], ~D[2019-01-05])
     end
 
-    test "raises an error with start outside range" do
+    test "raises an error with start before range" do
       scale = DateScale.new(Date.range(~D[2019-01-01], ~D[2019-01-05]))
 
       assert_raise ArgumentError, fn ->
         Scale.values(scale, %{start: ~D[2018-12-31]})
+      end
+    end
+
+    test "raises an error with start after range" do
+      scale = DateScale.new(Date.range(~D[2019-01-01], ~D[2019-01-05]))
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{start: ~D[2019-01-06]})
       end
     end
   end

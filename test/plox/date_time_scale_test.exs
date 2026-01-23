@@ -130,7 +130,15 @@ defmodule Plox.DateTimeScaleTest do
              ]
     end
 
-    test "raises an error with start outside range" do
+    test "raises an error with start before range" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{start: ~N[2018-12-31 23:59:59]})
+      end
+    end
+
+    test "raises an error with start after range" do
       scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
 
       assert_raise ArgumentError, fn ->
