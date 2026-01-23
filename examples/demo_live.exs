@@ -13,6 +13,9 @@ defmodule DemoLive do
 
   import Plox
 
+  alias Plox.Helpers.Axis
+  alias Plox.Helpers.Grid
+
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     {:ok, mount_simple_line_graph(socket)}
@@ -69,22 +72,31 @@ defmodule DemoLive do
     <h2>Example graph</h2>
 
     <.graph dimensions={@dimensions}>
-      <.x_axis_labels :let={date} axis={@x_axis}>
+      <%!-- X-axis labels --%>
+      <Axis.x_labels :let={date} axis={@x_axis}>
         {Calendar.strftime(date, "%-m/%-d")}
-      </.x_axis_labels>
+      </Axis.x_labels>
 
-      <%!-- this wraps text... why does it take in `axis`?? if we want to follow the SVG, we need to pass in `x` --%>
-      <.x_axis_label axis={@x_axis} value={~D[2023-08-02]} position={:top} color="red">
-        {"Important Day"}
-      </.x_axis_label>
+      <%!-- Add label for a specific date above the graph --%>
+      <text
+        x={@x_axis[~D[2023-08-02]]}
+        y={above_graph(@dimensions)}
+        dominant-baseline="text-bottom"
+        text-anchor="middle"
+      >
+        Important Day
+      </text>
 
-      <.x_axis_grid_lines axis={@x_axis} stroke="#D3D3D3" />
+      <%!-- X-axis grid lines --%>
+      <Grid.vertical_lines axis={@x_axis} dimensions={@dimensions} ticks={5} />
 
-      <.y_axis_labels :let={value} axis={@y_axis} ticks={5}>
+      <%!-- Y-axis labels --%>
+      <Axis.y_labels :let={value} axis={@y_axis} ticks={5}>
         {value}
-      </.y_axis_labels>
+      </Axis.y_labels>
 
-      <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
+      <%!-- Y-axis grid lines --%>
+      <Grid.horizontal_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
 
       <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="orange" stroke-width={2} />
 

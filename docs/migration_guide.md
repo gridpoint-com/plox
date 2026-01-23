@@ -92,16 +92,26 @@ dataset =
 ```html
 <.graph id="example_graph" dimensions={@dimensions}>
   <!-- Render axis labels and lines individually -->
-  <.x_axis_labels :let={date} axis={@x_axis}>
+  <Plox.Helpers.Axis.x_labels :let={date} axis={@x_axis}>
     {Calendar.strftime(date, "%-m/%-d")}
-  </.x_axis_labels>
+  </Plox.Helpers.Axis.x_labels>
 
-  <.y_axis_labels :let={value} axis={@y_axis} ticks={5}>
+  <Plox.Helpers.Axis.y_labels :let={value} axis={@y_axis} ticks={5}>
     {value}
-  </.y_axis_labels>
+  </Plox.Helpers.Axis.y_labels>
 
-  <.x_axis_grid_lines axis={@x_axis} stroke="#D3D3D3" />
-  <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
+  <Plox.Helpers.Grid.vertical_lines
+    axis={@x_axis}
+    dimensions={@dimensions}
+    stroke="#D3D3D3"
+  />
+
+  <Plox.Helpers.Grid.horizontal_lines
+    axis={@y_axis}
+    dimensions={@dimensions}
+    ticks={5}
+    stroke="#D3D3D3"
+  />
 
   <!-- Use the `points/2` helper to generate a list of {x, y} tuples from our Dataset -->
   <.polyline points={points(@dataset[:x], @dataset[:y])} stroke="#EC7E16" stroke-width={2} />

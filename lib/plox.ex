@@ -5,13 +5,9 @@ defmodule Plox do
 
   use Phoenix.Component
 
+  alias Plox.Constants
   alias Plox.Dimensions
   alias Plox.Scale
-  alias Plox.XAxis
-  alias Plox.YAxis
-
-  # copied from SVG spec: https://svgwg.org/svg2-draft/styling.html#TermPresentationAttribute
-  @svg_presentation_globals ~w(alignment-baseline baseline-shift clip-path clip-rule color color-interpolation color-interpolation-filters cursor direction display dominant-baseline fill-opacity fill-rule filter flood-color flood-opacity font-family font-size font-size-adjust font-stretch font-style font-variant font-weight glyph-orientation-horizontal glyph-orientation-vertical image-rendering letter-spacing lighting-color marker-end marker-mid marker-start mask mask-type opacity overflow paint-order pointer-events shape-rendering stop-color stop-opacity stroke stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit stroke-opacity stroke-width text-anchor text-decoration text-overflow text-rendering transform-origin unicode-bidi vector-effect visibility white-space word-spacing writing-mode)
 
   @doc """
   Entrypoint component for rendering graphs and plots.
@@ -39,263 +35,13 @@ defmodule Plox do
   end
 
   @doc """
-  X-axis labels along the bottom or top of the graph.
-
-  See `x_axis_label/1` for more details on the accepted attributes.
-  """
-  @doc type: :component
-
-  attr :axis, XAxis, required: true
-  attr :ticks, :any
-  attr :step, :any
-  attr :start, :any
-  attr :rest, :global, include: ~w(gap rotation position) ++ @svg_presentation_globals
-
-  slot :inner_block, required: true
-
-  def x_axis_labels(assigns) do
-    ~H"""
-    <.x_axis_label
-      :for={value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step, :start]))}
-      axis={@axis}
-      value={value}
-      {@rest}
-    >
-      {render_slot(@inner_block, value)}
-    </.x_axis_label>
-    """
-  end
-
-  @doc """
-  An X-axis label at the bottom or top of the graph.
-  """
-  @doc type: :component
-
-  attr :axis, XAxis, required: true
-  attr :value, :any, required: true
-  attr :position, :atom, values: [:top, :bottom], default: :bottom
-  attr :gap, :integer, default: 16
-  attr :rotation, :integer, default: nil
-  attr :"dominant-baseline", :any, default: nil
-  attr :"text-anchor", :any, default: nil
-  attr :rest, :global, include: @svg_presentation_globals
-
-  slot :inner_block, required: true
-
-  def x_axis_label(%{position: :bottom} = assigns) do
-    ~H"""
-    <text
-      x={x = @axis[@value]}
-      y={@axis.dimensions.height - @axis.dimensions.margin.bottom + @gap}
-      dominant-baseline={assigns[:"dominant-baseline"] || "hanging"}
-      text-anchor={assigns[:"text-anchor"] || "middle"}
-      transform={
-        if @rotation,
-          do:
-            "rotate(#{@rotation}, #{x}, #{@axis.dimensions.height - @axis.dimensions.margin.bottom + @gap})"
-      }
-      {@rest}
-    >
-      {render_slot(@inner_block)}
-    </text>
-    """
-  end
-
-  def x_axis_label(%{position: :top} = assigns) do
-    ~H"""
-    <text
-      x={x = @axis[@value]}
-      y={@axis.dimensions.margin.bottom - @gap}
-      dominant-baseline={assigns[:"dominant-baseline"] || "text-bottom"}
-      text-anchor={assigns[:"text-anchor"] || "middle"}
-      transform={
-        if @rotation,
-          do: "rotate(#{@rotation}, #{x}, #{@axis.dimensions.margin.bottom - @gap})"
-      }
-      {@rest}
-    >
-      {render_slot(@inner_block)}
-    </text>
-    """
-  end
-
-  @doc """
-  Y-axis labels along the left or right side of the graph.
-
-  See `y_axis_label/1` for more details on the accepeted attributes.
-  """
-  @doc type: :component
-
-  attr :axis, YAxis, required: true
-  attr :ticks, :any
-  attr :step, :any
-  attr :start, :any
-  attr :rest, :global, include: ~w(gap rotation position) ++ @svg_presentation_globals
-
-  slot :inner_block, required: true
-
-  def y_axis_labels(assigns) do
-    ~H"""
-    <.y_axis_label
-      :for={value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step, :start]))}
-      axis={@axis}
-      value={value}
-      {@rest}
-    >
-      {render_slot(@inner_block, value)}
-    </.y_axis_label>
-    """
-  end
-
-  @doc """
-  A Y-axis label at the left or right side of the graph.
-  """
-  @doc type: :component
-
-  attr :axis, YAxis, required: true
-  attr :value, :any, required: true
-  attr :position, :atom, values: [:left, :right], default: :left
-  attr :gap, :integer, default: 16
-  attr :rotation, :integer, default: nil
-  attr :"dominant-baseline", :any, default: "middle"
-  attr :"text-anchor", :any, default: nil
-  attr :rest, :global, include: @svg_presentation_globals
-
-  slot :inner_block, required: true
-
-  def y_axis_label(%{position: :left} = assigns) do
-    ~H"""
-    <text
-      x={@axis.dimensions.margin.left - @gap}
-      y={y = @axis[@value]}
-      dominant-baseline={assigns[:"dominant-baseline"]}
-      text-anchor={assigns[:"text-anchor"] || "end"}
-      transform={
-        if @rotation,
-          do: "rotate(#{@rotation}, #{@axis.dimensions.margin.left - @gap}, #{y})"
-      }
-      {@rest}
-    >
-      {render_slot(@inner_block)}
-    </text>
-    """
-  end
-
-  def y_axis_label(%{position: :right} = assigns) do
-    ~H"""
-    <text
-      x={@axis.dimensions.width - @axis.dimensions.margin.right + @gap}
-      y={y = @axis[@value]}
-      dominant-baseline={assigns[:"dominant-baseline"]}
-      text-anchor={assigns[:"text-anchor"] || "start"}
-      transform={
-        if @rotation,
-          do:
-            "rotate(#{@rotation}, #{@axis.dimensions.width - @axis.dimensions.margin.right + @gap}, #{y})"
-      }
-      {@rest}
-    >
-      {render_slot(@inner_block)}
-    </text>
-    """
-  end
-
-  @doc """
-  X-axis grid lines.
-  """
-  @doc type: :component
-
-  attr :axis, XAxis, required: true
-  attr :ticks, :any
-  attr :step, :any
-  attr :start, :any
-  attr :rest, :global, include: @svg_presentation_globals
-
-  def x_axis_grid_lines(assigns) do
-    ~H"""
-    <.x_axis_grid_line
-      :for={value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step, :start]))}
-      axis={@axis}
-      value={value}
-      {@rest}
-    />
-    """
-  end
-
-  @doc """
-  A single X-axis grid line.
-  """
-  @doc type: :component
-
-  attr :axis, XAxis, required: true
-  attr :value, :any, required: true
-  attr :top_overdraw, :integer, default: 0
-  attr :bottom_overdraw, :integer, default: 0
-  attr :rest, :global, include: @svg_presentation_globals
-
-  def x_axis_grid_line(assigns) do
-    ~H"""
-    <line
-      x1={x = @axis[@value]}
-      y1={@axis.dimensions.margin.top - @top_overdraw}
-      x2={x}
-      y2={@axis.dimensions.height - @axis.dimensions.margin.bottom + @bottom_overdraw}
-      {@rest}
-    />
-    """
-  end
-
-  @doc """
-  Y-axis grid lines.
-  """
-  @doc type: :component
-
-  attr :axis, YAxis, required: true
-  attr :ticks, :any
-  attr :step, :any
-  attr :start, :any
-  attr :rest, :global, include: @svg_presentation_globals
-
-  def y_axis_grid_lines(assigns) do
-    ~H"""
-    <.y_axis_grid_line
-      :for={value <- Scale.values(@axis.scale, Map.take(assigns, [:ticks, :step, :start]))}
-      axis={@axis}
-      value={value}
-      {@rest}
-    />
-    """
-  end
-
-  @doc """
-  A single Y-axis grid line.
-  """
-  @doc type: :component
-
-  attr :axis, YAxis, required: true
-  attr :value, :any, required: true
-  attr :rest, :global, include: @svg_presentation_globals
-
-  def y_axis_grid_line(assigns) do
-    ~H"""
-    <line
-      x1={@axis.dimensions.margin.left}
-      y1={y = @axis[@value]}
-      x2={@axis.dimensions.width - @axis.dimensions.margin.right}
-      y2={y}
-      {@rest}
-    />
-    """
-  end
-
-  @doc """
   Draws a SVG `<polyline>` element connecting a series of points.
   """
   @doc type: :component
 
   attr :points, :any, required: true, doc: "String of coordinates (x1,y1 x2,y2...) or list of {x, y} tuples"
   attr :fill, :any, default: "none"
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def polyline(%{points: points} = assigns) when is_binary(points), do: do_polyline(assigns)
 
@@ -323,7 +69,7 @@ defmodule Plox do
 
   attr :points, :any, required: true, doc: "String of coordinates (x1,y1 x2,y2...) or list of {x, y} tuples"
   attr :fill, :any, default: "none"
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def step_polyline(%{points: points} = assigns) when is_binary(points) do
     points =
@@ -368,14 +114,13 @@ defmodule Plox do
   """
   @doc type: :component
 
-  # TODO: I wonder if we can more dynamically determine all "dynamic"-possible attributes
   attr :cx, :any, required: true
   attr :cy, :any, required: true
   attr :r, :any, required: true
   attr :fill, :any, default: nil
   attr :stroke, :any, default: nil
   attr :"stroke-width", :any, default: nil
-  attr :rest, :global, include: @svg_presentation_globals
+  attr :rest, :global, include: Constants.svg_presentation_attrs()
 
   def circle(assigns) do
     ~H"""
@@ -464,6 +209,71 @@ defmodule Plox do
       [List.to_tuple(data)]
     end
   end
+
+  @doc """
+  Returns scale values for rendering labels and grid lines.
+
+  ## Example
+
+      iex> scale_values(x_axis, ticks: 5)
+      [~D[2023-08-01], ~D[2023-08-02], ...]
+  """
+  def scale_values(%{scale: scale}, opts \\ []) do
+    opts = Map.new(opts)
+    Scale.values(scale, opts)
+  end
+
+  @doc """
+  Returns the y-coordinate for positioning elements above the graph (e.g. x-axis labels at top).
+  See `Plox.Constants.default_label_gap/0` for default gap value.
+  """
+  def above_graph(dimensions, gap \\ Constants.default_label_gap()) do
+    dimensions.margin.top + dimensions.padding.top - gap
+  end
+
+  @doc """
+  Returns the y-coordinate for positioning elements below the graph (e.g. x-axis labels at bottom).
+  See `Plox.Constants.default_label_gap/0` for default gap value.
+  """
+  def below_graph(dimensions, gap \\ Constants.default_label_gap()) do
+    dimensions.height - dimensions.margin.bottom - dimensions.padding.bottom + gap
+  end
+
+  @doc """
+  Returns the x-coordinate for positioning elements to the left of the graph (e.g. y-axis labels).
+  See `Plox.Constants.default_label_gap/0` for default gap value.
+  """
+  def left_of_graph(dimensions, gap \\ Constants.default_label_gap()) do
+    dimensions.margin.left + dimensions.padding.left - gap
+  end
+
+  @doc """
+  Returns the x-coordinate for positioning elements to the right of the graph (e.g. y-axis labels).
+  See `Plox.Constants.default_label_gap/0` for default gap value.
+  """
+  def right_of_graph(dimensions, gap \\ Constants.default_label_gap()) do
+    dimensions.width - dimensions.margin.right - dimensions.padding.right + gap
+  end
+
+  @doc """
+  Returns the top boundary of the graph area (for grid lines and other elements).
+  """
+  def graph_top(dimensions), do: dimensions.margin.top + dimensions.padding.top
+
+  @doc """
+  Returns the bottom boundary of the graph area (for grid lines and other elements).
+  """
+  def graph_bottom(dimensions), do: dimensions.height - dimensions.margin.bottom - dimensions.padding.bottom
+
+  @doc """
+  Returns the left boundary of the graph area (for grid lines and other elements).
+  """
+  def graph_left(dimensions), do: dimensions.margin.left + dimensions.padding.left
+
+  @doc """
+  Returns the right boundary of the graph area (for grid lines and other elements).
+  """
+  def graph_right(dimensions), do: dimensions.width - dimensions.margin.right - dimensions.padding.right
 
   # @doc """
   # Bar plot.

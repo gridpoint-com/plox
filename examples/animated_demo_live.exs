@@ -13,6 +13,9 @@ defmodule AnimatedDemoLive do
 
   import Plox
 
+  alias Plox.Helpers.Axis
+  alias Plox.Helpers.Grid
+
   @interval 1000
 
   @impl Phoenix.LiveView
@@ -83,26 +86,54 @@ defmodule AnimatedDemoLive do
   def render(assigns) do
     ~H"""
     <.graph dimensions={@dimensions}>
-      <.y_axis_labels :let={value} axis={@y_axis} ticks={5}>
+      <Axis.y_labels :let={value} axis={@y_axis} ticks={5}>
         {value}
-      </.y_axis_labels>
+      </Axis.y_labels>
 
-      <.y_axis_grid_lines axis={@y_axis} ticks={5} stroke="#D3D3D3" />
+      <Grid.horizontal_lines axis={@y_axis} dimensions={@dimensions} ticks={5} />
 
-      <.x_axis_labels :let={datetime} axis={@x_axis} step={5} start={@nearest_5_second}>
+      <Axis.x_labels :let={datetime} axis={@x_axis} step={5} start={@nearest_5_second}>
         {Calendar.strftime(datetime, "%-I:%M:%S")}
-      </.x_axis_labels>
+      </Axis.x_labels>
 
-      <.x_axis_grid_lines axis={@x_axis} step={5} start={@nearest_5_second} stroke="#D3D3D3" />
-      <.x_axis_grid_line axis={@x_axis} value={@x_axis.scale.first} stroke="#D3D3D3" />
-      <.x_axis_grid_line axis={@x_axis} value={@x_axis.scale.last} stroke="#D3D3D3" />
+      <Grid.vertical_lines axis={@x_axis} dimensions={@dimensions} step={5} start={@nearest_5_second} />
 
-      <%!-- vertical marker for "now" with a label --%>
-      <.x_axis_label axis={@x_axis} value={@now} position={:top} stroke="red">
-        Now ({Calendar.strftime(@now, "%-I:%M:%S")})
-      </.x_axis_label>
+      <%!-- draw left boundary of the graph --%>
+      <line
+        x1={graph_left(@dimensions)}
+        x2={graph_left(@dimensions)}
+        y1={graph_top(@dimensions)}
+        y2={graph_bottom(@dimensions)}
+        stroke="#D3D3D3"
+      />
 
-      <.x_axis_grid_line axis={@x_axis} value={@now} stroke="red" />
+      <%!-- draw right boundary of the graph --%>
+      <line
+        x1={graph_right(@dimensions)}
+        x2={graph_right(@dimensions)}
+        y1={graph_top(@dimensions)}
+        y2={graph_bottom(@dimensions)}
+        stroke="#D3D3D3"
+      />
+
+      <%!-- vertical marker for "now" with a label above the graph --%>
+      <text
+        x={@x_axis[@now]}
+        y={above_graph(@dimensions)}
+        dominant-baseline="text-bottom"
+        text-anchor="middle"
+        stroke="red"
+      >
+        ({Calendar.strftime(@now, "%-I:%M:%S")})
+      </text>
+
+      <line
+        x1={@x_axis[@now]}
+        x2={@x_axis[@now]}
+        y1={graph_top(@dimensions)}
+        y2={graph_bottom(@dimensions)}
+        stroke="red"
+      />
 
       <.polyline points={points(@dataset1[:x], @dataset1[:y])} stroke="orange" stroke-width="2" />
       <.polyline points={points(@dataset2[:x], @dataset2[:y])} stroke="blue" stroke-width="2" />
