@@ -45,10 +45,20 @@ defmodule Plox.DateTimeScaleTest do
   end
 
   describe "values/2" do
-    test "with default step (60s)" do
+    test "with default step (60s) and start" do
       scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
 
       assert Scale.values(scale) == [
+               ~N[2019-01-01 00:00:00],
+               ~N[2019-01-01 00:01:00],
+               ~N[2019-01-01 00:02:00]
+             ]
+    end
+
+    test "with valid step in total seconds" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert Scale.values(scale, %{step: 60}) == [
                ~N[2019-01-01 00:00:00],
                ~N[2019-01-01 00:01:00],
                ~N[2019-01-01 00:02:00]
@@ -92,6 +102,67 @@ defmodule Plox.DateTimeScaleTest do
                ~N[2019-01-01 00:00:01],
                ~N[2019-01-01 00:00:02],
                ~N[2019-01-01 00:00:03]
+             ]
+    end
+
+    test "raises an error with zero step" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{step: 0})
+      end
+    end
+
+    test "raises an error with negative step" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{step: -60})
+      end
+    end
+
+    test "raises an error with invalid step" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{step: {-500, :invalid}})
+      end
+    end
+
+    test "with custom start" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert Scale.values(scale, %{start: ~N[2019-01-01 00:01:00]}) == [
+               ~N[2019-01-01 00:01:00],
+               ~N[2019-01-01 00:02:00]
+             ]
+    end
+
+    test "raises an error with start before range" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{start: ~N[2018-12-31 23:59:59]})
+      end
+    end
+
+    test "raises an error with start after range" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{start: ~N[2019-01-01 00:03:00]})
+      end
+    end
+
+    test "with custom step and start" do
+      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:10:00])
+
+      assert Scale.values(scale, %{step: {2, :minute}, start: ~N[2019-01-01 00:01:00]}) == [
+               ~N[2019-01-01 00:01:00],
+               ~N[2019-01-01 00:03:00],
+               ~N[2019-01-01 00:05:00],
+               ~N[2019-01-01 00:07:00],
+               ~N[2019-01-01 00:09:00]
              ]
     end
   end

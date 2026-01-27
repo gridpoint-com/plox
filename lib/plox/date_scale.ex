@@ -4,7 +4,8 @@ defmodule Plox.DateScale do
 
   This struct implements the `Plox.Scale` protocol.
 
-  `Plox.Scale.values/2` returns a `t:Date.Range.t/0` enumerable:
+  `Plox.Scale.values/2` returns a `t:Date.Range.t/0` enumerable and accepts
+  `step` and `start` options:
 
       iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-10], 1))
       iex> scale |> Plox.Scale.values(%{step: 2}) |> Enum.to_list()
@@ -13,6 +14,10 @@ defmodule Plox.DateScale do
       iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-10], ~D[2020-01-01], -1))
       iex> scale |> Plox.Scale.values(%{step: 3}) |> Enum.to_list()
       [~D[2020-01-10], ~D[2020-01-07], ~D[2020-01-04], ~D[2020-01-01]]
+
+      iex> scale = Plox.DateScale.new(Date.range(~D[2020-01-01], ~D[2020-01-10], 1))
+      iex> scale |> Plox.Scale.values(%{start: ~D[2020-01-07]}) |> Enum.to_list()
+      [~D[2020-01-07], ~D[2020-01-08], ~D[2020-01-09], ~D[2020-01-10]]
 
   `Plox.Scale.convert_to_range/3` returns a number in the given range:
 
@@ -67,15 +72,32 @@ defmodule Plox.DateScale do
     Returns a `t:Date.Range.t/0` of all `t:Date.t/0` values in the scale,
     stepping by the given interval.
 
-    Accepts a `step` option as a number of days. The default step is 1 day.
-    Raises if given `step` is not a positive integer greater than 1.
+    Maintains the direction of the original range (positive or negative).
+
+    ## Options
+
+      * `:start` - The starting date for generating values. Must be a `t:Date.t/0`
+        within the scale's domain. Defaults to the first date in the scale's range.
+
+      * `:step` - The number of days between each value. Must be a positive integer.
+        Defaults to `1`.
     """
     def values(scale, opts) do
-      case Map.fetch(opts, :step) do
-        :error -> scale.range
-        {:ok, step} when step < 1 -> raise ArgumentError, message: "Step must be a positive integer"
-        {:ok, step} when scale.range.step > 0 -> %{scale.range | step: step}
-        {:ok, step} when scale.range.step < 0 -> %{scale.range | step: -step}
+      first_value = Map.get(opts, :start, scale.range.first)
+      step = Map.get(opts, :step, 1)
+
+      unless first_value in scale.range do
+        raise ArgumentError, message: "DateScale: start value must be within the range of the scale"
+      end
+
+      if step < 1 do
+        raise ArgumentError, message: "DateScale: step must be a positive integer"
+      end
+
+      if scale.range.step > 0 do
+        Date.range(first_value, scale.range.last, step)
+      else
+        Date.range(first_value, scale.range.last, -step)
       end
     end
 
