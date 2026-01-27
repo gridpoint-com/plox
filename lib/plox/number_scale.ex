@@ -8,7 +8,8 @@ defmodule Plox.NumberScale do
 
   This struct implements the `Plox.Scale` protocol.
 
-  `Plox.Scale.values/2` returns an enumerable of the numerical values in the scale:
+  `Plox.Scale.values/2` returns an enumerable of the numerical values in the scale
+  and accepts `start` and `ticks` options:
 
       iex> scale = Plox.NumberScale.new(0, 10)
       iex> Plox.Scale.values(scale)
@@ -17,6 +18,10 @@ defmodule Plox.NumberScale do
       iex> scale = Plox.NumberScale.new(10, 0)
       iex> Plox.Scale.values(scale, %{ticks: 6})
       [10.0, 8.0, 6.0, 4.0, 2.0, 0.0]
+
+      iex> scale = Plox.NumberScale.new(0, 10)
+      iex> Plox.Scale.values(scale, %{start: 5})
+      [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0]
 
   `Plox.Scale.convert_to_range/3` returns a number in the given range:
 
@@ -69,20 +74,44 @@ defmodule Plox.NumberScale do
     dynamically calculated based on `first`, `last`, and `ticks`.
 
     Raises if `ticks` is less than `2` (default is `11`).
+
+    ## Options
+
+      * `:start` - The starting value. Must be a number within the scale's domain.
+        Defaults to the first value in the scale.
+
+      * `:ticks` - The number of scale values to return. Must be at least `2`.
+        Defaults to `11`.
     """
     def values(scale, opts) do
-      ticks = Map.get(opts, :ticks, 11)
+      first_value =
+        case Map.get(opts, :start) do
+          nil -> scale.first
+          value when is_number(value) -> Decimal.from_float(value / 1.0)
+          value -> raise ArgumentError, message: "NumberScale: start must be a number, got #{inspect(value)}"
+        end
 
-      if ticks < 2 do
-        raise ArgumentError, message: "Invalid ticks count `#{ticks}`, must be at least 2"
+      minimum = if scale.backwards?, do: scale.last, else: scale.first
+      maximum = if scale.backwards?, do: scale.first, else: scale.last
+
+      if Decimal.lt?(first_value, minimum) or Decimal.gt?(first_value, maximum) do
+        raise ArgumentError,
+          message: "NumberScale: start value #{Decimal.to_float(first_value)} must be within the scale range"
       end
 
-      step = scale.last |> Decimal.sub(scale.first) |> Decimal.div(ticks - 1)
+      ticks = Map.get(opts, :ticks, 11)
+
+      case ticks do
+        n when is_integer(n) and n >= 2 -> n
+        _ -> raise ArgumentError, message: "NumberScale: ticks must be an integer >= 2"
+      end
+
+      step = scale.last |> Decimal.sub(first_value) |> Decimal.div(ticks - 1)
 
       # we don't compute the last value because it could include rounding errors
       # carried through each step, instead we just append `scale.last`
       0..(ticks - 2)
-      |> Enum.map_reduce(scale.first, fn _i, acc -> {acc, Decimal.add(acc, step)} end)
+      |> Enum.map_reduce(first_value, fn _i, acc -> {acc, Decimal.add(acc, step)} end)
       |> elem(0)
       |> Kernel.++([scale.last])
       |> Enum.map(&Decimal.to_float/1)

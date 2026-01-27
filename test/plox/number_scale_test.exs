@@ -29,7 +29,7 @@ defmodule Plox.NumberScaleTest do
   end
 
   describe "values/2" do
-    test "with default ticks" do
+    test "with default ticks (11) and start" do
       scale = NumberScale.new(0, 10)
       assert Scale.values(scale) == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
     end
@@ -39,16 +39,50 @@ defmodule Plox.NumberScaleTest do
       assert Scale.values(scale, %{ticks: 5}) == [0.0, 2.5, 5.0, 7.5, 10.0]
     end
 
-    test "with reversed scale" do
+    test "with default ticks (11) and reversed scale" do
       scale = NumberScale.new(10, 0)
       assert Scale.values(scale) == [10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0]
     end
 
-    test "raises an error with invalid ticks" do
+    test "raises an error with ticks < 2" do
       scale = NumberScale.new(0, 10)
 
       assert_raise ArgumentError, fn ->
         Scale.values(scale, %{ticks: 1})
+      end
+    end
+
+    test "raises an error with non-integer ticks" do
+      scale = NumberScale.new(0, 10)
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{ticks: 5.5})
+      end
+    end
+
+    test "with custom start" do
+      scale = NumberScale.new(0, 10)
+      assert Scale.values(scale, %{start: 5}) == [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0]
+    end
+
+    test "with custom start and ticks" do
+      scale = NumberScale.new(0, 10)
+      assert Scale.values(scale, %{start: 2, ticks: 5}) == [2.0, 4.0, 6.0, 8.0, 10.0]
+    end
+
+    test "raises an error with start before range" do
+      scale = NumberScale.new(0, 10)
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{start: -1})
+      end
+    end
+
+    test "raises an error with start after range" do
+      scale = NumberScale.new(0, 10)
+
+      assert_raise ArgumentError, fn ->
+        Scale.values(scale, %{start: 11})
       end
     end
   end
