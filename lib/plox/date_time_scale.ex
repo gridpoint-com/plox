@@ -71,12 +71,12 @@ defmodule Plox.DateTimeScale do
 
     ## Options
 
+      * `:start` - The starting datetime value. Must be included in the scale.
+        Defaults to the first value in the scale.
+
       * `:step` - The step interval. Can be a non-zero integer number of seconds,
         or a tuple of `{integer, :second | :minute | :hour | :day}`.
         Defaults to `{60, :second}`.
-
-      * `:start` - The starting datetime value. Must be included in the scale.
-        Defaults to the first value in the scale.
     """
     def values(%{first: %DateTime{time_zone: tz}} = scale, %{step: {step_days, :day}}) when tz != "Etc/UTC" do
       scale.first

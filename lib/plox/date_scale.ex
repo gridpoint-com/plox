@@ -76,10 +76,11 @@ defmodule Plox.DateScale do
 
     ## Options
 
-      * `:step` - The number of days between each value. Must be a positive integer.
-        Defaults to `1`.
       * `:start` - The starting date for generating values. Must be a `t:Date.t/0`
         within the scale's domain. Defaults to the first date in the scale's range.
+
+      * `:step` - The number of days between each value. Must be a positive integer.
+        Defaults to `1`.
     """
     def values(scale, opts) do
       first_value = Map.get(opts, :start, scale.range.first)

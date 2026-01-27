@@ -45,7 +45,7 @@ defmodule Plox.DateTimeScaleTest do
   end
 
   describe "values/2" do
-    test "with default step (60s)" do
+    test "with default step (60s) and start" do
       scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
 
       assert Scale.values(scale) == [
@@ -127,16 +127,6 @@ defmodule Plox.DateTimeScaleTest do
       assert_raise ArgumentError, fn ->
         Scale.values(scale, %{step: {-500, :invalid}})
       end
-    end
-
-    test "with default start" do
-      scale = DateTimeScale.new(~N[2019-01-01 00:00:00], ~N[2019-01-01 00:02:00])
-
-      assert Scale.values(scale) == [
-               ~N[2019-01-01 00:00:00],
-               ~N[2019-01-01 00:01:00],
-               ~N[2019-01-01 00:02:00]
-             ]
     end
 
     test "with custom start" do
