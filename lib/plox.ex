@@ -43,15 +43,31 @@ defmodule Plox do
     begins. Accepts one, two, three or four values and interprets them the same was as in CSS.
     """
 
+  attr :use_flexbox, :boolean,
+    default: false,
+    doc: """
+    Whether to use flexbox for the div containing the graph for special layout cases.
+    """
+
   slot :legend
   slot :tooltips
   slot :inner_block, required: true
 
   def graph(assigns) do
+    graph_div_style_string = "position: relative; width: #{assigns.width}px; height: #{assigns.height}px"
+
+    graph_div_style_string =
+      if assigns.use_flexbox do
+        "display: flex; " <> graph_div_style_string
+      else
+        graph_div_style_string
+      end
+
     assigns =
       assign(assigns,
         for: nil,
-        graph: Graph.put_dimensions(assigns.for, Dimensions.new(assigns))
+        graph: Graph.put_dimensions(assigns.for, Dimensions.new(assigns)),
+        graph_div_style_string: graph_div_style_string
       )
 
     ~H"""
@@ -61,7 +77,7 @@ defmodule Plox do
           {render_slot(legend)}
         </.legend>
       </div>
-      <div style={"position: relative; width: #{@width}px; height: #{@height}px"}>
+      <div style={@graph_div_style_string}>
         <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
           {render_slot(@inner_block, @graph)}
         </svg>
