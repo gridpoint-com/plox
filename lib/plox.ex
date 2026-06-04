@@ -211,25 +211,29 @@ defmodule Plox do
 
   def line_plot(%{type: :line} = assigns) do
     ~H"""
-    <polyline
-      points={@dataset |> GraphDataset.to_graph_points(@x, @y) |> polyline_points()}
-      fill="none"
-      stroke={@color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
+    <g id={"dataset-#{@dataset.id}-line"}>
+      <polyline
+        points={@dataset |> GraphDataset.to_graph_points(@x, @y) |> polyline_points()}
+        fill="none"
+        stroke={@color}
+        stroke-width={@width}
+        stroke-dasharray={stroke_dasharray(@line_style)}
+      />
+    </g>
     """
   end
 
   def line_plot(%{type: :step_line} = assigns) do
     ~H"""
-    <polyline
-      points={@dataset |> step_points(@x, @y) |> polyline_points()}
-      fill="none"
-      stroke={@color}
-      stroke-width={@width}
-      stroke-dasharray={stroke_dasharray(@line_style)}
-    />
+    <g id={"dataset-#{@dataset.id}-step_line"}>
+      <polyline
+        points={@dataset |> step_points(@x, @y) |> polyline_points()}
+        fill="none"
+        stroke={@color}
+        stroke-width={@width}
+        stroke-dasharray={stroke_dasharray(@line_style)}
+      />
+    </g>
     """
   end
 
@@ -262,27 +266,29 @@ defmodule Plox do
 
   def points_plot(assigns) do
     ~H"""
-    <circle
-      :for={point <- GraphDataset.to_graph_points(@dataset, @x, @y)}
-      phx-click={
-        if assigns[:"phx-click"],
-          do:
-            JS.push(assigns[:"phx-click"],
-              value: %{
-                id: point.data_point.id,
-                dataset_id: @dataset.id,
-                x_pixel: point.x,
-                y_pixel: point.y
-              }
-            )
-      }
-      phx-target={assigns[:"phx-target"]}
-      style={if assigns[:"phx-click"], do: "cursor: pointer;"}
-      fill={GraphDataset.to_color(@dataset, @color, point.data_point)}
-      cx={point.x}
-      cy={point.y}
-      r={@radius}
-    />
+    <g id={"dataset-#{@dataset.id}-points"}>
+      <circle
+        :for={point <- GraphDataset.to_graph_points(@dataset, @x, @y)}
+        phx-click={
+          if assigns[:"phx-click"],
+            do:
+              JS.push(assigns[:"phx-click"],
+                value: %{
+                  id: point.data_point.id,
+                  dataset_id: @dataset.id,
+                  x_pixel: point.x,
+                  y_pixel: point.y
+                }
+              )
+        }
+        phx-target={assigns[:"phx-target"]}
+        style={if assigns[:"phx-click"], do: "cursor: pointer;"}
+        fill={GraphDataset.to_color(@dataset, @color, point.data_point)}
+        cx={point.x}
+        cy={point.y}
+        r={@radius}
+      />
+    </g>
     """
   end
 
@@ -308,34 +314,36 @@ defmodule Plox do
 
   def bar_plot(assigns) do
     ~H"""
-    <%= for point <- GraphDataset.to_graph_points(@dataset, @x, @y) do %>
-      <line
-        phx-click={
-          if assigns[:"phx-click"],
-            do:
-              JS.push(assigns[:"phx-click"],
-                value: %{
-                  id: point.data_point.id,
-                  dataset_id: @dataset.id,
-                  x_pixel: point.x,
-                  y_pixel: point.y
-                }
-              )
-        }
-        phx-target={assigns[:"phx-target"]}
-        style={if assigns[:"phx-click"], do: "cursor: pointer;"}
-        x1={point.x}
-        y1={point.y}
-        x2={point.x}
-        y2={
-          @dataset.dimensions.height - @dataset.dimensions.margin.bottom -
-            @dataset.dimensions.padding.bottom
-        }
-        stroke={GraphDataset.to_color(@dataset, @color, point.data_point)}
-        stroke-width={@width}
-        stroke-linecap={bar_style(@bar_style)}
-      />
-    <% end %>
+    <g id={"dataset-#{@dataset.id}-bar"}>
+      <%= for point <- GraphDataset.to_graph_points(@dataset, @x, @y) do %>
+        <line
+          phx-click={
+            if assigns[:"phx-click"],
+              do:
+                JS.push(assigns[:"phx-click"],
+                  value: %{
+                    id: point.data_point.id,
+                    dataset_id: @dataset.id,
+                    x_pixel: point.x,
+                    y_pixel: point.y
+                  }
+                )
+          }
+          phx-target={assigns[:"phx-target"]}
+          style={if assigns[:"phx-click"], do: "cursor: pointer;"}
+          x1={point.x}
+          y1={point.y}
+          x2={point.x}
+          y2={
+            @dataset.dimensions.height - @dataset.dimensions.margin.bottom -
+              @dataset.dimensions.padding.bottom
+          }
+          stroke={GraphDataset.to_color(@dataset, @color, point.data_point)}
+          stroke-width={@width}
+          stroke-linecap={bar_style(@bar_style)}
+        />
+      <% end %>
+    </g>
     """
   end
 
@@ -434,67 +442,71 @@ defmodule Plox do
 
   def area_plot(%{orientation: :horizontal} = assigns) do
     ~H"""
-    <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
-      <rect
-        :if={!is_nil(rect_color)}
-        fill={rect_color}
-        height={
-          @dataset.dimensions.height - @dataset.dimensions.margin.top -
-            @dataset.dimensions.margin.bottom
-        }
-        width={scalar2.value - scalar1.value}
-        x={scalar1.value}
-        y={@dataset.dimensions.margin.top}
-        phx-click={
-          if assigns[:"phx-click"],
-            do:
-              JS.push(assigns[:"phx-click"],
-                value: %{
-                  start_area_point_id: scalar1.data_point.id,
-                  end_area_point_id: scalar2.data_point.id,
-                  dataset_id: @dataset.id,
-                  x_pixel: scalar1.value + (scalar2.value - scalar1.value) / 2,
-                  y_pixel: @dataset.dimensions.margin.top + @dataset.dimensions.height / 2
-                }
-              )
-        }
-        style={if assigns[:"phx-click"], do: "cursor: pointer;"}
-        phx-target={assigns[:"phx-target"]}
-      />
-    <% end %>
+    <g id={"dataset-#{@dataset.id}-area"}>
+      <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
+        <rect
+          :if={!is_nil(rect_color)}
+          fill={rect_color}
+          height={
+            @dataset.dimensions.height - @dataset.dimensions.margin.top -
+              @dataset.dimensions.margin.bottom
+          }
+          width={scalar2.value - scalar1.value}
+          x={scalar1.value}
+          y={@dataset.dimensions.margin.top}
+          phx-click={
+            if assigns[:"phx-click"],
+              do:
+                JS.push(assigns[:"phx-click"],
+                  value: %{
+                    start_area_point_id: scalar1.data_point.id,
+                    end_area_point_id: scalar2.data_point.id,
+                    dataset_id: @dataset.id,
+                    x_pixel: scalar1.value + (scalar2.value - scalar1.value) / 2,
+                    y_pixel: @dataset.dimensions.margin.top + @dataset.dimensions.height / 2
+                  }
+                )
+          }
+          style={if assigns[:"phx-click"], do: "cursor: pointer;"}
+          phx-target={assigns[:"phx-target"]}
+        />
+      <% end %>
+    </g>
     """
   end
 
   def area_plot(%{orientation: :vertical} = assigns) do
     ~H"""
-    <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
-      <rect
-        :if={!is_nil(rect_color)}
-        fill={rect_color}
-        height={scalar1.value - scalar2.value}
-        width={
-          @dataset.dimensions.width - @dataset.dimensions.margin.left -
-            @dataset.dimensions.margin.right
-        }
-        x={@dataset.dimensions.margin.left}
-        y={scalar1.value - (scalar1.value - scalar2.value)}
-        phx-click={
-          if assigns[:"phx-click"],
-            do:
-              JS.push(assigns[:"phx-click"],
-                value: %{
-                  start_area_point_id: scalar1.data_point.id,
-                  end_area_point_id: scalar2.data_point.id,
-                  dataset_id: @dataset.id,
-                  x_pixel: @dataset.dimensions.margin.left + @dataset.dimensions.width / 2,
-                  y_pixel: scalar2.value + (scalar1.value - scalar2.value) / 2
-                }
-              )
-        }
-        style={if assigns[:"phx-click"], do: "cursor: pointer;"}
-        phx-target={assigns[:"phx-target"]}
-      />
-    <% end %>
+    <g id={"dataset-#{@dataset.id}-area"}>
+      <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
+        <rect
+          :if={!is_nil(rect_color)}
+          fill={rect_color}
+          height={scalar1.value - scalar2.value}
+          width={
+            @dataset.dimensions.width - @dataset.dimensions.margin.left -
+              @dataset.dimensions.margin.right
+          }
+          x={@dataset.dimensions.margin.left}
+          y={scalar1.value - (scalar1.value - scalar2.value)}
+          phx-click={
+            if assigns[:"phx-click"],
+              do:
+                JS.push(assigns[:"phx-click"],
+                  value: %{
+                    start_area_point_id: scalar1.data_point.id,
+                    end_area_point_id: scalar2.data_point.id,
+                    dataset_id: @dataset.id,
+                    x_pixel: @dataset.dimensions.margin.left + @dataset.dimensions.width / 2,
+                    y_pixel: scalar2.value + (scalar1.value - scalar2.value) / 2
+                  }
+                )
+          }
+          style={if assigns[:"phx-click"], do: "cursor: pointer;"}
+          phx-target={assigns[:"phx-target"]}
+        />
+      <% end %>
+    </g>
     """
   end
 
