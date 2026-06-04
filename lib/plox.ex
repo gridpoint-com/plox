@@ -80,8 +80,10 @@ defmodule Plox do
         </.legend>
       </div>
       <div style={@graph_div_style_string}>
-
-        <div :if={@sticky_left_axis != []} style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; left: 0px; margin-top: 4px; margin-bottom: 16px;">
+        <div
+          :if={@sticky_left_axis != []}
+          style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; left: 0px; margin-top: 4px; margin-bottom: 16px;"
+        >
           {render_slot(@sticky_left_axis, @graph)}
         </div>
 
@@ -89,7 +91,10 @@ defmodule Plox do
           {render_slot(@inner_block, @graph)}
         </svg>
 
-        <div :if={@sticky_right_axis != []} style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; right: 0px; margin-top: 4px; margin-bottom: 16px;">
+        <div
+          :if={@sticky_right_axis != []}
+          style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; right: 0px; margin-top: 4px; margin-bottom: 16px;"
+        >
           {render_slot(@sticky_right_axis, @graph)}
         </div>
 
