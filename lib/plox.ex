@@ -80,21 +80,17 @@ defmodule Plox do
         </.legend>
       </div>
       <div style={@graph_div_style_string}>
-        <%= for sticky_left_axis <- @sticky_left_axis do %>
-          <div style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; left: 0px; margin-top: 4px; margin-bottom: 16px;">
-            {render_slot(sticky_left_axis, @graph)}
-          </div>
-        <% end %>
+        <div style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; left: 0px; margin-top: 4px; margin-bottom: 16px;">
+          {render_slot(@sticky_left_axis, @graph)}
+        </div>
 
         <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
           {render_slot(@inner_block, @graph)}
         </svg>
 
-        <%= for sticky_right_axis <- @sticky_right_axis do %>
-          <div style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; right: 0px; margin-top: 4px; margin-bottom: 16px;">
-            {render_slot(sticky_right_axis, @graph)}
-          </div>
-        <% end %>
+        <div style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; right: 0px; margin-top: 4px; margin-bottom: 16px;">
+          {render_slot(@sticky_right_axis, @graph)}
+        </div>
 
         <%= for tooltip <- @tooltips do %>
           {render_slot(tooltip, @graph)}
