@@ -51,6 +51,8 @@ defmodule Plox do
 
   slot :legend
   slot :tooltips
+  slot :sticky_left_axis, doc: "Y-axes included in this slot will stick to the left of the graph"
+  slot :sticky_right_axis, doc: "Y-axes included in this slot will stick to the right of the graph"
   slot :inner_block, required: true
 
   def graph(assigns) do
@@ -78,9 +80,21 @@ defmodule Plox do
         </.legend>
       </div>
       <div style={@graph_div_style_string}>
+        <%= for sticky_left_axis <- @sticky_left_axis do %>
+          <div style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; left: 0px; margin-top: 4px; margin-bottom: 16px;">
+            {render_slot(sticky_left_axis, @graph)}
+          </div>
+        <% end %>
+
         <svg viewBox={"0 0 #{@width} #{@height}"} xmlns="http://www.w3.org/2000/svg">
           {render_slot(@inner_block, @graph)}
         </svg>
+
+        <%= for sticky_right_axis <- @sticky_right_axis do %>
+          <div style="display: flex; flex-direction: column-reverse; justify-content: space-evenly; position: sticky; right: 0px; margin-top: 4px; margin-bottom: 16px;">
+            {render_slot(sticky_right_axis, @graph)}
+          </div>
+        <% end %>
 
         <%= for tooltip <- @tooltips do %>
           {render_slot(tooltip, @graph)}
