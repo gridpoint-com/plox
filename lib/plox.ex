@@ -199,6 +199,7 @@ defmodule Plox do
   """
   @doc type: :component
 
+  attr :id, :string, default: nil
   attr :dataset, :any, required: true
 
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
@@ -211,7 +212,7 @@ defmodule Plox do
 
   def line_plot(%{type: :line} = assigns) do
     ~H"""
-    <g id={"dataset-#{@dataset.id}-line"}>
+    <g id={@id}>
       <polyline
         points={@dataset |> GraphDataset.to_graph_points(@x, @y) |> polyline_points()}
         fill="none"
@@ -225,7 +226,7 @@ defmodule Plox do
 
   def line_plot(%{type: :step_line} = assigns) do
     ~H"""
-    <g id={"dataset-#{@dataset.id}-step_line"}>
+    <g id={@id}>
       <polyline
         points={@dataset |> step_points(@x, @y) |> polyline_points()}
         fill="none"
@@ -254,6 +255,7 @@ defmodule Plox do
   """
   @doc type: :component
 
+  attr :id, :string, default: nil
   attr :dataset, :any, required: true
 
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
@@ -266,7 +268,7 @@ defmodule Plox do
 
   def points_plot(assigns) do
     ~H"""
-    <g id={"dataset-#{@dataset.id}-points"}>
+    <g id={@id}>
       <circle
         :for={point <- GraphDataset.to_graph_points(@dataset, @x, @y)}
         phx-click={
@@ -297,6 +299,7 @@ defmodule Plox do
   """
   @doc type: :component
 
+  attr :id, :string, default: nil
   attr :dataset, :any, required: true
 
   attr :x, :atom, default: :x, doc: "The dataset axis key to use for x values"
@@ -314,7 +317,7 @@ defmodule Plox do
 
   def bar_plot(assigns) do
     ~H"""
-    <g id={"dataset-#{@dataset.id}-bar"}>
+    <g id={@id}>
       <%= for point <- GraphDataset.to_graph_points(@dataset, @x, @y) do %>
         <line
           phx-click={
@@ -430,6 +433,7 @@ defmodule Plox do
   """
   @doc type: :component
 
+  attr :id, :string, default: nil
   attr :dataset, :any, required: true
 
   attr :area, :atom, required: true, doc: "The dataset axis key to use for the area plots"
@@ -442,7 +446,7 @@ defmodule Plox do
 
   def area_plot(%{orientation: :horizontal} = assigns) do
     ~H"""
-    <g id={"dataset-#{@dataset.id}-area"}>
+    <g id={@id}>
       <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
         <rect
           :if={!is_nil(rect_color)}
@@ -477,7 +481,7 @@ defmodule Plox do
 
   def area_plot(%{orientation: :vertical} = assigns) do
     ~H"""
-    <g id={"dataset-#{@dataset.id}-area"}>
+    <g id={@id}>
       <%= for [scalar1, scalar2] <- area_points(@dataset, @area, @orientation), rect_color = GraphDataset.to_color(@dataset, @color, scalar1.data_point) do %>
         <rect
           :if={!is_nil(rect_color)}
